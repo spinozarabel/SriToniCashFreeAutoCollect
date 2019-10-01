@@ -785,7 +785,8 @@ function VA_payments_callback()
 			<th>Payer Bank Reference</th>
 		</tr>
 	<?php
-	// get all payments made into this account
+	// create new instance of payment gateway API. In WP no need to pass site name Since
+    // settings are unique per site. Site name is only required for call from Moodle
 	$cashfree_api 	= new CfAutoCollect; // new cashfree API object
 	//
 	$payments	= $cashfree_api->getPaymentsForVirtualAccount($va_id);	// list of payments msde into this VA
@@ -970,7 +971,7 @@ function set_orders_newcolumn_values($colname)
 			foreach ($payments as $key=> $payment)
 				{
 
-					$payment_id			= $payment->id;
+					$payment_id			= $payment->referenceId;
 					$args 				= array(
 												'status' 			=> array(
 																				'processing',
@@ -980,7 +981,7 @@ function set_orders_newcolumn_values($colname)
 												'payment_method' 	=> "vabacs",
 												'customer_id'		=> $user_id,
 												'meta-key'			=> "va_payment_id",
-												'meta_value'		=> $payment->id,
+												'meta_value'		=> $payment_id,
 												);
 					// get all orderes in process or completed with search parameters as shown above
 					$payment_already_reconciled 	= !empty( wc_get_orders( $args ) );
@@ -991,7 +992,7 @@ function set_orders_newcolumn_values($colname)
 							continue;	// continue the for each loop next iteration
 						}
 					// Now we have a payment that is unreconciled. See if it is a potential candidate for reconciliation
-					if ( !reconcilable_ma($order, $payment) )
+					if ( !reconcilable_ma($order, $payment, $timezone) )
 						{
 						// this payment is not reconcilable either due to mismatch in payment or dates or both
 						continue;	// continue next iteration of loop payment
@@ -1003,14 +1004,12 @@ function set_orders_newcolumn_values($colname)
 
 		case ( ($reconcilable == true) && ($reconcile == 1) ) :
 
-			// fall through from previous case statement
-			$payment_details		= $cashfree_api->getPaymentDetails($payment_id);
+			// we will reconcle since all flags are go
 			reconcile_ma($order, $payment, $payment_details, $reconcile, $reconcilable);
-			$payment_datetime		= new DateTime('@' . $payment->created_at);
-			$payment_datetime->setTimezone($timezone);
-
-			$payment_amount 		= $payment->amount * 0.01;
-
+            $payment_date       = $payment->paymentTime;    // example 2007-06-28 15:29:26
+			$payment_datetime	=  DateTime::createFromFormat('Y-m-d H:i:s', $payment_date);
+			// $payment_datetime->setTimezone($timezone);
+			$payment_amount 		= $payment->amount;    // already in rupees
 	}		// end of SWITCH structure
 
 	if ( 'VApymnt' === $colname )
@@ -1074,15 +1073,20 @@ function set_orders_newcolumn_values($colname)
 *  1. Payments must be equal
 *  2. Order creation Date must be before Payment Date
 */
-function reconcilable_ma($order, $payment)
+function reconcilable_ma($order, $payment, $timezone)
 {
+    // since order datetime is from time stamp whereas payment datetime is form actula date and time
+    // we will only use settimezone for order datetime and not payment datetime.
 	$order_total			= $order->get_total();
-	$order_total_p			= (int) round($order_total * 100);
+	// $order_total_p			= (int) round($order_total * 100);
 	$order_created_datetime	= new DateTime( '@' . $order->get_date_created()->getTimestamp());
-	// we don't care about the time zone adjustment since it will be common for all dates for comparison purpses
+    $order_created_datetime->setTimezone($timezone);
+    // we don't care about the time zone adjustment since it will be common for all dates for comparison purpses
 	//
-	$payment_amount_p 		= $payment->amount; // in paise
-	$payment_datetime		= new DateTime('@' . $payment->created_at);
+	$payment_amount 		= $payment->amount;      // in ruppees
+    $payment_date       = $payment->paymentTime;     // example 2007-06-28 15:29:26
+    $payment_datetime	=  DateTime::createFromFormat('Y-m-d H:i:s', $payment_date);
+    // $payment_datetime->setTimezone($timezone);
 
 	return ( ($order_total_p == $payment_amount_p) && ($payment_datetime > $order_created_datetime) );
 
@@ -1106,24 +1110,25 @@ function reconcile_ma($order, $payment, $payment_details, $reconcile, $reconcila
 	$order_created_datetime	= new DateTime( '@' . $order->get_date_created()->getTimestamp());
 	$order_created_datetime->setTimezone($timezone);
 
-	$payment_datetime		= new DateTime('@' . $payment->created_at);
-	$payment_datetime->setTimezone($timezone);
+    $payment_date       = $payment->paymentTime;     // example 2007-06-28 15:29:26
+    $payment_datetime	=  DateTime::createFromFormat('Y-m-d H:i:s', $payment_date); // this is already IST
+	// $payment_datetime->setTimezone($timezone);
 	$order_note = 'Payment received by cashfree Virtual Account ID: ' . get_post_meta($order->id, 'va_id', true) .
-					' Payment ID: ' . $payment->id . '  on: ' . $payment_datetime->format('Y-m-d H:i:s') .
-					' Payment description: ' . $payment_details->description . ' bank reference: ' . $payment_details->bank_reference;
+					' Payment ID: ' . $payment->referenceId . '  on: ' . $payment_datetime->format('Y-m-d H:i:s') .
+					' UTR reference: ' . $payment->utr;
 	$order->add_order_note($order_note);
 
-	$order->update_meta_data('va_payment_id', 				$payment->id);
+	$order->update_meta_data('va_payment_id', 				$payment->referenceId);
 	$order->update_meta_data('amount_paid_by_va_payment', 	$payment->amount);  // in Rs
-	$order->update_meta_data('bank_reference', 				$payment_details->bank_reference);
-	$order->update_meta_data('payment_notes_by_customer', 	$payment_obj->description);
+	$order->update_meta_data('bank_reference', 				$payment->utr);
+	// $order->update_meta_data('payment_notes_by_customer', 	$payment_obj->description);
 	$order->save;
 
 	$transaction_arr	= array(
-									'payment_id'		=> $payment->id,
+									'payment_id'		=> $payment->referenceId,
 									'payment_date'		=> $payment_datetime->format('Y-m-d H:i:s'),
 									'va_id'				=> get_post_meta($order->id, 'va_id', true),
-									'bank_reference'	=> $payment_details->bank_reference,
+									'utr'	            => $payment->utr,
 								);
 
 	$transaction_id = json_encode($transaction_arr);
