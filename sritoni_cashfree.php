@@ -15,6 +15,7 @@ require_once(__DIR__."/sritoni_cashfree.php");  	    // main plugin file contain
 require_once(__DIR__."/MoodleRest.php");   				// Moodle REST API driver for PHP
 require_once(__DIR__."/sritoni_cashfree_settings.php"); // file containing class for settings submenu and page
 require_once(__DIR__."/cfAutoCollect.inc.php");         // contains cashfree api class
+require_once(__DIR__."/webhook/cashfree-webhook.php");  // contains webhook class
 
 // global $blog_id;
 // get sub-site name to be used to get appropriate API keys
@@ -1258,7 +1259,7 @@ function ma_update_order_meta_atcheckout( $order, $data )
 */
 function cf_webhook_init()
 {
-    $cfWebhook = new cf_webhook();
+    $cfWebhook = new CF_webhook();
 
     $cfWebhook->process();
 }

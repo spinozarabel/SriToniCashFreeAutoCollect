@@ -1,24 +1,20 @@
 <?php
 
-require_once __DIR__.'/../woo-razorpay.php';
-require_once __DIR__.'/../razorpay-sdk/Razorpay.php';
+require_once __DIR__.'/../sritoni_cashfree.php';            // plugin file
+require_once __DIR__.'/../cfAutoCollect.inc.php';           // API class file
+require_once __DIR__.'/../sritoni_cashfree_settings.php';   // API settings file
 
-use Razorpay\Api\Api;
-use Razorpay\Api\Errors;
-
-$verbose = true;
-
-class RZP_Webhook
+class CF_webhook
 {
     /**
-     * Instance of the razorpay payments class
-     * @var WC_Razorpay
+     * Instance of the cashfree payments class
+     *
      */
-    protected $razorpay;
+    // protected $cashfree; // not used in cashfree
 
     /**
      * API client instance to communicate with Razorpay API
-     * @var Razorpay\Api\Api
+     *
      */
     protected $api;
 
@@ -34,9 +30,9 @@ class RZP_Webhook
 
     function __construct()
     {
-        $this->razorpay = new WC_Razorpay(false);
+        //$this->razorpay = new WC_Razorpay(false);
 
-        $this->api 		= $this->razorpay->getRazorpayApiInstance();
+        $this->api 		= new CfAutoCollect;   // no need for site name since this is WP environment
 
 		$this->verbose	= self::VERBOSE;
 
