@@ -62,7 +62,10 @@ class CF_webhook
         if (!$signature_verified)
         {
             error_log('Signature not verified for Webhook, below is dump of webhook packet');
-            error_log(print_r($_POST, true));
+            foreach ($data as $key => $value)
+            {
+                error_log($key." : ".$value);
+            }
             return;
         }
 
