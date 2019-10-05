@@ -31,6 +31,10 @@ $moodle_token 	= get_option( 'sritoni_settings')["moodle_token"];
 
 
 add_action('plugins_loaded', 'init_custom_gateway_class');
+// hook action for post that has action set to cf_wc_webhook
+// When that action is discovered the function cf_webhook_init is fired
+// https://sritoni.org/hset-payments/wp-admin/admin-post.php?action=cf_wc_webhook
+add_action('admin_post_nopriv_cf_wc_webhook', 'cf_webhook_init', 10);
 
 function init_custom_gateway_class()
 	{
@@ -1245,4 +1249,16 @@ function ma_update_order_meta_atcheckout( $order, $data )
 	$order->update_meta_data('va_id', $va_id);
 
 	return;
+}
+
+/**
+* https://sritoni.org/hset-payments/wp-admin/admin-post.php?action=cf_wc_webhook
+* add_action('admin_post_nopriv_cf_wc_webhook', 'cf_webhook_init', 10);
+* This is set to a priority of 10
+*/
+function cf_webhook_init()
+{
+    $cfWebhook = new cf_webhook();
+
+    $cfWebhook->process();
 }
