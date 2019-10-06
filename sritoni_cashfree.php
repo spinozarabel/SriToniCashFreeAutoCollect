@@ -20,7 +20,8 @@ require_once(__DIR__."/webhook/cashfree-webhook.php");  // contains webhook clas
 // global $blog_id;
 // get sub-site name to be used to get appropriate API keys
 // $site_name	=	get_blog_details( $blog_id )->blogname;
-if ( is_admin() ){ // admin actions
+if ( is_admin() )
+{ // admin actions
   // Hook for adding admin menus only if you are an admin
   add_action('admin_menu', 'add_VA_payments_submenu');
   // Now add a new submenu for sritoni cashfree plugin settings in Woocommerce. This is to be done only once!!!!
@@ -437,6 +438,7 @@ add_action( 'woocommerce_order_status_completed', 'moodle_on_order_status_comple
 *   The JSON encoded data is written back to SRiToni by using core-users-update API
 *   Based on payments array conditions are checked for valid 'fees paid' status.
 *   Based on the conditions the user field 'fees paid' is updated to yes or no
+* No API calls are made to any payment gateway, relies only on order data and meta data
 */
 function moodle_on_order_status_completed( $order_id )
 {
@@ -444,7 +446,7 @@ function moodle_on_order_status_completed( $order_id )
 
 	$debug						= true;  // controls debug messages to error log
 
-
+    // get all details from order and nothing but order using just order_id
 	$order 						= wc_get_order( $order_id );
 	$user_id 					= $order->get_user_id();  // this is WP user id
 	$user						= $order->get_user();     // get wpuser information associated with order
@@ -472,6 +474,7 @@ function moodle_on_order_status_completed( $order_id )
 	$order_payee				=	get_blog_details( $blog_id )->blogname;
 
 	// prepare the data we want to write to Moodle user field called payments, of type text area
+    // all data is from order
 	$data = array(
 					"order_id"					=>	$order_id,
 					"order_amount"				=>	$order_amount,
@@ -944,7 +947,7 @@ function set_orders_newcolumn_values($colname)
 	$order_user 			= get_user_by('id', $user_id);
 	$user_display_name 		= $order_user->display_name;
 
-	$reconcilable = false;	// preset flag to indicate that order is reconcilable
+	$reconcilable = false;	// preset flag to indicate that order is not reconcilable
 
 	switch (true)
 	{
@@ -970,7 +973,7 @@ function set_orders_newcolumn_values($colname)
 
 			// for orders processing or completed get payment amount and date for display later on
 			// So first we get a list of payments made to the VAID contained in this HOLD order
-			$payments					= $cashfree_api->getPayments($va_id)->items;	// list of payments msde into this VA
+			$payments	= $cashfree_api->getPaymentsForVirtualAccount($va_id);
 			// Loop through the paymenst to check which one is already reconciled and which one is not
 
 			foreach ($payments as $key=> $payment)
@@ -1010,7 +1013,7 @@ function set_orders_newcolumn_values($colname)
 		case ( ($reconcilable == true) && ($reconcile == 1) ) :
 
 			// we will reconcle since all flags are go
-			reconcile_ma($order, $payment, $payment_details, $reconcile, $reconcilable);
+			reconcile_ma($order, $payment, $reconcile, $reconcilable);
             $payment_date       = $payment->paymentTime;    // example 2007-06-28 15:29:26
 			$payment_datetime	=  DateTime::createFromFormat('Y-m-d H:i:s', $payment_date);
 			// $payment_datetime->setTimezone($timezone);
@@ -1093,7 +1096,7 @@ function reconcilable_ma($order, $payment, $timezone)
     $payment_datetime	=  DateTime::createFromFormat('Y-m-d H:i:s', $payment_date);
     // $payment_datetime->setTimezone($timezone);
 
-	return ( ($order_total_p == $payment_amount_p) && ($payment_datetime > $order_created_datetime) );
+	return ( ($order_total == $payment_amount) && ($payment_datetime > $order_created_datetime) );
 
 }
 
@@ -1104,7 +1107,7 @@ function reconcilable_ma($order, $payment, $timezone)
 *  2. Order creation Date must be before Payment Date
 *  Reconciliation means that payment is marked complete and order meta updated suitably
 */
-function reconcile_ma($order, $payment, $payment_details, $reconcile, $reconcilable)
+function reconcile_ma($order, $payment, $reconcile, $reconcilable)
 {
 	if 	(	($reconcile == 0) ||
 			($reconcilable == false)	)
