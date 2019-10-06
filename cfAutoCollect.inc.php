@@ -1,6 +1,6 @@
 <?php
-/* Modified by Madhu Avasarala 09/29/2013
-* ver 1.0 add Moodle and WP compatibility and get settings appropriately
+/* Modified by Madhu Avasarala 10/06/2019
+* ver 1.2 add Moodle and WP compatibility and get settings appropriately
 *         all data returned as objects instead of arrays in json_decode
 */
 
@@ -15,6 +15,9 @@ class CfAutoCollect
 {
     protected $token;
     protected $baseUrl;
+    protected $clientId;
+    protected $clientSecret;
+
     const TEST_PRODUCTION  = "TEST";
     const VERBOSE          = true;
 
@@ -27,8 +30,8 @@ class CfAutoCollect
 			// we are in wordpress environment, don't care about $site_name since get_option is site dependendent
             // ensure key and sercret set correctly no check is made wether set or not
             // Make sure these work for Virtual Account API
-			$api_key		= $this->getoption("sritoni_settings", "pg_vas_key");
-			$api_secret		= $this->getoption("sritoni_settings", "pg_vas_secret");
+			$api_key		= $this->getoption("sritoni_settings", "cashfree_key");
+			$api_secret		= $this->getoption("sritoni_settings", "cashfree_secret");
 		}
 
         if ( defined("MOODLE_INTERNAL") )
@@ -36,6 +39,7 @@ class CfAutoCollect
 			// we are in MOODLE environment
 			// based on passed in $site_name change the strings for config select.
             // $site must be passed correctlt for this to work, no check is made
+            // make sure these definitions are same as in configurable_reports plugin settings
 			if (stripos($site_name, 'hset') !== false)
 			{
 				$key_string 	= 'pg_api_key_hset';
@@ -51,20 +55,18 @@ class CfAutoCollect
 			$api_key		= get_config('block_configurable_reports', $key_string);
 			$api_secret		= get_config('block_configurable_reports', $secret_string);
 		}
-        
+
         // add these as properties of object
         $this->clientId		= $api_key;
 		$this->clientSecret	= $api_secret;
-        // these are legay variables so we keep them
-        $clientId           = $api_key;
-        $clientSecret       = $api_secret;
+
         $stage = self::TEST_PRODUCTION;
 
         if ($stage == "PROD")
         {
-          $this->baseUrl = "https://cac-api.gocashfree.com/cac/v1";
+          $this->baseUrl = "https://cac-api.cashfree.com/cac/v1";
         } else {
-          $this->baseUrl = "https://cac-gamma.gocashfree.com/cac/v1";
+          $this->baseUrl = "https://cac-gamma.cashfree.com/cac/v1";
         }
 
         $this->token     = $this->authorizeAndGetToken();
@@ -94,6 +96,7 @@ class CfAutoCollect
            {
              $token = $curlResponse->data->token;
              return $token;
+             error_log($token);
            } else
            {
               throw new Exception("Authorization failed. Reason : ". $curlResponse->message);
@@ -102,13 +105,13 @@ class CfAutoCollect
     }       // end of function authorizeAndGetToken
 
     /**
-    * @param moodleuserid is the user id as in moodle user table
+    * @param vAccountId is moodle id padded if needed for min 4 chars
     * @param name is the user's sritoni full name
     * @param phone is the user's principal phone number
     * @param email is the SriToni email of user
     * returns an object with keys "accountNumber" and "ifsc"
     */
-    public function createVirtualAccount($moodleuserid, $name, $phone, $email)
+    public function createVirtualAccount($vAccountId, $name, $phone, $email)
     {
       $response =["status" => "FAILED", "message" => "Authorization failed"];
       if ($this->token)
@@ -119,15 +122,17 @@ class CfAutoCollect
             "Authorization: Bearer $authToken"
             ];
         // pad moodleuserid with 0's from left for minimum length of 4
-        $vAccountId = str_pad($moodleuserid, 4, "0", STR_PAD_LEFT);
-        $params     =
-        [
-            "vAccountId: $vAccountId",
-            "name: $name",
-            "phone: $phone",
-            "email: $email"
-        ];
+        // $vAccountId = str_pad($moodleuserid, 4, "0", STR_PAD_LEFT);
+        $params     = array
+                            (
+                                "vAccountId" => $vAccountId,
+                                "name"       => $name,
+                                "phone"      => $phone,
+                                "email"      => $email,
+                            );
         $curlResponse = $this->postCurl($endpoint, $headers, $params);
+        //error_log("curl response of accountcreate");
+        //error_log(print_r($curlResponse));
         if ($curlResponse->status == "SUCCESS")
         {
             return $curlResponse->data; // returns new account object
@@ -147,7 +152,7 @@ class CfAutoCollect
     * returns an object with all vAccounts created so far
     * The data is an array numerically indexed, of objects
     */
-    protected function listAllVirtualAccounts()
+    function listAllVirtualAccounts()
     {
         if ($this->token)
         {
@@ -172,7 +177,7 @@ class CfAutoCollect
     * @param vAccounts is the array containing list of all vAs
     * returns the boolean value of vA with this ID exists or not
     */
-    protected function vAExists($vAccountId, $vAccounts)
+    function vAExists($vAccountId, $vAccounts)
     {
         if (sizeof($vAccounts) == 0)
         {
@@ -193,25 +198,28 @@ class CfAutoCollect
     }
 
     /**
-    *  Get Virtual Account Object given its ID and list of all Virtual Accounts
-    * @param id is the Moodle user table's id
-    * @param vAccounts is object of all virtual accounts
+    *  Get Virtual Account Object given its ID
+    * @param vAccountId is the vAccountId
+    * returns null if not successfull
+    * returns the fetched virtual account object if successfull
     */
-    protected function getvAccountGivenId($moodleuserid)
+    function getvAccountGivenId($vAccountId)
     {
         if (!$this->token)
-        {
-            return null;
-        }
+            {
+                return null;
+            }
         $vA = null;
         // pad the moodle user id with 0's on left side, if less than 4 digits
-        $vAccountId = str_pad($moodleuserid, 4, "0", STR_PAD_LEFT);
+        // $vAccountId = str_pad($moodleuserid, 4, "0", STR_PAD_LEFT);
         $endpoint = $this->baseUrl . "/va/" . $vAccountId;
         $authToken = $this->token;
         $headers = [
                     "Authorization: Bearer $authToken"
                    ];
         $curlResponse = $this->getCurl($endpoint, $headers);
+        //error_log("curl response of accountcreate");
+        //error_log(print_r($curlResponse));
         if ($curlResponse->status == "SUCCESS")
         {
           $vA = $curlResponse->data;    // return the account details object
@@ -221,7 +229,7 @@ class CfAutoCollect
 
     /**
     *  @param vAccountId is self explanatory, is SriToni ID number limited to 8 chars
-    *  returns all payments made to this account as an object
+    *  returns all payments made to this account as an array of payment objects
     */
     public function getPaymentsForVirtualAccount($vAccountId) {
       if ($this->token) {
@@ -279,7 +287,7 @@ class CfAutoCollect
        $returnData = curl_exec($ch);
        curl_close($ch);
        if ($returnData != "") {
-        return json_decode($returnData, fasle);     // returns object not array
+        return json_decode($returnData, false);     // returns object not array
        }
        return NULL;
     }
@@ -287,6 +295,14 @@ class CfAutoCollect
     function __destruct()
     {
       $this->token = NULL;
+    }
+
+    /**
+    *  returns the client secret of the api
+    */
+    public function get_clientSecret()
+    {
+        return $this->clientSecret;
     }
 }       // class definition ends
 ?>
