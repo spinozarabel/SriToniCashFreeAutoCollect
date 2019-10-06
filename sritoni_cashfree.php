@@ -469,10 +469,8 @@ function moodle_on_order_status_completed( $order_id )
 		$item_name    = $item->get_name();	// this is the name of the bundled product
 		break;
 	}
-
 	// get sub-site name which will serve as payee name
 	$order_payee				=	get_blog_details( $blog_id )->blogname;
-
 	// prepare the data we want to write to Moodle user field called payments, of type text area
     // all data is from order
 	$data = array(
@@ -484,16 +482,12 @@ function moodle_on_order_status_completed( $order_id )
 					"order_payee"				=>  $order_payee, // this will be hset-payments or hsea-llp-payments
 					"order_grade"				=>  $grade_or_class, // this is the grade that the user is/was when payment was made
 				 );
-
-
-
 	// prepare the Moodle Rest API object
 	$MoodleRest = new MoodleRest();
 	$MoodleRest->setServerAddress("https://hset.in/sritoni/webservice/rest/server.php");
 	$MoodleRest->setToken( $moodle_token ); // get token from ignore_key file
 	$MoodleRest->setReturnFormat(MoodleRest::RETURN_ARRAY); // Array is default. You can use RETURN_JSON or RETURN_XML too.
 	$MoodleRest->setDebug();
-
 	// get moodle user details associated with this completed order from SriToni
 	$parameters = array("criteria" => array(array("key" => "id", "value" => $moodle_user_id)));
 	// get moodle user satisfying above criteria
@@ -567,7 +561,6 @@ function moodle_on_order_status_completed( $order_id )
 					error_log("status of user profile field fees");
 					error_log(print_r($fees_paid ,true));
 	}
-
 	// if $existing already has elements in it then add this payment at index 0
 	// if not $existing is empty so add this payment explicitly at index 0
 	if($existing)
@@ -579,11 +572,7 @@ function moodle_on_order_status_completed( $order_id )
 		$existing[0] = $data;
 	}
 
-
-
 	$existing_json 		= json_encode($existing);
-
-
 
 	// create the users array in format needed for Moodle RSET API
 	$users = array("users" => array(array(	"id" 			=> $moodle_user_id,
@@ -919,24 +908,19 @@ function orders_add_mycolumns($columns)
 function set_orders_newcolumn_values($colname)
 {
 	global $post;
-
 	// Proceed only for new columns added by us
 	if ( !( ($colname == 'VApymnt') || ($colname == 'VAid') || ($colname == 'Student') )  )
 		{
 			return;
 		}
-
 	$order = wc_get_order( $post->ID );
 	// Only continue if we have an order.
 	if ( empty( $order ) )
 		{
 			return;
 		}
-
 	$timezone				= new DateTimeZone("Asia/Kolkata");
-
 	$cashfree_api 			= new CfAutoCollect; // new API object
-
 	// get the reconcile or not flag from settings. If true then we try to reconcile whatever was missed by webhook
 	$reconcile				= get_option( 'sritoni_settings' )["reconcile"] ?? 0;
 	// get order details up ahead of treating all the cases below
@@ -971,7 +955,6 @@ function set_orders_newcolumn_values($colname)
 		// for orders on hold extract the payment amount and date from possible unreconciled payments if any
 		case (  ( 'on-hold' == $order_status )    ||
                 ( 'pending' == $order_status )          ):
-
 			// So first we get a list of payments made to the VAID contained in this HOLD order
 			$payments	= $cashfree_api->getPaymentsForVirtualAccount($va_id);
             // what happens if there are no payents made and this is null?
@@ -1120,7 +1103,6 @@ function reconcile_ma($order, $payment, $reconcile, $reconcilable)
 		{
 			return false;	// just a safety check
 		}
-
 	$order_created_datetime	= new DateTime( '@' . $order->get_date_created()->getTimestamp());
 	$order_created_datetime->setTimezone($timezone);
 
@@ -1168,14 +1150,6 @@ function installment_pre_get_posts_query( $q )
 	{
 		return; // no product filter for admin and shop_manager just return
 	}
-
-	/*
-	error_log("Student Category");
-	error_log(print_r($studentcat ,true));
-
-	error_log("Student grade or class");
-	error_log(print_r($grade_or_class ,true));
-	*/
 
 	$tax_query = (array) $q->get( 'tax_query' );
 
