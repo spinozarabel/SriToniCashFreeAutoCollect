@@ -1108,7 +1108,6 @@ function reconcile_ma($order, $payment, $reconcile, $reconcilable)
 
     $payment_date       = $payment->paymentTime;     // example 2007-06-28 15:29:26
     $payment_datetime	=  DateTime::createFromFormat('Y-m-d H:i:s', $payment_date); // this is already IST
-	// $payment_datetime->setTimezone($timezone);
 	$order_note = 'Payment received by cashfree Virtual Account ID: ' . get_post_meta($order->id, 'va_id', true) .
 					' Payment ID: ' . $payment->referenceId . '  on: ' . $payment_datetime->format('Y-m-d H:i:s') .
 					' UTR reference: ' . $payment->utr;
@@ -1134,7 +1133,7 @@ function reconcile_ma($order, $payment, $reconcile, $reconcilable)
 }
 
 /**
- * Exclude products from a particular category on the shop page
+ * Filter products on the shop page based on user meta: sritoni_student_category, grade_or_class
  * https://docs.woocommerce.com/document/exclude-a-category-from-the-shop-page/
  * https://stackoverflow.com/questions/39004800/how-do-i-hide-woocommerce-products-with-a-given-category-based-on-user-role
  */
