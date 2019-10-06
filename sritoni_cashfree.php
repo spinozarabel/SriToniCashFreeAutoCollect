@@ -959,7 +959,7 @@ function set_orders_newcolumn_values($colname)
 
 		case ( ( 'processing' == $order_status ) || ( 'completed' == $order_status ) ) :
 
-			// for orders processing or completed get payment amount and date for display later on
+			// for orders processing or completed get payment data from order for display later on
 			$payment_amount 	= get_post_meta($order->id, 'amount_paid_by_va_payment', true); // in Rs.
 
 			$payment_datetime	= new DateTime( '@' . $order->get_date_paid()->getTimestamp());
@@ -969,13 +969,19 @@ function set_orders_newcolumn_values($colname)
 		break;
 
 		// for orders on hold extract the payment amount and date from possible unreconciled payments if any
-		case ( ( 'on-hold' == $order_status ) || ( 'pending' == $order_status ) ) :
+		case (  ( 'on-hold' == $order_status )    ||
+                ( 'pending' == $order_status )          ):
 
-			// for orders processing or completed get payment amount and date for display later on
 			// So first we get a list of payments made to the VAID contained in this HOLD order
 			$payments	= $cashfree_api->getPaymentsForVirtualAccount($va_id);
+            // what happens if there are no payents made and this is null?
+            if (empty($payments))
+            {
+                $payment_amount     = "n/a";
+                $payment_datetime   = "n/a";
+                break;  // break out of switch structure and go to print
+            }
 			// Loop through the paymenst to check which one is already reconciled and which one is not
-
 			foreach ($payments as $key=> $payment)
 				{
 
