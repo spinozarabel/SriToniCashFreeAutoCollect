@@ -146,7 +146,7 @@ error_log($clientSecret . "ajn4rhdj");   // for debugging only, delete when done
 		// if null exit, there are no open orders for this user to reconcile
 		if ( $open_orders == null )
 			{
-				return;
+                return;
 			}
 		else
 			{
@@ -211,7 +211,7 @@ error_log($clientSecret . "ajn4rhdj");   // for debugging only, delete when done
 							error_log( 'Order No: ' . $order->get_id() );
 						}
 			}
-			// true, reconciled eorders exist
+			// true, reconciled orders do exist, return boolean true
 			return true;
 		}
 		// false, reconciled orders don't exist for this payment
@@ -219,7 +219,8 @@ error_log($clientSecret . "ajn4rhdj");   // for debugging only, delete when done
     }
 
 	/**
-     * returns any open orders object for this user
+    * @param wp_userid is the wordpress user id, also the WC customer id
+     * returns all vabacs orders for this user thar are on-hold
      */
     protected function getOpenOrders($wp_userid)
     {
@@ -238,7 +239,7 @@ error_log($clientSecret . "ajn4rhdj");   // for debugging only, delete when done
 					}
 				return null;
 			}
-		// we have valid open orders for this user
+		// we have valid open orders for this user, can be more than 1 but typically only 1 should exist
 		if ($this->verbose)
 					{
 						foreach ($orders as $order)
@@ -287,7 +288,11 @@ error_log($clientSecret . "ajn4rhdj");   // for debugging only, delete when done
 
 		}
 		// we have checked all orders and none can be reconciled with our webhook payment
-		return null;
+        if ($this->verbose)
+                {
+                    error_log('All on-hold vabacs orders for this user checked, none can be reconciled with this payment');
+                }
+        return null;
     }
 
 	/**
