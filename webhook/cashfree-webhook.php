@@ -7,12 +7,6 @@ require_once __DIR__.'/../sritoni_cashfree_settings.php';   // API settings file
 class CF_webhook
 {
     /**
-     * Instance of the cashfree payments class
-     *
-     */
-    // protected $cashfree; // not used in cashfree
-
-    /**
      * API client instance to communicate with Razorpay API
      *
      */
@@ -28,12 +22,11 @@ class CF_webhook
 
     function __construct()
     {
-        //$this->razorpay = new WC_Razorpay(false);
-
-        $this->api 		= new CfAutoCollect;   // no need for site name since this is WP environment
-
+        // no need for site name argument to be passed in since this is WP environment
+        $this->api 		= new CfAutoCollect;
+        // sets verbose mode based on constant defined above
 		$this->verbose	= self::VERBOSE;
-
+        // sets timezone object to IST
 		$this->timezone =  new DateTimeZone(self::TIMEZONE);
         // setup property clientSecret using api data, needed for webhook signature verification
         $this->clientSecret = $this->api->get_clientSecret();
@@ -45,8 +38,6 @@ class CF_webhook
      * - Exception while fetching the payment
      *
      * It passes on the webhook in the following cases:
-     * - invoice_id set in payment.authorized
-     * - Invalid JSON
      * - Signature mismatch
      * - Secret isn't setup
      * - Event not recognized
@@ -68,7 +59,7 @@ class CF_webhook
             }
             return;
         }
-
+        // signature is verified, process webhook further
         switch ($data['event'])
         {
             case self::AMOUNT_COLLECTED:
@@ -79,7 +70,7 @@ class CF_webhook
 				return $this->amountCollected($data);
 
             default:
-                return true;
+                return ;
         }
     }
 
@@ -101,7 +92,7 @@ class CF_webhook
           }
         }
         $clientSecret = $this->clientSecret;
-error_log($clientSecret);   // for debugging only delete when done
+error_log($clientSecret . "ajn4rhdj");   // for debugging only, delete when done
         $hash_hmac = hash_hmac('sha256', $postData, $clientSecret, true) ;
         $computedSignature = base64_encode($hash_hmac);
         if ($signature == $computedSignature)
