@@ -79,6 +79,8 @@ class CF_webhook
         //
 
         $signature = $data["signature"];
+        error_log('Signature of Webhook: ' . $signature);
+        error_log(print_r($signature, true));
         unset($data["signature"]);
         ksort($data);
         // check if signature is verified
