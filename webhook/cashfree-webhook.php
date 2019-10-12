@@ -51,7 +51,7 @@ class CF_webhook
         $post = file_get_contents('php://input');
         $data = json_decode($post, true);   // decode into associative array
         // verify the IP of get_resource_type
-        $cashfree_ip = [
+        $whitelist_ip = [
                         "143.204.29.33" ,
                         "143.204.29.40" ,
                         "143.204.29.59" ,
@@ -60,8 +60,8 @@ class CF_webhook
                             ];
         // get IP of webhook server
         $ip_source = $_SERVER['REMOTE_ADDR'];
-        // check that webhook IP is white imap_listsubscribed
-        if (!in_array($ip_source, $cashfree_ip))
+        // check that webhook IP is white listed
+        if (!in_array($ip_source, $whitelist_ip))
         {
             // do not trust this webhook since its IP is not in whitelist
             // but log its contents just so we can see what it contains
@@ -71,7 +71,7 @@ class CF_webhook
             {
                 error_log($key." : ".$value);
             }
-            return;
+            die;
         }
         //
         error_log('IP of Webhook IS in whitelsit-Accepted: ' . $ip_source);
