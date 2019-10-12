@@ -77,6 +77,8 @@ class CF_webhook
         error_log('IP of Webhook IS in whitelsit-Accepted: ' . $ip_source);
         */
         //
+
+        $signature = $data["signature"];
         unset($data["signature"]);
         ksort($data);
         // check if signature is verified
