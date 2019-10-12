@@ -46,10 +46,10 @@ class CF_webhook
      */
     public function process()
     {
-        //$data = $_POST;
-        //$signature = $_POST["signature"];
-        $post = file_get_contents('php://input');
-        $data = json_decode($post, true);   // decode into associative array
+        $data = $_POST;
+        $signature = $_POST["signature"];
+        //$post = file_get_contents('php://input');
+        //$data = json_decode($post, true);   // decode into associative array
         // verify the IP of get_resource_type
         $whitelist_ip = [
                         "143.204.29.33" ,
@@ -78,9 +78,9 @@ class CF_webhook
         */
         //
 
-        $signature = $data["signature"];
+        //$signature = $data["signature"];
         error_log('Signature of Webhook: ' . $signature);
-        error_log(print_r($signature, true));
+        error_log(print_r($data, true));
         unset($data["signature"]);
         ksort($data);
         // check if signature is verified
