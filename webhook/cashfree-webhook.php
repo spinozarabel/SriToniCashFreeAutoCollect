@@ -127,7 +127,7 @@ class CF_webhook
           }
         }
         $clientSecret = $this->clientSecret;
-error_log($clientSecret . "ajn4rhdj");   // for debugging only, delete when done
+        // error_log($clientSecret . "ajn4rhdj");   // for debugging only, delete when done
         $hash_hmac = hash_hmac('sha256', $postData, $clientSecret, true) ;
         $computedSignature = base64_encode($hash_hmac);
         if ($signature == $computedSignature)
