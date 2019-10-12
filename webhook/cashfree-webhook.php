@@ -1,5 +1,7 @@
 <?php
 
+// version 1.1 checks if webhook IP is whitelisted
+
 require_once __DIR__.'/../sritoni_cashfree.php';            // plugin file
 require_once __DIR__.'/../cfAutoCollect.inc.php';           // API class file
 require_once __DIR__.'/../sritoni_cashfree_settings.php';   // API settings file
@@ -48,7 +50,28 @@ class CF_webhook
         //$signature = $_POST["signature"];
         $post = file_get_contents('php://input');
         $data = json_decode($post, true);   // decode into associative array
-        
+        // verify the IP of get_resource_type
+        $cashfree_ip = [
+                        "143.204.29.33" ,
+                        "143.204.29.40" ,
+                        "143.204.29.59" ,
+                        "143.204.29.114"
+                            ];
+        // get IP of webhook server
+        $ip_source = $_SERVER['REMOTE_ADDR'];
+        // check that webhook IP is white imap_listsubscribed
+        if (!in_array($ip_source, $cashfree_ip))
+        {
+            // do not trust this webhook since its IP is not in whitelist
+            // but log its contents just so we can see what it contains
+            error_log('IP of Webhook not in whitelsit-rejected, below is dump of webhook packet');
+            error_log('IP address of webhook is: ' . $ip_source);
+            foreach ($data as $key => $value)
+            {
+                error_log($key." : ".$value);
+            }
+            return;
+        }
         unset($data["signature"]);
         ksort($data);
         // check if signature is verified
