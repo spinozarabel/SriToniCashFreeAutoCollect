@@ -61,6 +61,7 @@ class CF_webhook
         // get IP of webhook server
         $ip_source = $_SERVER['REMOTE_ADDR'];
         // check that webhook IP is white listed
+        /*
         if (!in_array($ip_source, $whitelist_ip))
         {
             // do not trust this webhook since its IP is not in whitelist
@@ -73,8 +74,8 @@ class CF_webhook
             }
             die;
         }
-        //
         error_log('IP of Webhook IS in whitelsit-Accepted: ' . $ip_source);
+        */
         //
         unset($data["signature"]);
         ksort($data);
