@@ -44,8 +44,11 @@ class CF_webhook
      */
     public function process()
     {
-        $data = $_POST;
-        $signature = $_POST["signature"];
+        //$data = $_POST;
+        //$signature = $_POST["signature"];
+        $post = file_get_contents('php://input');
+        $data = json_decode($post, true);   // decode into associative array
+        
         unset($data["signature"]);
         ksort($data);
         // check if signature is verified
