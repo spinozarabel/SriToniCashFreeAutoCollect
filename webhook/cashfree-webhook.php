@@ -56,7 +56,7 @@ class CF_webhook
                         "143.204.29.40" ,
                         "143.204.29.59" ,
                         "143.204.29.114",
-                        "24.10.101.115"         // my PC IP
+                        //"24.10.101.115"         // my PC IP
                             ];
         // get IP of webhook server
         $ip_source = $_SERVER['REMOTE_ADDR'];
