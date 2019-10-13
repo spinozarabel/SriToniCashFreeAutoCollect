@@ -118,7 +118,7 @@ class sritoni_cashfree_settings {
 	$field = "ip_whitelist";
 	$value = esc_attr( $settings[$field] );
 
-	echo "<input type='textarea' name='sritoni_settings[$field]' value='$value' rows='4' />";
+	echo "<input type='text' name='sritoni_settings[$field]' value='$value' size='50' />";
 
     }
 
