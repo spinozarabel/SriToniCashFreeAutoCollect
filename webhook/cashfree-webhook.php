@@ -1,5 +1,6 @@
 <?php
 
+// version 1.2 gets ip_whitelist string from options
 // version 1.1 checks if webhook IP is whitelisted
 
 require_once __DIR__.'/../sritoni_cashfree.php';            // plugin file
@@ -54,7 +55,11 @@ class CF_webhook
                         "24.10.101.115"         // my PC IP
                             ];
                             */
-        $whitelist_ip = gethostbynamel('cashfree.com');
+        // get comma separated string of whitelisted IP's
+        $ip_whitelist  = get_option( 'sritoni_settings')["ip_whitelist"];
+        // convert this into an array of IP's
+        $whitelist_ip  = explode("," , $ip_whitelist);
+        //$whitelist_ip = gethostbynamel('cashfree.com');
         error_log(print_r($whitelist_ip, true));
         // get IP of webhook server
         $ip_source = $_SERVER['REMOTE_ADDR'];

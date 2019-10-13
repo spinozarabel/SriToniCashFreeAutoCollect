@@ -1,5 +1,6 @@
 <?php
 /**
+ * ver 1 added ip_whitelist option
  * Sub woocommerce menu class
  * Adds a submenu item and page for settings for Sritoni cashfree plugin
  * @author Madhu <madhu.avasarala@gmail.com>
@@ -79,6 +80,7 @@ class sritoni_cashfree_settings {
 		add_settings_field( 'reconcile', 'Try Reconciling Payments', array( $this, 'reconcile_callback' ), 'sritoni_settings', 'cashfree_api_section' );
 		add_settings_field( 'cashfree_secret', 'cashfree API client Secret', array( $this, 'cashfree_secret_callback' ), 'sritoni_settings', 'cashfree_api_section' );
 		add_settings_field( 'cashfree_key', 'cashfree API Client Key or ID', array( $this, 'cashfree_key_callback' ), 'sritoni_settings', 'cashfree_api_section' );
+        add_settings_field( '1p_whitelist', 'comma separated IPs to be white listed', array( $this, 'ip_whitelist_callback' ), 'sritoni_settings', 'cashfree_api_section' );
 
 		add_settings_field( 'moodle_token', 'Moodle API Token', array( $this, 'moodle_token_callback' ), 'sritoni_settings', 'moodle_api_section' );
 	}
@@ -89,6 +91,20 @@ class sritoni_cashfree_settings {
     public function print_section_info()
     {
         print 'Enter your settings below:';
+    }
+
+    /**
+     * Get the settings option array and print comma separated ip_whitelsit string
+    */
+    public function ip_whitelist_callback()
+    {
+
+	$settings = (array) get_option( 'sritoni_settings' );
+	$field = "ip_whitelist";
+	$value = esc_attr( $settings[$field] );
+
+	echo "<input type='textarea' name='sritoni_settings[$field]' value='$value' />";
+
     }
 
 	/**
