@@ -77,7 +77,7 @@ class sritoni_cashfree_settings {
 
 
 		// add_settings_field( $id, $title, $callback, $page, $section, $args );
-		add_settings_field( 'reconcile', 'Try Reconciling Payments', array( $this, 'reconcile_callback' ), 'sritoni_settings', 'cashfree_api_section' );
+		add_settings_field( 'reconcile', 'Try Reconciling Payments?', array( $this, 'reconcile_callback' ), 'sritoni_settings', 'cashfree_api_section' );
 		add_settings_field( 'cashfree_secret', 'cashfree API client Secret', array( $this, 'cashfree_secret_callback' ), 'sritoni_settings', 'cashfree_api_section' );
 		add_settings_field( 'cashfree_key', 'cashfree API Client Key or ID', array( $this, 'cashfree_key_callback' ), 'sritoni_settings', 'cashfree_api_section' );
         add_settings_field( 'ip_whitelist', 'comma separated IPs to be white listed', array( $this, 'ip_whitelist_callback' ), 'sritoni_settings', 'cashfree_api_section' );
