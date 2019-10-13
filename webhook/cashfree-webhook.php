@@ -35,14 +35,11 @@ class CF_webhook
     }
 
     /**
-     * Process a Razorpay Webhook. We exit in the following cases:
-     * - Successful processed
-     * - Exception while fetching the payment
-     *
-     * It passes on the webhook in the following cases:
-     * - Signature mismatch
-     * - Secret isn't setup
-     * - Event not recognized
+     * Process a Cashfree Webhook. We exit in the following cases:
+     * - Check that the IP is whitelisted
+     * . Extract the signature and verify /**
+     * . Once IP is in whitelist and signature is verified process the webhook
+     * . only event 'amount_colected' is processed
      */
     public function process()
     {
