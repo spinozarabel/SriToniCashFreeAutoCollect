@@ -1,6 +1,6 @@
 <?php
 /**
- * ver 1 added ip_whitelist option
+ * ver 2 added ip_whitelist option
  * Sub woocommerce menu class
  * Adds a submenu item and page for settings for Sritoni cashfree plugin
  * @author Madhu <madhu.avasarala@gmail.com>
