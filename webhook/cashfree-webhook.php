@@ -46,8 +46,6 @@ class CF_webhook
      */
     public function process()
     {
-        $data = $_POST;
-        $signature = $_POST["signature"];
         //$post = file_get_contents('php://input');
         //$data = json_decode($post, true);   // decode into associative array
         // verify the IP of get_resource_type
@@ -76,17 +74,19 @@ class CF_webhook
         }
         error_log('IP of Webhook IS in whitelsit-Accepted: ' . $ip_source);
         */
-        //
+        $data = $_POST;
+        $signature = $_POST["signature"];
 
-        //$signature = $data["signature"];
         error_log('Signature of Webhook: ' . $signature);
         error_log(print_r($data, true));
+        // prepare data for signature verification
         unset($data["signature"]);
         ksort($data);
         // check if signature is verified
         $signature_verified = $this->verify_signature($data, $signature);
         if (!$signature_verified)
         {
+            // signature is not valid, log and die
             error_log('Signature not verified for Webhook, below is dump of webhook packet');
             foreach ($data as $key => $value)
             {
@@ -94,7 +94,7 @@ class CF_webhook
             }
             die;
         }
-        // webhook signature is verified, IP is whitelsited, so process webhook further
+        // if reached this far, webhook signature is verified, IP is whitelsited, process webhook
         switch ($data['event'])
         {
             case self::AMOUNT_COLLECTED:
