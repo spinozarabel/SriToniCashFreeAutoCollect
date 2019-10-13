@@ -59,7 +59,7 @@ class CF_webhook
         $ip_whitelist_str  = get_option( 'sritoni_settings')["ip_whitelist"];
         $domain_whitelist  = get_option( 'sritoni_settings')["domain_whitelist"];
         // convert this into an array of IP's
-        $ip_whitelist_arr  = explode("," , $ip_whitelist);
+        $ip_whitelist_arr  = explode("," , $ip_whitelist_str);
         // get ips associated with domain
         $domain_ip_arr = gethostbynamel($domain_whitelist);
         // make a master whitelsited ip array
