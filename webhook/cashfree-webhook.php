@@ -58,6 +58,7 @@ class CF_webhook
         error_log(print_r($whitelist_ip, true));
         // get IP of webhook server
         $ip_source = $_SERVER['REMOTE_ADDR'];
+        error_log('ip of source: ' . $ip_source);
         // check that webhook IP is white listed
         /*
         if (!in_array($ip_source, $whitelist_ip))
