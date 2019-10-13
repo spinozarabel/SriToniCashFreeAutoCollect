@@ -46,13 +46,16 @@ class CF_webhook
         //$post = file_get_contents('php://input');
         //$data = json_decode($post, true);   // decode into associative array
         // verify the IP of get_resource_type
-        $whitelist_ip = [
+        /*$whitelist_ip = [
                         "143.204.29.33" ,
                         "143.204.29.40" ,
                         "143.204.29.59" ,
                         "143.204.29.114",
                         "24.10.101.115"         // my PC IP
                             ];
+                            */
+        $whitelist_ip = gethostbynamel('cashfree.com');
+        error_log(print_r($whitelist_ip, true));
         // get IP of webhook server
         $ip_source = $_SERVER['REMOTE_ADDR'];
         // check that webhook IP is white listed
