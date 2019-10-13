@@ -56,17 +56,21 @@ class CF_webhook
                             ];
                             */
         // get comma separated string of whitelisted IP's
-        $ip_whitelist  = get_option( 'sritoni_settings')["ip_whitelist"];
+        $ip_whitelist_str  = get_option( 'sritoni_settings')["ip_whitelist"];
+        $domain_whitelist  = get_option( 'sritoni_settings')["domain_whitelist"];
         // convert this into an array of IP's
-        $whitelist_ip  = explode("," , $ip_whitelist);
-        //$whitelist_ip = gethostbynamel('cashfree.com');
-        error_log(print_r($whitelist_ip, true));
+        $ip_whitelist_arr  = explode("," , $ip_whitelist);
+        // get ips associated with domain
+        $domain_ip_arr = gethostbynamel($domain_whitelist);
+        // make a master whitelsited ip array
+        $whitelist_ip_arr = array_merge($ip_whitelist_arr, $domain_ip_arr);
+        error_log(print_r($whitelist_ip_arr, true));
         // get IP of webhook server
         $ip_source = $_SERVER['REMOTE_ADDR'];
         error_log('ip of source: ' . $ip_source);
         // check that webhook IP is white listed
         /*
-        if (!in_array($ip_source, $whitelist_ip))
+        if (!in_array($ip_source, $whitelist_ip_arr))
         {
             // do not trust this webhook since its IP is not in whitelist
             // but log its contents just so we can see what it contains
