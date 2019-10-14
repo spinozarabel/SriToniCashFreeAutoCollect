@@ -3,7 +3,7 @@
 *Plugin Name: SriToni Cashfree Autocollect
 *Plugin URI:
 *Description: SriToni Admin interface to Cashfree Autocollect Virtual accounts
-*Version: 20191001
+*Version: 20191014
 *Author: Madhu Avasarala
 *Author URI: http://sritoni.org
 *Text Domain: sritoni_cashfree_autocollect
