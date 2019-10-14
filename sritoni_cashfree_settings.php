@@ -193,6 +193,12 @@ class sritoni_cashfree_settings {
 		if( isset( $input['moodle_token'] ) )
             $new_input['moodle_token'] = sanitize_text_field( $input['moodle_token'] );
 
+        if( isset( $input['ip_whitelist'] ) )
+            $new_input['ip_whitelist'] = sanitize_text_field( $input['ip_whitelist'] );
+
+        if( isset( $input['domain_whitelist'] ) )
+            $new_input['domain_whitelist'] = sanitize_text_field( $input['domain_whitelist'] );
+
 		if( !($input['reconcile']) )
             $new_input['reconcile'] = 0;
 
