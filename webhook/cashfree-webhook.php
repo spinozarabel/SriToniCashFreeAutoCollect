@@ -55,6 +55,9 @@ class CF_webhook
                         "24.10.101.115"         // my PC IP
                             ];
                             */
+        // dump all the settings for debug purposes
+        $options_sritoni_settings = (array) get_option( 'sritoni_settings');
+        error_log(print_r($options_sritoni_settings, true));
         // get comma separated string of whitelisted IP's
         $ip_whitelist_str  = get_option( 'sritoni_settings')["ip_whitelist"];
         $domain_whitelist  = get_option( 'sritoni_settings')["domain_whitelist"];
