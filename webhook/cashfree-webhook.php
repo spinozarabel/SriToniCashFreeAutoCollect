@@ -103,7 +103,7 @@ class CF_webhook
             {
                 error_log($key." : ".$value);
             }
-            die;
+            return;
         }
         // if reached this far, webhook signature is verified, IP is whitelsited, process webhook
         switch ($data['event'])
