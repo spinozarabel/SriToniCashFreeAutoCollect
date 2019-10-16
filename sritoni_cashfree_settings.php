@@ -52,10 +52,12 @@ class sritoni_cashfree_settings {
             <h1>SriToni cashfree Settings</h1>
             <form method="post" action="options.php">
             <?php
-                // This prints out all hidden setting fields
+                // https://codex.wordpress.org/Settings_API
+                // following is for hidden fields and security of form submission per api
                 settings_fields( 'sritoni_settings' );
+                // prints out the sections and fields per API
                 do_settings_sections( 'sritoni_settings' ); // slug of page
-                submit_button();
+                submit_button();    // wordpress submit button for form
             ?>
             </form>
         </div>
