@@ -76,6 +76,7 @@ class sritoni_cashfree_settings {
 		// add_settings_section( $id, $title, $callback, $page );
 		add_settings_section( 'cashfree_api_section', 'cashfree API Settings', array( $this, 'print_section_info' ), 'sritoni_settings' );
 		add_settings_section( 'moodle_api_section', 'Moodle API Settings', array( $this, 'print_section_info' ), 'sritoni_settings' );
+        add_settings_section( 'student_section', 'Student Categories and Groups Settings', array( $this, 'print_section_info' ), 'sritoni_settings' );
 
 
 		// add_settings_field( $id, $title, $callback, $page, $section, $args );
@@ -86,6 +87,12 @@ class sritoni_cashfree_settings {
         add_settings_field( 'domain_whitelist', 'domain to be whitelisted ', array( $this, 'domain_whitelist_callback' ), 'sritoni_settings', 'cashfree_api_section' );
 
 		add_settings_field( 'moodle_token', 'Moodle API Token', array( $this, 'moodle_token_callback' ), 'sritoni_settings', 'moodle_api_section' );
+
+        add_settings_field( 'studentcat_possible', 'Comma separated list of permissible student categories', array( $this, 'studentcat_possible_callback' ), 'sritoni_settings', 'student_section' );
+        add_settings_field( 'group_possible', 'Comma separated list of permissible student groups', array( $this, 'group_possible_callback' ), 'sritoni_settings', 'student_section' );
+        add_settings_field( 'whitelist_idnumbers', 'Comma separated list of whitelisted user ID numbers', array( $this, 'whitelist_idnumbers_callback' ), 'sritoni_settings', 'student_section' );
+        add_settings_field( 'courseid_groupingid', 'Comma separated pairs of course ID-grouping ID', array( $this, 'courseid_groupingid_callback' ), 'sritoni_settings', 'student_section' );
+
 	}
 
 	/**
@@ -94,6 +101,64 @@ class sritoni_cashfree_settings {
     public function print_section_info()
     {
         print 'Enter your settings below:';
+    }
+
+    /**
+    *  Comma separated list of course ID - Grouping // ID
+    * for example: 116-24,100-29
+    * This specifies a grouping ID for a given course ID from the calling activity
+    */
+    public function courseid_groupingid_callback()
+    {
+
+    $settings = (array) get_option( 'sritoni_settings' );
+    $field = "courseid_groupingid";
+    $value = esc_attr( $settings[$field] );
+
+    echo "<input type='textarea' name='sritoni_settings[$field]' value='$value' rows='4' columns='20' />";
+
+    }
+
+    /**
+    *  Comma separated list of ID numbers of users who need to be whitelsited
+    * for these users no checks are done regarding their group or student category
+    */
+    public function whitelist_idnumbers_callback()
+    {
+
+    $settings = (array) get_option( 'sritoni_settings' );
+    $field = "whitelist_idnumbers";
+    $value = esc_attr( $settings[$field] );
+
+    echo "<input type='textarea' name='sritoni_settings[$field]' value='$value' rows='4' columns='20' />";
+
+    }
+
+    /**
+    *  Comma separated list of permissible groups that should correspond to product categories
+    * if student's group extracted from grouping is not in this user is rejected
+    */
+    public function group_possible_callback()
+    {
+
+    $settings = (array) get_option( 'sritoni_settings' );
+    $field = "group_possible";
+    $value = esc_attr( $settings[$field] );
+
+    echo "<input type='textarea' name='sritoni_settings[$field]' value='$value' rows='4' columns='20' />";
+
+    }
+
+    public function studentcat_possible_callback()
+    {
+
+    $settings = (array) get_option( 'sritoni_settings' );
+    $field = "studentcat_possible";
+    $value = esc_attr( $settings[$field] );
+
+    //echo "<input type='text' name='sritoni_settings[$field]' value='$value' size='50' />";
+    echo "<input type='textarea' name='sritoni_settings[$field]' value='$value' rows='4' columns='20' />";
+
     }
 
     /**
@@ -106,7 +171,7 @@ class sritoni_cashfree_settings {
 	$field = "domain_whitelist";
 	$value = esc_attr( $settings[$field] );
 
-	echo "<input type='text' name='sritoni_settings[$field]' value='$value' size='50' />";
+    echo "<input type='text' name='sritoni_settings[$field]' value='$value' size='50' />";
 
     }
 
@@ -120,7 +185,8 @@ class sritoni_cashfree_settings {
 	$field = "ip_whitelist";
 	$value = esc_attr( $settings[$field] );
 
-	echo "<input type='text' name='sritoni_settings[$field]' value='$value' size='50' />";
+	//echo "<input type='text' name='sritoni_settings[$field]' value='$value' size='50' />";
+    echo "<input type='textarea' name='sritoni_settings[$field]' value='$value' rows='4' columns='20' />";
 
     }
 
