@@ -80,8 +80,9 @@ class sritoni_cashfree_settings {
 
 
 		// add_settings_field( $id, $title, $callback, $page, $section, $args );
-		add_settings_field( 'reconcile', 'Try Reconciling Payments?', array( $this, 'reconcile_callback' ), 'sritoni_settings', 'cashfree_api_section' );
-		add_settings_field( 'cashfree_secret', 'cashfree API client Secret', array( $this, 'cashfree_secret_callback' ), 'sritoni_settings', 'cashfree_api_section' );
+        add_settings_field( 'production', 'Check box if Production and Not Test', array( $this, 'production_callback' ), 'sritoni_settings', 'cashfree_api_section' );
+        add_settings_field( 'reconcile', 'Try Reconciling Payments?', array( $this, 'reconcile_callback' ), 'sritoni_settings', 'cashfree_api_section' );
+        add_settings_field( 'cashfree_secret', 'cashfree API client Secret', array( $this, 'cashfree_secret_callback' ), 'sritoni_settings', 'cashfree_api_section' );
 		add_settings_field( 'cashfree_key', 'cashfree API Client Key or ID', array( $this, 'cashfree_key_callback' ), 'sritoni_settings', 'cashfree_api_section' );
         add_settings_field( 'ip_whitelist', 'comma separated IPs          ', array( $this, 'ip_whitelist_callback' ), 'sritoni_settings', 'cashfree_api_section' );
         add_settings_field( 'domain_whitelist', 'domain to be whitelisted ', array( $this, 'domain_whitelist_callback' ), 'sritoni_settings', 'cashfree_api_section' );
@@ -238,6 +239,20 @@ class sritoni_cashfree_settings {
 
 		?>
 			<input name="sritoni_settings[reconcile]" type="checkbox" value="1"<?php checked( $checked, 1, true ); ?>/>
+		<?php
+    }
+
+    /**
+     * 
+     */
+    public function production_callback()
+    {
+        $settings = (array) get_option( 'sritoni_settings' );
+		$field = "production";
+		$checked = $settings[$field] ?? 0;
+
+		?>
+			<input name="sritoni_settings[production]" type="checkbox" value="1"<?php checked( $checked, 1, true ); ?>/>
 		<?php
     }
 
