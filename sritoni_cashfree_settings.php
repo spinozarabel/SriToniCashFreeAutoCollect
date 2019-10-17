@@ -243,7 +243,7 @@ class sritoni_cashfree_settings {
     }
 
     /**
-     * 
+     *
      */
     public function production_callback()
     {
@@ -282,6 +282,9 @@ class sritoni_cashfree_settings {
 
 		if( !($input['reconcile']) )
             $new_input['reconcile'] = 0;
+
+        if( !($input['production']) )
+            $new_input['production'] = 0;
 
         return $new_input;
 
