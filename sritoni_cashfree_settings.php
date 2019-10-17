@@ -115,7 +115,7 @@ class sritoni_cashfree_settings {
     $field = "courseid_groupingid";
     $value = esc_attr( $settings[$field] );
 
-    echo "<input type='text' name='sritoni_settings[$field]' value='$value' size='50' />";
+    echo "<input type='text' name='sritoni_settings[$field]' value='$value' size='80' />";
 
     }
 
@@ -130,7 +130,7 @@ class sritoni_cashfree_settings {
     $field = "whitelist_idnumbers";
     $value = esc_attr( $settings[$field] );
 
-    echo "<input type='text' name='sritoni_settings[$field]' value='$value' size='50' />";
+    echo "<input type='text' name='sritoni_settings[$field]' value='$value' size='80' />";
 
     }
 
@@ -145,7 +145,7 @@ class sritoni_cashfree_settings {
     $field = "group_possible";
     $value = esc_attr( $settings[$field] );
 
-    echo "<input type='text' name='sritoni_settings[$field]' value='$value' size='50' />";
+    echo "<input type='text' name='sritoni_settings[$field]' value='$value' size='80' />";
 
     }
 
@@ -156,7 +156,7 @@ class sritoni_cashfree_settings {
     $field = "studentcat_possible";
     $value = esc_attr( $settings[$field] );
 
-    echo "<input type='text' name='sritoni_settings[$field]' value='$value' size='50' />";
+    echo "<input type='text' name='sritoni_settings[$field]' value='$value' size='80' />";
 
     }
 
@@ -170,7 +170,7 @@ class sritoni_cashfree_settings {
 	$field = "domain_whitelist";
 	$value = esc_attr( $settings[$field] );
 
-    echo "<input type='text' name='sritoni_settings[$field]' value='$value' size='50' />";
+    echo "<input type='text' name='sritoni_settings[$field]' value='$value' size='80' />";
 
     }
 
@@ -184,8 +184,7 @@ class sritoni_cashfree_settings {
 	$field = "ip_whitelist";
 	$value = esc_attr( $settings[$field] );
 
-	//echo "<input type='text' name='sritoni_settings[$field]' value='$value' size='50' />";
-    echo "<input type='textarea' name='sritoni_settings[$field]' value='$value' rows='4' columns='20' />";
+	echo "<input type='text' name='sritoni_settings[$field]' value='$value' size='80' />";
 
     }
 
