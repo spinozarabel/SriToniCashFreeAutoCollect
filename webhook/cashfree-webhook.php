@@ -65,10 +65,8 @@ class CF_webhook
         $domain_ip_arr = gethostbynamel($domain_whitelist);
         // make a master whitelsited ip array
         $whitelist_ip_arr = array_merge($ip_whitelist_arr, $domain_ip_arr);
-        error_log(print_r($whitelist_ip_arr, true));
         // get IP of webhook server
         $ip_source = $_SERVER['REMOTE_ADDR'];
-        error_log('ip of source: ' . $ip_source);
         // check that webhook IP is white listed
         /*
         if (!in_array($ip_source, $whitelist_ip_arr))
@@ -95,6 +93,18 @@ class CF_webhook
         ksort($data);
         // check if signature is verified
         $signature_verified = $this->verify_signature($data, $signature);
+        if ($this->verbose)
+        {
+            error_log('IP whitelist array');
+            error_log(print_r($whitelist_ip_arr, true));
+
+            error_log('ip of webhook source: ' . $ip_source);
+
+            error_log('Wbhook Signature verified?: ' . $signature_verified);
+
+            error_log('Below is dump of webhook packet');
+            error_log(print_r($data, true));
+        }
         if (!$signature_verified)
         {
             // signature is not valid, log and die
@@ -190,7 +200,7 @@ class CF_webhook
 		$open_orders = $this->getOpenOrders($wp_userid);
 
 		// if null exit, there are no open orders for this user to reconcile
-		if ( $open_orders == null )
+		if ( empty($open_orders) )
 			{
                 return;
 			}
@@ -199,7 +209,7 @@ class CF_webhook
 				// we do have open orders for this user, so lets see if we can reconcile the webhook payment to one of these open orders
 				$reconciledOrder = $this->reconcileOrder($open_orders, $data, $payment_datetime, $wp_userid);
 				// if reconciled order is null then exit
-				if ( $reconciledOrder == null )
+				if ( empty($reconciledOrder) )
 					{
 						return;
 					}
@@ -227,6 +237,8 @@ class CF_webhook
 
 
 	/**
+     * @param payment_id
+     * @param wp_userid
      * Gets any orders that maybe already reconciled with this payment
 	 * return false if if no reconciled orders already exist for this webhook payment
 	 * return true if this payment is alreay present in an existing completed / processsing order
@@ -251,7 +263,7 @@ class CF_webhook
 		{	// we already have completed orders that reconcile this payment ID so this webhook must be old or redundant, so quit
 			if ($this->verbose)
 			{
-				error_log('Following orders already completed using this payment_id:' . $payment_id);
+				error_log('Following order already completed using this payment_id:' . $payment_id);
 				foreach ($orders_completed as $order)
 						{
 							error_log( 'Order No: ' . $order->get_id() );
@@ -267,6 +279,7 @@ class CF_webhook
 	/**
     * @param wp_userid is the wordpress user id, also the WC customer id
      * returns all vabacs orders for this user thar are on-hold
+     * returns null if there are no orders on-hold for this wp-userid
      */
     protected function getOpenOrders($wp_userid)
     {
