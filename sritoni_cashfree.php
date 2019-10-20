@@ -527,7 +527,7 @@ function moodle_on_order_status_completed( $order_id )
 				$existing	= json_decode($string_without_tags, true); // decode into an array
 
 			}
-			$field_payments_key	= $key;  // this is the key for the payments field if needed for future
+			$field_payments_key	= $key;  // this is the key for the payments field
 
 		}
 		if ( $field["shortname"] == "fees" )
@@ -538,7 +538,7 @@ function moodle_on_order_status_completed( $order_id )
 				$fees_paid = strtolower(strip_tags(html_entity_decode($field["value"])));
 
 			}
-			$field_fees_key	= $key;  // this is the key for the payments field if needed for future
+			$field_fees_key	= $key;  // this is the key for the payments field
 		}
 
 		if ( $field["shortname"] == "studentcat" )
@@ -549,7 +549,7 @@ function moodle_on_order_status_completed( $order_id )
 				$studentcat			= strtolower(strip_tags(html_entity_decode($field["value"])));
 
 			}
-			$field_studentcat_key		= $key;  // this is the key for this field if needed for future
+			$field_studentcat_key		= $key;  // this is the key for studentcat field
 		}
 	}
 
@@ -583,144 +583,10 @@ function moodle_on_order_status_completed( $order_id )
 										 )
 								   )
 				  );
-	// now to update the user's field payment field values
+	// now to update the user's profiel field payments with latest completed payment
 	$ret = $MoodleRest->request('core_user_update_users', $users, MoodleRest::METHOD_POST);
 
-
-	/* check the profiel field fees to see if fees has been paid. If yes return
-	if ($fees_paid == "paid")
-	{
-		// no need to update fees paid status, already paid, just return
-		// we assume that at beginning of year everyone's status is set to "Not Paid"
-		return;
-	}
-	*/
-
-	//Based on payments so far, check conditions for valid 'fees paid' status for this academic year
-	// The conditions to be checked are: For both payment sites HSET and HSEA-LLP
-	// 1.Does any payment item contain school annual fees?
-	// 2. Is the payment grade same as users's existing grade?
-	// 3. Does the payee term contain 'hset-payments'
-
-	$fees_paid 					= "Not paid"; // default
-	$paid_hset 					= false; // default value
-	$paid_hseallp				= false;
-	$paid_hset_installment1 	= false;
-	$paid_hset_installment2 	= false;
-	$paid_hseallp_installment1 	= false;
-	$paid_hseallp_installment2 	= false;
-	$current_year 				= date("Y") . "/03/01"; // this is date of 2019/03/01
-	$current_timestamp 			= strtotime($current_year);
-
-	switch ($studentcat)
-	{
-		default:
-			// this is done for all cases except 'installment" case
-			foreach ($existing as $key => $item)
-			{		// each $item is a payment array that we have written to Moodle user profile field 'payments'
-					// now lets check if product name has 'Annual HSET Payment' in it and is made for same grade as student's grade
-					if ( preg_match("/\bAnnual HSET Payment\b/i", $item["order_product_name"] ) && ( $item["order_grade"] == $grade_or_class ) )
-					{
-						// this order qualifies for valid payment of annual school fees to HSET
-						$paid_hset = true; // from legacy requirements
-					}
-					// check if product name has term 'Annual HSEA-LLP Payment' in it
-					if ( preg_match("/\bAnnual HSEA-LLP Payment\b/i", $item["order_product_name"] ) && ( $item["order_grade"] == $grade_or_class ) )
-					{
-						// this qualifies as valid services payment to hsea_llp for academic year
-						$paid_hseallp = true; // from legacy requirements
-					}
-
-			}
-			// combine the 2 conditions
-			if( $paid_hset && $paid_hseallp )
-			{
-				$fees_paid = "Paid";
-			}
-		break; // get out of switch statement
-
-		case "installment":
-			// loop through all of the payments in 'payments' to be stored in user profile field payments
-			foreach ($existing as $key => $item)
-			{
-					// now lets check if product name has 'annual school fees installment 1' in it and is made for same grade as student's grade
-					if ( preg_match("/\bAnnual HSET Payment Installment1\b/i", $item["order_product_name"] ) && ( $item["order_grade"] == $grade_or_class ) )
-					{
-						// this order qualifies for valid payment of annual school fees Installment 1 to HSET
-						$paid_hset_installment1 = true;
-					}
-					// check if product name has term 'Annual Service Fees' in it
-					if ( preg_match("/\bAnnual HSEA-LLP Payment Installment1\b/i", $item["order_product_name"] ) && ( $item["order_grade"] == $grade_or_class ) )
-					{
-						// this qualifies as valid services payment installment 1 to hsea_llp for this year
-						$paid_hseallp_installment1 = true;
-					}
-
-					// now lets check if product name has 'annual school fees installment 2' in it and is made for same grade as student's grade
-					if ( preg_match("/\bAnnual HSET Payment Installment1\b/i", $item["order_product_name"] ) && ( $item["order_grade"] == $grade_or_class ) )
-					{
-						// this order qualifies for valid payment of annual school fees Installment 1 to HSET
-						$paid_hset_installment2 = true;
-					}
-					// check if product name has term 'Annual Service Fees' in it
-					if ( preg_match("/\bAnnual HSEA-LLP Payment Installment1\b/i", $item["order_product_name"] ) && ( $item["order_grade"] == $grade_or_class ) )
-					{
-						// this qualifies as valid services payment installment 1 to hsea_llp for this year
-						$paid_hseallp_installment2 = true;
-					}
-			}
-
-
-			if ($paid_hset_installment2 && $paid_hseallp_installment2)
-			{
-				$fees_paid = "Installment 2 paid" ;
-			}
-			elseif ($paid_installment1 = $paid_hset_installment1 && $paid_hseallp_installment1)
-			{
-				$fees_paid = "Installment 1 paid";
-			}
-			else
-			{
-				$fees_paid = "Not paid";
-			}
-
-	}
-
-
-
-	// now we are ready to update the fees paid profile field of user in Moodle
-	// create the users array in format needed for Moodle RSET API
-	$users = array("users" => array(array(	"id" 			=> $moodle_user_id,
-											"customfields" 	=> array(array(	"type"	=>	"fees",
-																			"value"	=>	$fees_paid, // TODO change to $fees_paid
-																		  )
-																    )
-										 )
-								   )
-				  );
-	// now to update the user's field payment field values
-	$ret = $MoodleRest->request('core_user_update_users', $users, MoodleRest::METHOD_POST);
-
-	if ($debug)
-	{
-					error_log("HSET installment 1 paid: ");
-					error_log(print_r($$paid_hset_installment1 ,true));
-
-					error_log("HSET installment 2 paid: ");
-					error_log(print_r($$paid_hset_installment2 ,true));
-
-					error_log("HSEA-LLP installment 1 paid: ");
-					error_log(print_r($$paid_hseallp_installment1 ,true));
-
-					error_log("HSEA-LLP installment 2 paid: ");
-					error_log(print_r($$paid_hseallp_installment2 ,true));
-
-					error_log("Updated payment information in profile field payments");
-					error_log(print_r($existing ,true));
-
-					error_log("Updated status of user profile field fees");
-					error_log(print_r($fees_paid ,true));
-	}
+    // put function here to check and update profile_field fees paid based on payments array
 
 	return;
 }
@@ -746,8 +612,9 @@ function add_VA_payments_submenu()
 /** VA_payments_callback()
 *   is the callback function for the sub-menu VA-payments
 *   This function decides what to do when the sub-menu is clicked
-*   We can display the non-closed orders and the corresponding user's VA payments if desired.
-*   Or we can do something else.
+*   Prescribed way to get to this page is by clicking on an account in the orders page for any order
+*   3 parameters are passed: va_id, display_name, user_id. We use these to display status of
+*   all payments made into this VA and any reconciled orders for them
 */
 function VA_payments_callback()
 {
@@ -787,6 +654,12 @@ function VA_payments_callback()
 	$cashfree_api 	= new CfAutoCollect; // new cashfree API object
 	//
 	$payments	= $cashfree_api->getPaymentsForVirtualAccount($va_id);	// list of payments msde into this VA
+    // if no payments made exit
+    if (empty($payments))
+    {
+        echo 'No payments made into this VA';
+        return;
+    }
 	//
 	foreach ($payments as $key=> $payment)
 		{
@@ -868,13 +741,11 @@ function VA_payments_callback()
 
 }
 
-// --a dd 2 new columns to the orders page of woocommerce------------------------------------------
-
-
 /** function orders_add_mycolumns($columns)
-*   @param $columns
+*   @param columns
 *   This function is called by add_filter( 'manage_edit-shop_order_columns', 'orders_add_mycolumns' )
-*   adds new columns after order_total column.
+*   adds new columns after order_status column called Student
+*   adds 2 new columns after order_total called VApymnt and VAid
 */
 function orders_add_mycolumns($columns)
 {
@@ -901,9 +772,12 @@ function orders_add_mycolumns($columns)
 }
 
 /** set_orders_newcolumn_values($columns)
-*   @param $column
+*   @param colname
 *   sets values to be displayed in the new columns in orders page
 *   This is callback for add_action( 'manage_shop_order_posts_custom_column', 'set_orders_newcolumn_values', 2 );
+*   For STudent we display students display name.
+*   For VApymnt we display the payment made if order is paid for and reconciled. Otherwise display pending
+*   For VAid we display the VAid with a link to the payments page
 */
 function set_orders_newcolumn_values($colname)
 {
@@ -920,7 +794,7 @@ function set_orders_newcolumn_values($colname)
 			return;
 		}
 	$timezone				= new DateTimeZone("Asia/Kolkata");
-	$cashfree_api 			= new CfAutoCollect; // new API object
+	$cashfree_api 			= new CfAutoCollect; // new cashfree Autocollect API object
 	// get the reconcile or not flag from settings. If true then we try to reconcile whatever was missed by webhook
 	$reconcile				= get_option( 'sritoni_settings' )["reconcile"] ?? 0;
 	// get order details up ahead of treating all the cases below
@@ -1065,6 +939,9 @@ function set_orders_newcolumn_values($colname)
 }
 
 /**
+*  @param order is the full order object under consideration
+*  @param payment is the full payment object being considered
+*  @param timezone is the full timezone object needed for order objects timestamp
 *  return a boolean value if the payment and order can be reconciled
 *  Conditions for reconciliation are: (We assume payment method is VABACS and this payment is not reconciled in any order before
 *  1. Payments must be equal
@@ -1090,7 +967,11 @@ function reconcilable_ma($order, $payment, $timezone)
 }
 
 /**
-*  return a boolean value if the payment and order have been reconciled
+*  @param order is the order object
+*  @param payment is the payment object
+*  @param reconcile is a settings boolean option for non-webhook reconciliation
+*  @param reconcilable is a boolean variable indicating wether order and payment are reconcilable or not
+*  return a boolean value if the payment and order have been reconciled successfully
 *  Conditions for reconciliation are: (We assume payment method is VABACS and this payment is not reconciled in any order before
 *  1. Payments must be equal
 *  2. Order creation Date must be before Payment Date
@@ -1130,6 +1011,7 @@ function reconcile_ma($order, $payment, $reconcile, $reconcilable)
 
 	$order->payment_complete($transaction_id);
 
+    return true;
 }
 
 /**
@@ -1209,12 +1091,11 @@ add_filter( 'woocommerce_grouped_price_html', 'max_grouped_price', 10, 3 );
 // This adds an action just before saving any order at checkout to update the order meta for va_id
 add_action('woocommerce_checkout_create_order', 'ma_update_order_meta_atcheckout', 20, 2);
 
-/*
-* @param $order is the passed in order object under consideration at checkout
-* @param $data is an aray that contains the order meta keys and values when passed in
-* We can either modify the value sin $data or directly set the order meta explicitly
+/**
+* @param order is the passed in order object under consideration at checkout
+* @param data is an aray that contains the order meta keys and values when passed in
+* We update the order's va_id meta at checkout. 
 */
-
 function ma_update_order_meta_atcheckout( $order, $data )
 {
 	// get user associated with this order
