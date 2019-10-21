@@ -163,7 +163,7 @@ class sritoni_cashfree_settings {
 
     $settings = (array) get_option( 'sritoni_settings' );
     $field = "studentcat_possible";
-    $value = esc_attr( $settings[$field] );
+    $value = strtolower(esc_attr( $settings[$field] ));
 
     echo "<input type='text' name='sritoni_settings[$field]' id='sritoni_settings[$field]'
             value='$value' size='80' class='code' />example:general,rte,installment,scholarship,free";
