@@ -73,9 +73,9 @@ class sritoni_cashfree_settings {
 	{
 		// register_setting( string $option_group, string $option_name, array $args = array() )
         $args = array(
-            'sanitize_callback' => 'sanitize',  // function name for callback
-            'default' => NULL,                  // default values when calling get_options
-            );
+                        'sanitize_callback' => array( $this, 'sanitize' ),  // function name for callback
+            //          'default' => NULL,                  // default values when calling get_options
+                     );
 		register_setting( 'sritoni_settings', 'sritoni_settings' );
 
 		// add_settings_section( $id, $title, $callback, $page );
