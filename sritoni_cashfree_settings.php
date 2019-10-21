@@ -121,7 +121,8 @@ class sritoni_cashfree_settings {
     $field = "courseid_groupingid";
     $value = esc_attr( $settings[$field] );
 
-    echo "<input type='text' name='sritoni_settings[$field]' value='$value' size='80' />";
+    echo "<input type='text' name='sritoni_settings[$field]' id='sritoni_settings[$field]'
+            value='$value' size='80' class='code' />example: 116-29,100-24";
 
     }
 
