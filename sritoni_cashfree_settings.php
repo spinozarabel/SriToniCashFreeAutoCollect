@@ -122,7 +122,7 @@ class sritoni_cashfree_settings {
     $value = esc_attr( $settings[$field] );
 
     echo "<input type='text' name='sritoni_settings[$field]' id='sritoni_settings[$field]'
-            value='$value' size='80' class='code' />example: 116-24,100-29";
+            value='$value' size='80' class='code' />example:116-24,100-29";
 
     }
 
@@ -138,7 +138,7 @@ class sritoni_cashfree_settings {
     $value = esc_attr( $settings[$field] );
 
     echo "<input type='text' name='sritoni_settings[$field]' id='sritoni_settings[$field]'
-            value='$value' size='80' class='code' />example: HSEA001,WHS1234";
+            value='$value' size='80' class='code' />example:HSEA001,WHS1234";
 
     }
 
@@ -259,7 +259,8 @@ class sritoni_cashfree_settings {
 		$checked = $settings[$field] ?? 0;
 
 		?>
-			<input name="sritoni_settings[production]" type="checkbox" value="1"<?php checked( $checked, 1, true ); ?>/>
+			<input name="sritoni_settings[production]" id="sritoni_settings[production]" type="checkbox"
+                value="1" class="code"<?php checked( $checked, 1, true ); ?>/>
 		<?php
     }
 
