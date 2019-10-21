@@ -1,5 +1,6 @@
 <?php
 /**
+ * ver 3 added sanitize
  * ver 2 added ip_whitelist option
  * Sub woocommerce menu class
  * Adds a submenu item and page for settings for Sritoni cashfree plugin
@@ -71,7 +72,11 @@ class sritoni_cashfree_settings {
 	public function init_sritoni_cashfree_settings()
 	{
 		// register_setting( string $option_group, string $option_name, array $args = array() )
-		register_setting( 'sritoni_settings', 'sritoni_settings' );
+        $args = array(
+            'sanitize_callback' => 'sanitize',  // function name for callback
+            'default' => NULL,                  // default values when calling get_options
+            );
+		register_setting( 'sritoni_settings', 'sritoni_settings', $args );
 
 		// add_settings_section( $id, $title, $callback, $page );
 		add_settings_section( 'cashfree_api_section', 'cashfree API Settings', array( $this, 'print_section_info' ), 'sritoni_settings' );
