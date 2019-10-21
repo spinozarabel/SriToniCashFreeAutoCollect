@@ -44,31 +44,27 @@ class CF_webhook
      */
     public function process()
     {
-        //$post = file_get_contents('php://input');
-        //$data = json_decode($post, true);   // decode into associative array
-        // verify the IP of get_resource_type
-        /*$whitelist_ip = [
-                        "143.204.29.33" ,
-                        "143.204.29.40" ,
-                        "143.204.29.59" ,
-                        "143.204.29.114",
-                        "24.10.101.115"         // my PC IP
-                            ];
-                            */
-        //
+        $ip_whitelist_arr   = array();      // declare an empty array
+        $domain_ip_arr      = array();      // declare empty array
         // get comma separated string of whitelisted IP's
         $ip_whitelist_str  = get_option( 'sritoni_settings')['ip_whitelist'];
         $domain_whitelist  = get_option( 'sritoni_settings')['domain_whitelist'];
         // convert this into an array of IP's
-        $ip_whitelist_arr  = explode("," , $ip_whitelist_str);
+        if ( !empty($ip_whitelist_str) )
+            {
+                $ip_whitelist_arr  = explode("," , $ip_whitelist_str);
+            }
         // get ips associated with domain
-        $domain_ip_arr = gethostbynamel($domain_whitelist);
+        if ( !empty($domain_whitelist) )
+            {
+                $domain_ip_arr = gethostbynamel($domain_whitelist);
+            }
         // make a master whitelsited ip array
         $whitelist_ip_arr = array_merge($ip_whitelist_arr, $domain_ip_arr);
         // get IP of webhook server
         $ip_source = $_SERVER['REMOTE_ADDR'];
         // check that webhook IP is white listed
-        /*
+
         if (!in_array($ip_source, $whitelist_ip_arr))
         {
             // do not trust this webhook since its IP is not in whitelist
@@ -79,15 +75,13 @@ class CF_webhook
             {
                 error_log($key." : ".$value);
             }
-            die;
+            return;
         }
-        error_log('IP of Webhook IS in whitelsit-Accepted: ' . $ip_source);
-        */
+        ($this->verbose ? error_log('IP of Webhook IS in whitelist..Accepted: ' . $ip_source) : false);
+
         $data = $_POST;
         $signature = $_POST["signature"];
 
-        error_log('Signature of Webhook: ' . $signature);
-        error_log(print_r($data, true));
         // prepare data for signature verification
         unset($data["signature"]);
         ksort($data);
@@ -166,6 +160,10 @@ class CF_webhook
         else
         {
           error_log("webhook Signature FAILED verification");
+          foreach ($data as $key => $value)
+          {
+              error_log($key." : ".$value);
+          }
           return false;
         }
     }
