@@ -44,8 +44,10 @@ class CF_webhook
      */
     public function process()
     {
-        $ip_whitelist_arr   = array();      // declare an empty array
-        $domain_ip_arr      = array();      // declare empty array
+        $ip_whitelist_arr       = array();      // declare an empty array
+        $domain_ip_arr          = array();      // declare empty array
+        $domain_whitelist_arr   = array();      // declare empty array
+        $domain_ip_arr          = array();      // declare empty array
         // get comma separated string of whitelisted IP's
         $ip_whitelist_str  = get_option( 'sritoni_settings')['ip_whitelist'];
         $domain_whitelist  = get_option( 'sritoni_settings')['domain_whitelist'];
@@ -57,8 +59,14 @@ class CF_webhook
         // get ips associated with domain
         if ( !empty($domain_whitelist) )
             {
-                $domain_ip_arr = gethostbynamel($domain_whitelist);
+                $domain_whitelist_arr = explode("," , $domain_whitelist);
+
             }
+        foreach ($domain_whitelist_arr as $domain)
+        {
+            $domain_ip      = (array) gethostbynamel($domain);
+            $domain_ip_arr  = array_merge($domain_ip_arr, $domain_ip);
+        }
         // make a master whitelsited ip array
         $whitelist_ip_arr = array_merge($ip_whitelist_arr, $domain_ip_arr);
         // get IP of webhook server
