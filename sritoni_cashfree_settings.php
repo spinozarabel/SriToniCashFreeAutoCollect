@@ -166,7 +166,7 @@ class sritoni_cashfree_settings {
     $value = strtolower(esc_attr( $settings[$field] ));
 
     echo "<input type='text' name='sritoni_settings[$field]' id='sritoni_settings[$field]'
-            value='$value' size='80' class='code' />example:general,rte,installment,scholarship,free";
+            value='$value' size='80' class='code' />These should be exactly as defined in Moodle but in lower case";
 
     }
 
