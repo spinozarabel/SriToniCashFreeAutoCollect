@@ -90,7 +90,7 @@ class sritoni_cashfree_settings {
         add_settings_field( 'cashfree_secret', 'cashfree API client Secret', array( $this, 'cashfree_secret_callback' ), 'sritoni_settings', 'cashfree_api_section' );
 		add_settings_field( 'cashfree_key', 'cashfree API Client Key or ID', array( $this, 'cashfree_key_callback' ), 'sritoni_settings', 'cashfree_api_section' );
         add_settings_field( 'ip_whitelist', 'comma separated IPs to be whitelisted for webhook', array( $this, 'ip_whitelist_callback' ), 'sritoni_settings', 'cashfree_api_section' );
-        add_settings_field( 'domain_whitelist', 'webhook domain to be whitelisted ', array( $this, 'domain_whitelist_callback' ), 'sritoni_settings', 'cashfree_api_section' );
+        add_settings_field( 'domain_whitelist', 'comma separated webhook domains to be whitelisted ', array( $this, 'domain_whitelist_callback' ), 'sritoni_settings', 'cashfree_api_section' );
 
 		add_settings_field( 'moodle_token', 'Moodle API Token', array( $this, 'moodle_token_callback' ), 'sritoni_settings', 'moodle_api_section' );
 
@@ -181,7 +181,7 @@ class sritoni_cashfree_settings {
 	$value = esc_attr( $settings[$field] );
 
     echo "<input type='text' name='sritoni_settings[$field]' id='sritoni_settings[$field]'
-            value='$value' size='80' class='code' />example:cashfree.com";
+            value='$value' size='80' class='code' />example:cashfree.com,madhu.ddns.net";
 
     }
 
