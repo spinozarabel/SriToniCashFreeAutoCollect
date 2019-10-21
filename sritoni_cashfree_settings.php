@@ -81,7 +81,7 @@ class sritoni_cashfree_settings {
 		// add_settings_section( $id, $title, $callback, $page );
 		add_settings_section( 'cashfree_api_section', 'cashfree API Settings', array( $this, 'print_section_info' ), 'sritoni_settings' );
 		add_settings_section( 'moodle_api_section', 'Moodle API Settings', array( $this, 'print_section_info' ), 'sritoni_settings' );
-        add_settings_section( 'student_section', 'Student Categories and Groups Settings', array( $this, 'print_section_info' ), 'sritoni_settings' );
+        add_settings_section( 'student_section', 'Student related Settings', array( $this, 'print_section_info' ), 'sritoni_settings' );
 
 
 		// add_settings_field( $id, $title, $callback, $page, $section, $args );
@@ -89,8 +89,8 @@ class sritoni_cashfree_settings {
         add_settings_field( 'reconcile', 'Try Reconciling Payments?', array( $this, 'reconcile_callback' ), 'sritoni_settings', 'cashfree_api_section' );
         add_settings_field( 'cashfree_secret', 'cashfree API client Secret', array( $this, 'cashfree_secret_callback' ), 'sritoni_settings', 'cashfree_api_section' );
 		add_settings_field( 'cashfree_key', 'cashfree API Client Key or ID', array( $this, 'cashfree_key_callback' ), 'sritoni_settings', 'cashfree_api_section' );
-        add_settings_field( 'ip_whitelist', 'comma separated IPs          ', array( $this, 'ip_whitelist_callback' ), 'sritoni_settings', 'cashfree_api_section' );
-        add_settings_field( 'domain_whitelist', 'domain to be whitelisted ', array( $this, 'domain_whitelist_callback' ), 'sritoni_settings', 'cashfree_api_section' );
+        add_settings_field( 'ip_whitelist', 'comma separated IPs to be whitelisted for webhook', array( $this, 'ip_whitelist_callback' ), 'sritoni_settings', 'cashfree_api_section' );
+        add_settings_field( 'domain_whitelist', 'webhook domain to be whitelisted ', array( $this, 'domain_whitelist_callback' ), 'sritoni_settings', 'cashfree_api_section' );
 
 		add_settings_field( 'moodle_token', 'Moodle API Token', array( $this, 'moodle_token_callback' ), 'sritoni_settings', 'moodle_api_section' );
 
@@ -122,7 +122,7 @@ class sritoni_cashfree_settings {
     $value = esc_attr( $settings[$field] );
 
     echo "<input type='text' name='sritoni_settings[$field]' id='sritoni_settings[$field]'
-            value='$value' size='80' class='code' />example: 116-29,100-24";
+            value='$value' size='80' class='code' />example: 116-24,100-29";
 
     }
 
@@ -137,7 +137,8 @@ class sritoni_cashfree_settings {
     $field = "whitelist_idnumbers";
     $value = esc_attr( $settings[$field] );
 
-    echo "<input type='text' name='sritoni_settings[$field]' value='$value' size='80' />";
+    echo "<input type='text' name='sritoni_settings[$field]' id='sritoni_settings[$field]'
+            value='$value' size='80' class='code' />example: HSEA001,WHS1234";
 
     }
 
