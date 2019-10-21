@@ -153,7 +153,8 @@ class sritoni_cashfree_settings {
     $field = "group_possible";
     $value = esc_attr( $settings[$field] );
 
-    echo "<input type='text' name='sritoni_settings[$field]' value='$value' size='80' />";
+    echo "<input type='text' name='sritoni_settings[$field]' id='sritoni_settings[$field]'
+            value='$value' size='80' class='code' />example:grade4,grade5,grade6,grade7";
 
     }
 
@@ -164,7 +165,8 @@ class sritoni_cashfree_settings {
     $field = "studentcat_possible";
     $value = esc_attr( $settings[$field] );
 
-    echo "<input type='text' name='sritoni_settings[$field]' value='$value' size='80' />";
+    echo "<input type='text' name='sritoni_settings[$field]' id='sritoni_settings[$field]'
+            value='$value' size='80' class='code' />example:general,rte,installment,scholarship,free";
 
     }
 
@@ -178,7 +180,8 @@ class sritoni_cashfree_settings {
 	$field = "domain_whitelist";
 	$value = esc_attr( $settings[$field] );
 
-    echo "<input type='text' name='sritoni_settings[$field]' value='$value' size='80' />";
+    echo "<input type='text' name='sritoni_settings[$field]' id='sritoni_settings[$field]'
+            value='$value' size='80' class='code' />example:cashfree.com";
 
     }
 
@@ -192,7 +195,8 @@ class sritoni_cashfree_settings {
 	$field = "ip_whitelist";
 	$value = esc_attr( $settings[$field] );
 
-	echo "<input type='text' name='sritoni_settings[$field]' value='$value' size='80' />";
+	echo "<input type='text' name='sritoni_settings[$field]' id='sritoni_settings[$field]'
+            value='$value' size='80' class='code' />example:24.12.10.1,30.18.27.1";
 
     }
 
@@ -206,7 +210,8 @@ class sritoni_cashfree_settings {
 	$field = "cashfree_key";
 	$value = esc_attr( $settings[$field] );
 
-	echo "<input type='text' name='sritoni_settings[$field]' value='$value'  size='50' />";
+	echo "<input type='text' name='sritoni_settings[$field]' id='sritoni_settings[$field]'
+            value='$value'  size='50' class='code' />";
 
     }
 
@@ -220,7 +225,8 @@ class sritoni_cashfree_settings {
 		$field = "cashfree_secret";
 		$value = esc_attr( $settings[$field] );
 
-		echo "<input type='text' name='sritoni_settings[$field]' value='$value'  size='50' />";
+        echo "<input type='text' name='sritoni_settings[$field]' id='sritoni_settings[$field]'
+                value='$value'  size='50' class='code' />";
     }
 
 	/**
@@ -232,7 +238,8 @@ class sritoni_cashfree_settings {
 		$field = "moodle_token";
 		$value = esc_attr( $settings[$field] );
 
-		echo "<input type='text' name='sritoni_settings[$field]' value='$value'  size='50' />";
+        echo "<input type='text' name='sritoni_settings[$field]' id='sritoni_settings[$field]'
+                value='$value'  size='50' class='code' />";
     }
 
 	/**
@@ -245,7 +252,8 @@ class sritoni_cashfree_settings {
 		$checked = $settings[$field] ?? 0;
 
 		?>
-			<input name="sritoni_settings[reconcile]" type="checkbox" value="1"<?php checked( $checked, 1, true ); ?>/>
+			<input name="sritoni_settings[reconcile]" id="sritoni_settings[reconcile]" type="checkbox"
+                value="1" class="code"<?php checked( $checked, 1, true ); ?>/>
 		<?php
     }
 
