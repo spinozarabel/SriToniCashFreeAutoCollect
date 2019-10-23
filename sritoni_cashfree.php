@@ -778,6 +778,8 @@ function orders_add_mycolumns($columns)
 *   For STudent we display students display name.
 *   For VApymnt we display the payment made if order is paid for and reconciled. Otherwise display pending
 *   For VAid we display the VAid with a link to the payments page
+*   If the reconcle flag is set in options then the 1st payment that can be reconciled will be reconciled
+*   This is a backup for reconciliation of payments with orders wif the webhook does not work
 */
 function set_orders_newcolumn_values($colname)
 {
@@ -824,7 +826,7 @@ function set_orders_newcolumn_values($colname)
 			$payment_datetime->setTimezone($timezone);	// adusted for local time zone
 			$payment_date		= $payment_datetime->format('Y-m-d H:i:s');
 
-		break;
+		break;     // out of switch structure
 
 		// for orders on hold extract the payment amount and date from possible unreconciled payments if any
 		case (  ( 'on-hold' == $order_status )    ||
@@ -869,12 +871,14 @@ function set_orders_newcolumn_values($colname)
 						continue;	// continue next iteration of loop payment
 						}
 					// we now have a reconcilable paymet against this order so we get out of the for loop
+                    // we only reconcile the 1st reconcilable payment.
+                    // if multiple payments are made only 1 payment will be reconciled
 					$reconcilable = true;
 					break;	// out of loop but still in Switch statement. $payment is the payment to be reconciled
 				}	// end of for each loop
 
 		case ( ($reconcilable == true) && ($reconcile == 1) ) :
-
+            // we cannot get here without going through case statement immediately above
 			// we will reconcle since all flags are go
 			reconcile_ma($order, $payment, $reconcile, $reconcilable);
             $payment_date       = $payment->paymentTime;    // example 2007-06-28 15:29:26
@@ -915,6 +919,7 @@ function set_orders_newcolumn_values($colname)
 		switch (true)
 		{
 			case ($payment_method == "vabacs") :
+                // display the VA ID with a link that when clicked takes you to payments made for that account
 				//$link_address = 'https://dashboard.cashfree.com/#/app/virtualaccounts/' . $va_id;
 				$data = array(
 								"va_id"			=>	$va_id,
@@ -1094,7 +1099,7 @@ add_action('woocommerce_checkout_create_order', 'ma_update_order_meta_atcheckout
 /**
 * @param order is the passed in order object under consideration at checkout
 * @param data is an aray that contains the order meta keys and values when passed in
-* We update the order's va_id meta at checkout. 
+* We update the order's va_id meta at checkout.
 */
 function ma_update_order_meta_atcheckout( $order, $data )
 {
