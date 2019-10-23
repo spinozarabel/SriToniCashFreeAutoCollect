@@ -880,7 +880,7 @@ function set_orders_newcolumn_values($colname)
 		case ( ($reconcilable == true) && ($reconcile == 1) ) :
             // we cannot get here without going through case statement immediately above
 			// we will reconcle since all flags are go
-			reconcile_ma($order, $payment, $reconcile, $reconcilable);
+			reconcile_ma($order, $payment, $reconcile, $reconcilable, $timezone);
             $payment_date       = $payment->paymentTime;    // example 2007-06-28 15:29:26
 			$payment_datetime	=  DateTime::createFromFormat('Y-m-d H:i:s', $payment_date);
 			// $payment_datetime->setTimezone($timezone);
@@ -976,13 +976,14 @@ function reconcilable_ma($order, $payment, $timezone)
 *  @param payment is the payment object
 *  @param reconcile is a settings boolean option for non-webhook reconciliation
 *  @param reconcilable is a boolean variable indicating wether order and payment are reconcilable or not
+*  @param timezone is passed in to calculate time of order creation using timestamp
 *  return a boolean value if the payment and order have been reconciled successfully
 *  Conditions for reconciliation are: (We assume payment method is VABACS and this payment is not reconciled in any order before
 *  1. Payments must be equal
 *  2. Order creation Date must be before Payment Date
 *  Reconciliation means that payment is marked complete and order meta updated suitably
 */
-function reconcile_ma($order, $payment, $reconcile, $reconcilable)
+function reconcile_ma($order, $payment, $reconcile, $reconcilable, $timezone)
 {
 	if 	(	($reconcile == 0) ||
 			($reconcilable == false)	)
