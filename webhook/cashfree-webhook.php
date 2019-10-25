@@ -44,6 +44,7 @@ class CF_webhook
      */
     public function process()
     {
+        return;
         $ip_whitelist_arr       = array();      // declare an empty array
         $domain_ip_arr          = array();      // declare empty array
         $domain_whitelist_arr   = array();      // declare empty array
