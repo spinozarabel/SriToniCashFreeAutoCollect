@@ -1,5 +1,6 @@
 <?php
 /**
+ * ver 4 added setting for verify_webhook_ip
  * ver 3 added sanitize
  * ver 2 added ip_whitelist option
  * Sub woocommerce menu class
@@ -91,8 +92,10 @@ class sritoni_cashfree_settings {
 		add_settings_field( 'cashfree_key', 'cashfree API Client Key or ID', array( $this, 'cashfree_key_callback' ), 'sritoni_settings', 'cashfree_api_section' );
         add_settings_field( 'ip_whitelist', 'comma separated IPs to be whitelisted for webhook', array( $this, 'ip_whitelist_callback' ), 'sritoni_settings', 'cashfree_api_section' );
         add_settings_field( 'domain_whitelist', 'comma separated webhook domains to be whitelisted ', array( $this, 'domain_whitelist_callback' ), 'sritoni_settings', 'cashfree_api_section' );
+        // added verify_webhook_ip setting in ver 1.3
+		add_settings_field( 'verify_webhook_ip', 'Verify if Webhook IP is in whitelist?', array( $this, 'verify_webhook_ip_callback' ), 'sritoni_settings', 'cashfree_api_section' );
 
-		add_settings_field( 'moodle_token', 'Moodle API Token', array( $this, 'moodle_token_callback' ), 'sritoni_settings', 'moodle_api_section' );
+        add_settings_field( 'moodle_token', 'Moodle API Token', array( $this, 'moodle_token_callback' ), 'sritoni_settings', 'moodle_api_section' );
 
         add_settings_field( 'studentcat_possible', 'Comma separated list of permissible student categories', array( $this, 'studentcat_possible_callback' ), 'sritoni_settings', 'student_section' );
         add_settings_field( 'group_possible', 'Comma separated list of permissible student groups', array( $this, 'group_possible_callback' ), 'sritoni_settings', 'student_section' );
@@ -272,6 +275,21 @@ class sritoni_cashfree_settings {
 		<?php
     }
 
+    /**
+     *  added in ver 1.3
+     */
+    public function verify_webhook_ip_callback()
+    {
+        $settings = (array) get_option( 'sritoni_settings' );
+        $field = "verify_webhook_ip";
+        $checked = $settings[$field] ?? 0;
+
+        ?>
+            <input name="sritoni_settings[verify_webhook_ip]" id="sritoni_settings[verify_webhook_ip]" type="checkbox"
+                value="1" class="code"<?php checked( $checked, 1, true ); ?>/>
+        <?php
+    }
+
 	/**
      * Sanitize each setting field as needed
      *
@@ -296,11 +314,14 @@ class sritoni_cashfree_settings {
         if( isset( $input['domain_whitelist'] ) )
             $new_input['domain_whitelist'] = sanitize_text_field( $input['domain_whitelist'] );
 
-		if( !($input['reconcile']) )
+		if( !empty($input['reconcile']) )
             $new_input['reconcile'] = 0;
 
-        if( !($input['production']) )
+        if( !empty($input['production']) )
             $new_input['production'] = 0;
+		// added in ver 1.3
+        if( !empty($input['verify_webhook_ip']) )
+            $new_input['verify_webhook_ip'] = 0;
 
         return $new_input;
 

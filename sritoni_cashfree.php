@@ -17,28 +17,22 @@ require_once(__DIR__."/sritoni_cashfree_settings.php"); // file containing class
 require_once(__DIR__."/cfAutoCollect.inc.php");         // contains cashfree api class
 require_once(__DIR__."/webhook/cashfree-webhook.php");  // contains webhook class
 
-// global $blog_id;
-// get sub-site name to be used to get appropriate API keys
-// $site_name	=	get_blog_details( $blog_id )->blogname;
 if ( is_admin() )
-{ // admin actions
-  // Hook for adding admin menus only if you are an admin
+{ // add sub-menu for a new payments page
   add_action('admin_menu', 'add_VA_payments_submenu');
   // Now add a new submenu for sritoni cashfree plugin settings in Woocommerce. This is to be done only once!!!!
   $sritoniCashfreeSettings = new sritoni_cashfree_settings();
 }
 
-
 $moodle_token 	= get_option( 'sritoni_settings')["moodle_token"];
 
-
-add_action('plugins_loaded', 'init_custom_gateway_class');
+add_action('plugins_loaded', 'init_vabacs_gateway_class');
 // hook action for post that has action set to cf_wc_webhook
 // When that action is discovered the function cf_webhook_init is fired
 // https://sritoni.org/hset-payments/wp-admin/admin-post.php?action=cf_wc_webhook
 add_action('admin_post_nopriv_cf_wc_webhook', 'cf_webhook_init', 10);
 
-function init_custom_gateway_class()
+function init_vabacs_gateway_class()
 	{
 	class WC_Gateway_VABACS extends WC_Payment_Gateway {  // MA
 	/**
@@ -422,10 +416,9 @@ function init_custom_gateway_class()
 
 // hook for adding custom columns on woocommerce orders page
 add_filter( 'manage_edit-shop_order_columns', 'orders_add_mycolumns' );
-
 // hook for updating my new column valus based on passed order details
 add_action( 'manage_shop_order_posts_custom_column', 'set_orders_newcolumn_values', 2 );
-
+// hook for callback function to be done after order's status is changed to completed
 add_action( 'woocommerce_order_status_completed', 'moodle_on_order_status_completed', 10, 1 );
 
 /** moodle_on_order_status_completed()
@@ -775,10 +768,13 @@ function orders_add_mycolumns($columns)
 *   @param colname
 *   sets values to be displayed in the new columns in orders page
 *   This is callback for add_action( 'manage_shop_order_posts_custom_column', 'set_orders_newcolumn_values', 2 );
-*   For STudent we display students display name.
-*   For VApymnt we display the payment made if order is paid for and reconciled. Otherwise display pending
-*   For VAid we display the VAid with a link to the payments page
-*   If the reconcle flag is set in options then the 1st payment that can be reconciled will be reconciled
+*   For Student we display students display name.
+*   For VAid we display the VAid with a link to the payments page if payment method is VABACS
+*   If a VABACS order is completed or processed we display the payment amount and date extracted from order
+*   If a VABACS order is on-hold, we get the last 3 payments made to the order related VAID
+*      If any of the payments are yet to be reconciled we then try to reconcile any of the payments to the order
+*      provided the reconcile flag in settings page is set.
+*      If reconciled display the payment amount and date. If not display that payment is pending, with no date
 *   This is a backup for reconciliation of payments with orders wif the webhook does not work
 */
 function set_orders_newcolumn_values($colname)
@@ -831,8 +827,8 @@ function set_orders_newcolumn_values($colname)
 		// for orders on hold extract the payment amount and date from possible unreconciled payments if any
 		case (  ( 'on-hold' == $order_status )    ||
                 ( 'pending' == $order_status )          ):
-			// So first we get a list of payments made to the VAID contained in this HOLD order
-			$payments	= $cashfree_api->getPaymentsForVirtualAccount($va_id);
+			// So first we get a list of last 3 payments made to the VAID contained in this HOLD order
+			$payments	= $cashfree_api->getPaymentsForVirtualAccount($va_id,3);
             // what happens if there are no payents made and this is null?
             if (empty($payments))
             {

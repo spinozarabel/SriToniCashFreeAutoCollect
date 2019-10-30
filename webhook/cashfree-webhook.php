@@ -1,5 +1,6 @@
 <?php
 
+// version 1.3 gets setting to verify IP of webhook
 // version 1.2 gets ip_whitelist string from options
 // version 1.1 checks if webhook IP is whitelisted
 
@@ -72,21 +73,33 @@ class CF_webhook
         $whitelist_ip_arr = array_merge($ip_whitelist_arr, $domain_ip_arr);
         // get IP of webhook server
         $ip_source = $_SERVER['REMOTE_ADDR'];
-        // check that webhook IP is white listed
 
-        if (!in_array($ip_source, $whitelist_ip_arr))
+        // get the setting wether to verify the IP of the webhook
+        $verify_webhook_ip = get_option( 'sritoni_settings')['verify_webhook_ip'] ?? 0;
+        // If flag to verify webhook IP is set then verify if webhook is whitelsited
+        if ($verify_webhook_ip)
         {
-            // do not trust this webhook since its IP is not in whitelist
-            // but log its contents just so we can see what it contains
-            error_log('IP of Webhook not in whitelsit-rejected, below is dump of webhook packet');
-            error_log('IP address of webhook is: ' . $ip_source);
-            foreach ($data as $key => $value)
+            if (!in_array($ip_source, $whitelist_ip_arr))
             {
-                error_log($key." : ".$value);
+                // do not trust this webhook since its IP is not in whitelist
+                // but log its contents just so we can see what it contains
+                error_log('IP of Webhook not in whitelsit-rejected, below is dump of webhook packet');
+                error_log('IP address of webhook is: ' . $ip_source);
+                foreach ($data as $key => $value)
+                {
+                    error_log($key." : ".$value);
+                }
+                return;
             }
-            return;
+            else
+            {
+                ($this->verbose ? error_log('IP of Webhook IS in whitelist..continue processing: ' . $ip_source) : false);
+            }
         }
-        ($this->verbose ? error_log('IP of Webhook IS in whitelist..Accepted: ' . $ip_source) : false);
+        else
+        {
+            ($this->verbose ? error_log('Webhook IP NOT checked against whitelist per setting..continue processing: ' . $ip_source) : false);
+        }
 
         $data = $_POST;
         $signature = $_POST["signature"];
