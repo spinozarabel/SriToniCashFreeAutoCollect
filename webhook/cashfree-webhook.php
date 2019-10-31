@@ -206,6 +206,8 @@ class CF_webhook
 		// use this as login to get WP user ID
 		$wp_user 	= get_user_by('login', $moodleuserid);       // get user by login (same as Moodle userid in User tables)
 		$wp_userid 	= $wp_user->ID ?? "web_hook_wpuser_not_found";      // get WP user ID
+        // get payment ID of webhook
+        $payment_id = $data["referenceId"];
         // cannot reconcile using order id in payment info since cashfree doesn't provide any
 		// so we follow the old method of reconciliation by checking all open orders
 		// Idempotent: Is this payment already reconciled?	If so webhook is redundant, exit
@@ -264,7 +266,7 @@ class CF_webhook
      */
     protected function anyReconciledOrders($payment_id, $wp_userid)
     {
-        $payment_id     = $data["referenceId"];
+        //$payment_id     = $data["referenceId"];
         $args = array(
 						'status' 			=> array(
 														'processing',
