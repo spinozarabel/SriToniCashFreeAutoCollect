@@ -774,14 +774,14 @@ function reconcile_payments_callback()
 		$payments	= $cashfree_api->getPaymentsForVirtualAccount($va_id, $maxReturn);
 		foreach ($payments as $payment)
 		{
-			if ( !reconcilable_ma($order, $payment, $timezone) )
+			if ( !reconcilable1_ma($order, $payment, $timezone) )
 				{
 				// this payment is not reconcilable either due to mismatch in payment or dates or both
 				continue;	// continue next payment
 				}
 			else
 				{
-					reconcile_ma($order, $payment, $timezone);
+					reconcile1_ma($order, $payment, $timezone);
 					break;	// break out of payment loop and process next order
 				}
 		}
@@ -803,7 +803,7 @@ function reconcile_payments_callback()
 *  1. Payments must be equal
 *  2. Order creation Date must be before Payment Date
 */
-function reconcilable_ma($order, $payment, $timezone)
+function reconcilable1_ma($order, $payment, $timezone)
 {
     // since order datetime is from time stamp whereas payment datetime is form actula date and time
     // we will only use settimezone for order datetime and not payment datetime.
@@ -834,7 +834,7 @@ function reconcilable_ma($order, $payment, $timezone)
 *  2. Order creation Date must be before Payment Date
 *  Reconciliation means that payment is marked complete and order meta updated suitably
 */
-function reconcile_ma($order, $payment, $timezone)
+function reconcile1_ma($order, $payment, $timezone)
 {
 	$order_created_datetime	= new DateTime( '@' . $order->get_date_created()->getTimestamp());
 	$order_created_datetime->setTimezone($timezone);
