@@ -325,10 +325,13 @@ class CfAutoCollect
     protected function getCurl ($endpoint, $headers, $params = [])
     {
         // check if anything exists in $params. If so make a query string out of it
-       if ( count($params) )
-       {
-           $endpoint = $endpoint . '?' . http_build_query($params);
-       }
+       if ($params)
+        {
+           if ( count($params) )
+           {
+               $endpoint = $endpoint . '?' . http_build_query($params);
+           }
+        }
        $ch = curl_init();
        curl_setopt($ch, CURLOPT_URL, $endpoint);
        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
