@@ -782,6 +782,7 @@ function reconcile_payments_callback()
 			else
 				{
 					reconcile1_ma($order, $payment, $timezone);
+                    echo 'Order No: ' . $order->id . ' Reconciled with Payment ID: ' . $payment->referenceId;
 					break;	// break out of payment loop and process next order
 				}
 		}
@@ -956,9 +957,8 @@ function set_orders_newcolumn_values($colname)
 
 		break;     // out of switch structure
 
-		// for orders on hold extract the payment amount and date from possible unreconciled payments if any
-		case (  ( 'on-hold' == $order_status )    ||
-                ( 'pending' == $order_status )          ):
+		// Reconcile on-hold orders only if reconcile flag in settings is set, otherwise miss
+		case ( ( 'on-hold' == $order_status ) && ( $reconcile == 1 ) ):
 			// So first we get a list of last 3 payments made to the VAID contained in this HOLD order
 			$payments	= $cashfree_api->getPaymentsForVirtualAccount($va_id,3);
             // what happens if there are no payents made and this is null?
@@ -1150,6 +1150,11 @@ function reconcile_ma($order, $payment, $reconcile, $reconcilable, $timezone)
 
 /**
  * Filter products on the shop page based on user meta: sritoni_student_category, grade_or_class
+ * The filter is not applicable to shop managers and administrators
+ * If user meta sritoni_student_category is installment then only products belonging to BOTH
+ *    categories Installment AND that pointed to by user meta "grade_or_class".
+ * If user meta "sritoni_student_category" does not contain installment then only show products
+ *    NOT in Installment category AND any products in Common OR pointed by user meta "grade_or_class"
  * https://docs.woocommerce.com/document/exclude-a-category-from-the-shop-page/
  * https://stackoverflow.com/questions/39004800/how-do-i-hide-woocommerce-products-with-a-given-category-based-on-user-role
  */
