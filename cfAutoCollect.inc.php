@@ -1,5 +1,6 @@
 <?php
 /* Modified by Madhu Avasarala 10/06/2019
+* ver 1.7 added change active status of VPA
 * ver 1.6 added params to getcurl
 * ver 1.5 added prod_cosnt as variable and not a constant
 * ver 1.4 make the site settings generic instead of hset, etc.
@@ -288,6 +289,29 @@ class CfAutoCollect
             }
 
         return $payments;
+    }
+
+    /**
+    * @param vAccountId is moodle id padded if needed for min 4 chars
+    *
+    * returns Response{"status": "SUCCESS", "subCode": "200",
+    *                  "message": "Vitual account status updated succesfully"}
+    */
+    public function deactivateVA($vAccountId)
+    {
+        // Not checkin for valid token, responsibility of programmer to ensure this
+        $endpoint   = $this->baseUrl."/changeVAStatus";
+        $authToken  = $this->token;
+        $headers    = [
+            "Authorization: Bearer $authToken"
+            ];
+        // pad moodleuserid with 0's from left for minimum length of 4
+        // $vAccountId = str_pad($moodleuserid, 4, "0", STR_PAD_LEFT);
+        $params     = array
+                            (
+                                "vAccountId" => $vAccountId,
+                                "status"     => "INACTIVE",
+                            );
     }
 
 
