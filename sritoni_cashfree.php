@@ -24,7 +24,8 @@ if ( is_admin() )
   $sritoniCashfreeSettings = new sritoni_cashfree_settings();
 }
 
-$moodle_token 	= get_option( 'sritoni_settings')["moodle_token"];
+$moodle_token 	= get_option( 'sritoni_settings')["sritoni_token"];
+$moodle_url     = get_option( 'sritoni_settings')["sritoni_url"] . '/webservice/rest/server.php';
 
 add_action('plugins_loaded', 'init_vabacs_gateway_class');
 // hook action for post that has action set to cf_wc_webhook
@@ -477,7 +478,7 @@ function moodle_on_order_status_completed( $order_id )
 				 );
 	// prepare the Moodle Rest API object
 	$MoodleRest = new MoodleRest();
-	$MoodleRest->setServerAddress("https://hset.in/sritoni/webservice/rest/server.php");
+	$MoodleRest->setServerAddress($moodle_url);
 	$MoodleRest->setToken( $moodle_token ); // get token from ignore_key file
 	$MoodleRest->setReturnFormat(MoodleRest::RETURN_ARRAY); // Array is default. You can use RETURN_JSON or RETURN_XML too.
 	$MoodleRest->setDebug();
