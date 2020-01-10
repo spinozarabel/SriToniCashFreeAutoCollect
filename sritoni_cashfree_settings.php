@@ -96,7 +96,7 @@ class sritoni_cashfree_settings {
         // added verify_webhook_ip setting in ver 1.3
 		add_settings_field( 'verify_webhook_ip', 'Verify if Webhook IP is in whitelist?', array( $this, 'verify_webhook_ip_callback' ), 'sritoni_settings', 'cashfree_api_section' );
 
-        add_settings_field( 'sritoni_url', '', array( $this, 'sritoni_url_callback' ), 'sritoni_settings', 'sritoni_api_section' );
+        add_settings_field( 'sritoni_url', 'Sritoni host URL', array( $this, 'sritoni_url_callback' ), 'sritoni_settings', 'sritoni_api_section' );
         add_settings_field( 'sritoni_token', 'Sritoni API Token', array( $this, 'sritoni_token_callback' ), 'sritoni_settings', 'sritoni_api_section' );
 
         add_settings_field( 'studentcat_possible', 'Comma separated list of permissible student categories', array( $this, 'studentcat_possible_callback' ), 'sritoni_settings', 'student_section' );
@@ -244,7 +244,7 @@ class sritoni_cashfree_settings {
 		$value = esc_attr( $settings[$field] );
 
         echo "<input type='text' name='sritoni_settings[$field]' id='sritoni_settings[$field]'
-                value='$value'  size='50' class='code' />";
+                value='$value'  size='50' class='code' />Token is an alphanumeric string, ex abcABC123";
     }
 
     /**
@@ -257,7 +257,7 @@ class sritoni_cashfree_settings {
 		$value = esc_attr( $settings[$field] );
 
         echo "<input type='text' name='sritoni_settings[$field]' id='sritoni_settings[$field]'
-                value='$value'  size='50' class='code' />";
+                value='$value'  size='50' class='code' />example:https://sritonilearningservices/sritoni no slash at end";
     }
 
 	/**
