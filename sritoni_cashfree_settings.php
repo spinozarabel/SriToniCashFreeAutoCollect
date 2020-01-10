@@ -1,5 +1,6 @@
 <?php
 /**
+ * ver 5 added setting for url hosting moodle
  * ver 4 added setting for verify_webhook_ip
  * ver 3 added sanitize
  * ver 2 added ip_whitelist option
@@ -81,7 +82,7 @@ class sritoni_cashfree_settings {
 
 		// add_settings_section( $id, $title, $callback, $page );
 		add_settings_section( 'cashfree_api_section', 'cashfree API Settings', array( $this, 'print_section_info' ), 'sritoni_settings' );
-		add_settings_section( 'moodle_api_section', 'Moodle API Settings', array( $this, 'print_section_info' ), 'sritoni_settings' );
+		add_settings_section( 'sritoni_api_section', 'Sritoni API Settings', array( $this, 'print_section_info' ), 'sritoni_settings' );
         add_settings_section( 'student_section', 'Student related Settings', array( $this, 'print_section_info' ), 'sritoni_settings' );
 
 
@@ -95,7 +96,8 @@ class sritoni_cashfree_settings {
         // added verify_webhook_ip setting in ver 1.3
 		add_settings_field( 'verify_webhook_ip', 'Verify if Webhook IP is in whitelist?', array( $this, 'verify_webhook_ip_callback' ), 'sritoni_settings', 'cashfree_api_section' );
 
-        add_settings_field( 'moodle_token', 'Moodle API Token', array( $this, 'moodle_token_callback' ), 'sritoni_settings', 'moodle_api_section' );
+        add_settings_field( 'sritoni_url', '', array( $this, 'sritoni_url_callback' ), 'sritoni_settings', 'sritoni_api_section' );
+        add_settings_field( 'sritoni_token', 'Sritoni API Token', array( $this, 'sritoni_token_callback' ), 'sritoni_settings', 'sritoni_api_section' );
 
         add_settings_field( 'studentcat_possible', 'Comma separated list of permissible student categories', array( $this, 'studentcat_possible_callback' ), 'sritoni_settings', 'student_section' );
         add_settings_field( 'group_possible', 'Comma separated list of permissible student groups', array( $this, 'group_possible_callback' ), 'sritoni_settings', 'student_section' );
@@ -235,10 +237,23 @@ class sritoni_cashfree_settings {
 	/**
      * Get the settings option array and print moodle_token value
      */
-    public function moodle_token_callback()
+    public function sritoni_token_callback()
     {
         $settings = (array) get_option( 'sritoni_settings' );
-		$field = "moodle_token";
+		$field = "sritoni_token";
+		$value = esc_attr( $settings[$field] );
+
+        echo "<input type='text' name='sritoni_settings[$field]' id='sritoni_settings[$field]'
+                value='$value'  size='50' class='code' />";
+    }
+
+    /**
+     * Get the settings option array and print moodle_token value
+     */
+    public function sritoni_url_callback()
+    {
+        $settings = (array) get_option( 'sritoni_settings' );
+		$field = "sritoni_url";
 		$value = esc_attr( $settings[$field] );
 
         echo "<input type='text' name='sritoni_settings[$field]' id='sritoni_settings[$field]'
@@ -305,8 +320,11 @@ class sritoni_cashfree_settings {
         if( isset( $input['cashfree_secret'] ) )
             $new_input['cashfree_secret'] = sanitize_text_field( $input['cashfree_secret'] );
 
-		if( isset( $input['moodle_token'] ) )
-            $new_input['moodle_token'] = sanitize_text_field( $input['moodle_token'] );
+		if( isset( $input['sritoni_token'] ) )
+            $new_input['sritoni_token'] = sanitize_text_field( $input['sritoni_token'] );
+
+        if( isset( $input['sritoni_url'] ) )
+            $new_input['sritoni_url'] = sanitize_text_field( $input['sritoni_url'] );
 
         if( isset( $input['ip_whitelist'] ) )
             $new_input['ip_whitelist'] = sanitize_text_field( $input['ip_whitelist'] );
