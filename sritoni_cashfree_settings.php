@@ -257,7 +257,7 @@ class sritoni_cashfree_settings {
 		$value = esc_attr( $settings[$field] );
 
         echo "<input type='text' name='sritoni_settings[$field]' id='sritoni_settings[$field]'
-                value='$value'  size='50' class='code' />example:https://sritonilearningservices/sritoni no slash at end";
+                value='$value'  size='50' class='code' />example:https://sritonilearningservices.com/sritoni no slash at end";
     }
 
 	/**
