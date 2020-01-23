@@ -436,7 +436,7 @@ add_action( 'woocommerce_order_status_completed', 'moodle_on_order_status_comple
 */
 function moodle_on_order_status_completed( $order_id )
 {
-	global $blog_id, $moodle_token;
+	global $blog_id, $moodle_token, $moodle_url;
 
 	$debug						= true;  // controls debug messages to error log
 
