@@ -1,5 +1,6 @@
 <?php
 /**
+ * ver 6 added setting for beneficiary name
  * ver 5 added setting for url hosting moodle
  * ver 4 added setting for verify_webhook_ip
  * ver 3 added sanitize
@@ -93,6 +94,8 @@ class sritoni_cashfree_settings {
 		add_settings_field( 'cashfree_key', 'cashfree API Client Key or ID', array( $this, 'cashfree_key_callback' ), 'sritoni_settings', 'cashfree_api_section' );
         add_settings_field( 'ip_whitelist', 'comma separated IPs to be whitelisted for webhook', array( $this, 'ip_whitelist_callback' ), 'sritoni_settings', 'cashfree_api_section' );
         add_settings_field( 'domain_whitelist', 'comma separated webhook domains to be whitelisted ', array( $this, 'domain_whitelist_callback' ), 'sritoni_settings', 'cashfree_api_section' );
+        add_settings_field( 'beneficiary_name', 'Beneficiary Name of Cashfree Account', array( $this, 'cashfree_beneficiary_callback' ), 'sritoni_settings', 'cashfree_api_section' );
+
         // added verify_webhook_ip setting in ver 1.3
 		add_settings_field( 'verify_webhook_ip', 'Verify if Webhook IP is in whitelist?', array( $this, 'verify_webhook_ip_callback' ), 'sritoni_settings', 'cashfree_api_section' );
 
@@ -232,6 +235,19 @@ class sritoni_cashfree_settings {
 
         echo "<input type='text' name='sritoni_settings[$field]' id='sritoni_settings[$field]'
                 value='$value'  size='50' class='code' />";
+    }
+
+    /**
+     * Get the settings option array and print cashfree beneficiary name
+     */
+    public function cashfree_beneficiary_callback()
+    {
+        $settings = (array) get_option( 'sritoni_settings' );
+		$field = "beneficiary_name";
+		$value = esc_attr( $settings[$field] );
+
+        echo "<input type='text' name='sritoni_settings[$field]' id='sritoni_settings[$field]'
+                value='$value'  size='50' class='code' />Cashfree Account Beneficiary Name, ex: HSEA LLP";
     }
 
 	/**
