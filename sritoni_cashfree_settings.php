@@ -357,6 +357,10 @@ class sritoni_cashfree_settings {
         if( !empty($input['verify_webhook_ip']) )
             $new_input['verify_webhook_ip'] = 0;
 
+        // added in ver 6
+        if( isset( $input['beneficiary_name'] ) )
+            $new_input['beneficiary_name'] = sanitize_text_field( $input['beneficiary_name'] );
+
         return $new_input;
 
     }
