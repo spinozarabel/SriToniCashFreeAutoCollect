@@ -1265,7 +1265,7 @@ add_filter( 'woocommerce_get_price', 'spz_change_price', 10, 2 );
 function spz_change_price($price, $product)
 {
     // check for grade dependent price category, return if not
-    if ( !is_product() ||  !has_term( 'grade-dependent-price', 'product_cat' ) )
+    if ( !has_term( 'grade-dependent-price', 'product_cat', $product->get_id() ) )
     {
         return;
     }
