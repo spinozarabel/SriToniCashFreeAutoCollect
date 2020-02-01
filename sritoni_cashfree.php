@@ -1264,6 +1264,11 @@ add_filter( 'woocommerce_get_price', 'spz_change_price', 10, 2 );
 */
 function spz_change_price($price, $product)
 {
+    // check for grade dependent price category, return if not
+    if ( !is_product() ||  !has_term( 'grade-dependent-price', 'product_cat' ) )
+    {
+        return;
+    }
     // Get the current user
     $current_user 	= wp_get_current_user();
 	$user_id 		= $current_user->ID;
