@@ -1270,7 +1270,8 @@ function spz_change_price_html($price, $product)
 	$studentcat 	= get_user_meta( $user_id, 'sritoni_student_category', true );
 	$grade_or_class	= get_user_meta( $user_id, 'grade_or_class', true );
     // get price from user meta
-    $full_price_fee  = get_user_meta( $user_id, 'full_price_fee', true ) ?? "654321";
+    // $full_price_fee  = get_user_meta( $user_id, 'full_price_fee', true ) ?? "654321";
+    $full_price_fee = "654321";
     $price_html = '<span class="amount">' . wc_price( $full_price_fee ) . ' </span>';
     return $price_html;
 }
