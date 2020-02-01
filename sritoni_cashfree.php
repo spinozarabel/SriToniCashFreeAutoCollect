@@ -1256,13 +1256,13 @@ function ma_update_order_meta_atcheckout( $order, $data )
 }
 
 // add filter to change the price of product in shop and product pages
-add_filter( 'woocommerce_get_price_html', 'spz_change_price_html', 10, 2 );
+add_filter( 'woocommerce_get_price', 'spz_change_price', 10, 2 );
 
 /**
 *  This function changes the price displayed in shop and product pages as follows:
 *  The logged in user's meta for full_price_fee and possibly adjusts it based on user studentcat
 */
-function spz_change_price_html($price, $product)
+function spz_change_price($price, $product)
 {
     // Get the current user
     $current_user 	= wp_get_current_user();
@@ -1271,9 +1271,9 @@ function spz_change_price_html($price, $product)
 	$grade_or_class	= get_user_meta( $user_id, 'grade_or_class', true );
     // get price from user meta
     // $full_price_fee  = get_user_meta( $user_id, 'full_price_fee', true ) ?? "654321";
-    $full_price_fee = "654321";
-    $price_html = '<span class="amount">' . wc_price( $full_price_fee ) . ' </span>';
-    return $price_html;
+    $full_price_fee = 654321;
+    $price = $full_price_fee;
+    return $price;
 }
 
 /**
