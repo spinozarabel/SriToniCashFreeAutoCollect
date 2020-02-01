@@ -3,7 +3,7 @@
 *Plugin Name: SriToni Cashfree Autocollect
 *Plugin URI:
 *Description: SriToni Admin interface to Cashfree Autocollect Virtual accounts
-*Version: 20191001
+*Version: 2019103100
 *Author: Madhu Avasarala
 *Author URI: http://sritoni.org
 *Text Domain: sritoni_cashfree_autocollect
@@ -17,28 +17,23 @@ require_once(__DIR__."/sritoni_cashfree_settings.php"); // file containing class
 require_once(__DIR__."/cfAutoCollect.inc.php");         // contains cashfree api class
 require_once(__DIR__."/webhook/cashfree-webhook.php");  // contains webhook class
 
-// global $blog_id;
-// get sub-site name to be used to get appropriate API keys
-// $site_name	=	get_blog_details( $blog_id )->blogname;
 if ( is_admin() )
-{ // admin actions
-  // Hook for adding admin menus only if you are an admin
+{ // add sub-menu for a new payments page
   add_action('admin_menu', 'add_VA_payments_submenu');
   // Now add a new submenu for sritoni cashfree plugin settings in Woocommerce. This is to be done only once!!!!
   $sritoniCashfreeSettings = new sritoni_cashfree_settings();
 }
 
+$moodle_token 	= get_option( 'sritoni_settings')["sritoni_token"];
+$moodle_url     = get_option( 'sritoni_settings')["sritoni_url"] . '/webservice/rest/server.php';
 
-$moodle_token 	= get_option( 'sritoni_settings')["moodle_token"];
-
-
-add_action('plugins_loaded', 'init_custom_gateway_class');
+add_action('plugins_loaded', 'init_vabacs_gateway_class');
 // hook action for post that has action set to cf_wc_webhook
 // When that action is discovered the function cf_webhook_init is fired
 // https://sritoni.org/hset-payments/wp-admin/admin-post.php?action=cf_wc_webhook
 add_action('admin_post_nopriv_cf_wc_webhook', 'cf_webhook_init', 10);
 
-function init_custom_gateway_class()
+function init_vabacs_gateway_class()
 	{
 	class WC_Gateway_VABACS extends WC_Payment_Gateway {  // MA
 	/**
@@ -422,10 +417,9 @@ function init_custom_gateway_class()
 
 // hook for adding custom columns on woocommerce orders page
 add_filter( 'manage_edit-shop_order_columns', 'orders_add_mycolumns' );
-
 // hook for updating my new column valus based on passed order details
 add_action( 'manage_shop_order_posts_custom_column', 'set_orders_newcolumn_values', 2 );
-
+// hook for callback function to be done after order's status is changed to completed
 add_action( 'woocommerce_order_status_completed', 'moodle_on_order_status_completed', 10, 1 );
 
 /** moodle_on_order_status_completed()
@@ -442,7 +436,7 @@ add_action( 'woocommerce_order_status_completed', 'moodle_on_order_status_comple
 */
 function moodle_on_order_status_completed( $order_id )
 {
-	global $blog_id, $moodle_token;
+	global $blog_id, $moodle_token, $moodle_url;
 
 	$debug						= true;  // controls debug messages to error log
 
@@ -484,7 +478,7 @@ function moodle_on_order_status_completed( $order_id )
 				 );
 	// prepare the Moodle Rest API object
 	$MoodleRest = new MoodleRest();
-	$MoodleRest->setServerAddress("https://hset.in/sritoni/webservice/rest/server.php");
+	$MoodleRest->setServerAddress($moodle_url);
 	$MoodleRest->setToken( $moodle_token ); // get token from ignore_key file
 	$MoodleRest->setReturnFormat(MoodleRest::RETURN_ARRAY); // Array is default. You can use RETURN_JSON or RETURN_XML too.
 	$MoodleRest->setDebug();
@@ -527,7 +521,7 @@ function moodle_on_order_status_completed( $order_id )
 				$existing	= json_decode($string_without_tags, true); // decode into an array
 
 			}
-			$field_payments_key	= $key;  // this is the key for the payments field if needed for future
+			$field_payments_key	= $key;  // this is the key for the payments field
 
 		}
 		if ( $field["shortname"] == "fees" )
@@ -538,7 +532,7 @@ function moodle_on_order_status_completed( $order_id )
 				$fees_paid = strtolower(strip_tags(html_entity_decode($field["value"])));
 
 			}
-			$field_fees_key	= $key;  // this is the key for the payments field if needed for future
+			$field_fees_key	= $key;  // this is the key for the payments field
 		}
 
 		if ( $field["shortname"] == "studentcat" )
@@ -549,7 +543,7 @@ function moodle_on_order_status_completed( $order_id )
 				$studentcat			= strtolower(strip_tags(html_entity_decode($field["value"])));
 
 			}
-			$field_studentcat_key		= $key;  // this is the key for this field if needed for future
+			$field_studentcat_key		= $key;  // this is the key for studentcat field
 		}
 	}
 
@@ -583,144 +577,10 @@ function moodle_on_order_status_completed( $order_id )
 										 )
 								   )
 				  );
-	// now to update the user's field payment field values
+	// now to update the user's profiel field payments with latest completed payment
 	$ret = $MoodleRest->request('core_user_update_users', $users, MoodleRest::METHOD_POST);
 
-
-	/* check the profiel field fees to see if fees has been paid. If yes return
-	if ($fees_paid == "paid")
-	{
-		// no need to update fees paid status, already paid, just return
-		// we assume that at beginning of year everyone's status is set to "Not Paid"
-		return;
-	}
-	*/
-
-	//Based on payments so far, check conditions for valid 'fees paid' status for this academic year
-	// The conditions to be checked are: For both payment sites HSET and HSEA-LLP
-	// 1.Does any payment item contain school annual fees?
-	// 2. Is the payment grade same as users's existing grade?
-	// 3. Does the payee term contain 'hset-payments'
-
-	$fees_paid 					= "Not paid"; // default
-	$paid_hset 					= false; // default value
-	$paid_hseallp				= false;
-	$paid_hset_installment1 	= false;
-	$paid_hset_installment2 	= false;
-	$paid_hseallp_installment1 	= false;
-	$paid_hseallp_installment2 	= false;
-	$current_year 				= date("Y") . "/03/01"; // this is date of 2019/03/01
-	$current_timestamp 			= strtotime($current_year);
-
-	switch ($studentcat)
-	{
-		default:
-			// this is done for all cases except 'installment" case
-			foreach ($existing as $key => $item)
-			{		// each $item is a payment array that we have written to Moodle user profile field 'payments'
-					// now lets check if product name has 'Annual HSET Payment' in it and is made for same grade as student's grade
-					if ( preg_match("/\bAnnual HSET Payment\b/i", $item["order_product_name"] ) && ( $item["order_grade"] == $grade_or_class ) )
-					{
-						// this order qualifies for valid payment of annual school fees to HSET
-						$paid_hset = true; // from legacy requirements
-					}
-					// check if product name has term 'Annual HSEA-LLP Payment' in it
-					if ( preg_match("/\bAnnual HSEA-LLP Payment\b/i", $item["order_product_name"] ) && ( $item["order_grade"] == $grade_or_class ) )
-					{
-						// this qualifies as valid services payment to hsea_llp for academic year
-						$paid_hseallp = true; // from legacy requirements
-					}
-
-			}
-			// combine the 2 conditions
-			if( $paid_hset && $paid_hseallp )
-			{
-				$fees_paid = "Paid";
-			}
-		break; // get out of switch statement
-
-		case "installment":
-			// loop through all of the payments in 'payments' to be stored in user profile field payments
-			foreach ($existing as $key => $item)
-			{
-					// now lets check if product name has 'annual school fees installment 1' in it and is made for same grade as student's grade
-					if ( preg_match("/\bAnnual HSET Payment Installment1\b/i", $item["order_product_name"] ) && ( $item["order_grade"] == $grade_or_class ) )
-					{
-						// this order qualifies for valid payment of annual school fees Installment 1 to HSET
-						$paid_hset_installment1 = true;
-					}
-					// check if product name has term 'Annual Service Fees' in it
-					if ( preg_match("/\bAnnual HSEA-LLP Payment Installment1\b/i", $item["order_product_name"] ) && ( $item["order_grade"] == $grade_or_class ) )
-					{
-						// this qualifies as valid services payment installment 1 to hsea_llp for this year
-						$paid_hseallp_installment1 = true;
-					}
-
-					// now lets check if product name has 'annual school fees installment 2' in it and is made for same grade as student's grade
-					if ( preg_match("/\bAnnual HSET Payment Installment1\b/i", $item["order_product_name"] ) && ( $item["order_grade"] == $grade_or_class ) )
-					{
-						// this order qualifies for valid payment of annual school fees Installment 1 to HSET
-						$paid_hset_installment2 = true;
-					}
-					// check if product name has term 'Annual Service Fees' in it
-					if ( preg_match("/\bAnnual HSEA-LLP Payment Installment1\b/i", $item["order_product_name"] ) && ( $item["order_grade"] == $grade_or_class ) )
-					{
-						// this qualifies as valid services payment installment 1 to hsea_llp for this year
-						$paid_hseallp_installment2 = true;
-					}
-			}
-
-
-			if ($paid_hset_installment2 && $paid_hseallp_installment2)
-			{
-				$fees_paid = "Installment 2 paid" ;
-			}
-			elseif ($paid_installment1 = $paid_hset_installment1 && $paid_hseallp_installment1)
-			{
-				$fees_paid = "Installment 1 paid";
-			}
-			else
-			{
-				$fees_paid = "Not paid";
-			}
-
-	}
-
-
-
-	// now we are ready to update the fees paid profile field of user in Moodle
-	// create the users array in format needed for Moodle RSET API
-	$users = array("users" => array(array(	"id" 			=> $moodle_user_id,
-											"customfields" 	=> array(array(	"type"	=>	"fees",
-																			"value"	=>	$fees_paid, // TODO change to $fees_paid
-																		  )
-																    )
-										 )
-								   )
-				  );
-	// now to update the user's field payment field values
-	$ret = $MoodleRest->request('core_user_update_users', $users, MoodleRest::METHOD_POST);
-
-	if ($debug)
-	{
-					error_log("HSET installment 1 paid: ");
-					error_log(print_r($$paid_hset_installment1 ,true));
-
-					error_log("HSET installment 2 paid: ");
-					error_log(print_r($$paid_hset_installment2 ,true));
-
-					error_log("HSEA-LLP installment 1 paid: ");
-					error_log(print_r($$paid_hseallp_installment1 ,true));
-
-					error_log("HSEA-LLP installment 2 paid: ");
-					error_log(print_r($$paid_hseallp_installment2 ,true));
-
-					error_log("Updated payment information in profile field payments");
-					error_log(print_r($existing ,true));
-
-					error_log("Updated status of user profile field fees");
-					error_log(print_r($fees_paid ,true));
-	}
+    // put function here to check and update profile_field fees paid based on payments array
 
 	return;
 }
@@ -736,9 +596,14 @@ function add_VA_payments_submenu()
 
     /*
 	add_submenu_page( string $parent_slug, string $page_title, string $menu_title, string $capability, string $menu_slug, callable $function = '' )
-	*                   parent slug   new submenu page  submenu title  capability                new submenu slug   callback for display page
+	*					parent slug		newsubmenupage	submenu title  	capability			new submenu slug		callback for display page
 	*/
-	add_submenu_page( 'woocommerce',   'VA-payments',  'VA-payments', 'manage_options', 'woo-VA-payments', 'VA_payments_callback' );
+	add_submenu_page( 'woocommerce',	'VA-payments',	'VA-payments',	'manage_options',	'woo-VA-payments',		'VA_payments_callback' );
+
+	/*
+	* add another submenu page for reconciling orders and payments on demand from admin menu
+	*/
+	add_submenu_page( 'woocommerce',	'reconcile',	'reconcile',	'manage_options',	'reconcile-payments',	'reconcile_payments_callback' );
 
 	return;
 }
@@ -746,8 +611,9 @@ function add_VA_payments_submenu()
 /** VA_payments_callback()
 *   is the callback function for the sub-menu VA-payments
 *   This function decides what to do when the sub-menu is clicked
-*   We can display the non-closed orders and the corresponding user's VA payments if desired.
-*   Or we can do something else.
+*   Prescribed way to get to this page is by clicking on an account in the orders page for any order
+*   3 parameters are passed: va_id, display_name, user_id. We use these to display status of
+*   all payments made into this VA and any reconciled orders for them
 */
 function VA_payments_callback()
 {
@@ -787,6 +653,12 @@ function VA_payments_callback()
 	$cashfree_api 	= new CfAutoCollect; // new cashfree API object
 	//
 	$payments	= $cashfree_api->getPaymentsForVirtualAccount($va_id);	// list of payments msde into this VA
+    // if no payments made exit
+    if (empty($payments))
+    {
+        echo 'No payments made into this VA';
+        return;
+    }
 	//
 	foreach ($payments as $key=> $payment)
 		{
@@ -868,13 +740,139 @@ function VA_payments_callback()
 
 }
 
-// --a dd 2 new columns to the orders page of woocommerce------------------------------------------
+/**
+*	This implements the callback for the sub-menu page reconcile.
+*   When this manu page is accessed from the admin menu under Woocommerce, it tries to reconcile all open orders against payments made
+*   Normally the reconciliation should be done as soon as a payment is made by a webhook issued by the payment gateway.
+*	Should the webhook reconciliation fail for whatever reason, an on-demand reconciliation can be forced by accessing this page.
+*/
+function reconcile_payments_callback()
+{
+	$maxReturn		=	3;					// maximum number of payments to be returned for any payment account to reconcile
+	$max_orders		=	30;					// maximum number of orders that are reconciled in one go
+	$timezone		= new DateTimeZone("Asia/Kolkata");
+	// get all open orders for all users
+	$args = array(
+						'status' 			=> 'on-hold',
+						'payment_method' 	=> 'vabacs',
+				  );
+	$orders = wc_get_orders( $args );
+	// if no orders on-hold then nothing t reconcile so exit
+	if (empty($orders))
+	{
+		echo 'No orders on-hold, nothing to reconcile';
+		return;
+	}
+	// Instantiate payment gateway API along with authetication
+	$cashfree_api 			= new CfAutoCollect; // new cashfree Autocollect API object
+	// For each order get the last 3 payments made. Assumption is that there are not more than 3 payments made after an order is placed
+	$order_count = 0;
+	foreach ($orders as $order)
+	{
+		// get user payment account ID details from order
+		$va_id		= get_post_meta($order->id, 'va_id', true) ?? 'unable to get VAID from order meta';
+		// get the last few payments bade by tis account
+		$payments	= $cashfree_api->getPaymentsForVirtualAccount($va_id, $maxReturn);
+		foreach ($payments as $payment)
+		{
+			if ( !reconcilable1_ma($order, $payment, $timezone) )
+				{
+				// this payment is not reconcilable either due to mismatch in payment or dates or both
+				continue;	// continue next payment
+				}
+			else
+				{
+					reconcile1_ma($order, $payment, $timezone);
+                    echo 'Order No: ' . $order->id . ' Reconciled with Payment ID: ' . $payment->referenceId;
+					break;	// break out of payment loop and process next order
+				}
+		}
+		$order_count +=	1;
+		if ($order_count >= $max_orders)
+		{
+			break; // exit out of orders loop
+		}
+	}
 
+}
+
+/**
+*  @param order is the full order object under consideration
+*  @param payment is the full payment object being considered
+*  @param timezone is the full timezone object needed for order objects timestamp
+*  return a boolean value if the payment and order can be reconciled
+*  Conditions for reconciliation are: (We assume payment method is VABACS and this payment is not reconciled in any order before
+*  1. Payments must be equal
+*  2. Order creation Date must be before Payment Date
+*/
+function reconcilable1_ma($order, $payment, $timezone)
+{
+    // since order datetime is from time stamp whereas payment datetime is form actula date and time
+    // we will only use settimezone for order datetime and not payment datetime.
+	$order_total			= $order->get_total();
+	// $order_total_p			= (int) round($order_total * 100);
+	$order_created_datetime	= new DateTime( '@' . $order->get_date_created()->getTimestamp());
+    $order_created_datetime->setTimezone($timezone);
+    // we don't care about the time zone adjustment since it will be common for all dates for comparison purpses
+	//
+	$payment_amount 		= $payment->amount;      // in ruppees
+    $payment_date       = $payment->paymentTime;     // example 2007-06-28 15:29:26
+    $payment_datetime	=  DateTime::createFromFormat('Y-m-d H:i:s', $payment_date);
+    // $payment_datetime->setTimezone($timezone);
+
+	return ( ($order_total == $payment_amount) && ($payment_datetime > $order_created_datetime) );
+
+}
+
+/**
+*  @param order is the order object
+*  @param payment is the payment object
+*  @param reconcile is a settings boolean option for non-webhook reconciliation
+*  @param reconcilable is a boolean variable indicating wether order and payment are reconcilable or not
+*  @param timezone is passed in to calculate time of order creation using timestamp
+*  return a boolean value if the payment and order have been reconciled successfully
+*  Conditions for reconciliation are: (We assume payment method is VABACS and this payment is not reconciled in any order before
+*  1. Payments must be equal
+*  2. Order creation Date must be before Payment Date
+*  Reconciliation means that payment is marked complete and order meta updated suitably
+*/
+function reconcile1_ma($order, $payment, $timezone)
+{
+	$order_created_datetime	= new DateTime( '@' . $order->get_date_created()->getTimestamp());
+	$order_created_datetime->setTimezone($timezone);
+
+    $payment_date       = $payment->paymentTime;     // example 2007-06-28 15:29:26
+    $payment_datetime	=  DateTime::createFromFormat('Y-m-d H:i:s', $payment_date); // this is already IST
+	$order_note = 'Payment received by cashfree Virtual Account ID: ' . get_post_meta($order->id, 'va_id', true) .
+					' Payment ID: ' . $payment->referenceId . '  on: ' . $payment_datetime->format('Y-m-d H:i:s') .
+					' UTR reference: ' . $payment->utr;
+	$order->add_order_note($order_note);
+
+	$order->update_meta_data('va_payment_id', 				$payment->referenceId);
+	$order->update_meta_data('amount_paid_by_va_payment', 	$payment->amount);  // in Rs
+	$order->update_meta_data('bank_reference', 				$payment->utr);
+	// $order->update_meta_data('payment_notes_by_customer', 	$payment_obj->description);
+	$order->save;
+
+	$transaction_arr	= array(
+									'payment_id'		=> $payment->referenceId,
+									'payment_date'		=> $payment_datetime->format('Y-m-d H:i:s'),
+									'va_id'				=> get_post_meta($order->id, 'va_id', true),
+									'utr'	            => $payment->utr,
+								);
+
+	$transaction_id = json_encode($transaction_arr);
+
+	$order->payment_complete($transaction_id);
+
+    return true;
+}
 
 /** function orders_add_mycolumns($columns)
-*   @param $columns
+*   @param columns
 *   This function is called by add_filter( 'manage_edit-shop_order_columns', 'orders_add_mycolumns' )
-*   adds new columns after order_total column.
+*   adds new columns after order_status column called Student
+*   adds 2 new columns after order_total called VApymnt and VAid
 */
 function orders_add_mycolumns($columns)
 {
@@ -901,9 +899,17 @@ function orders_add_mycolumns($columns)
 }
 
 /** set_orders_newcolumn_values($columns)
-*   @param $column
+*   @param colname
 *   sets values to be displayed in the new columns in orders page
 *   This is callback for add_action( 'manage_shop_order_posts_custom_column', 'set_orders_newcolumn_values', 2 );
+*   For Student we display students display name.
+*   For VAid we display the VAid with a link to the payments page if payment method is VABACS
+*   If a VABACS order is completed or processed we display the payment amount and date extracted from order
+*   If a VABACS order is on-hold, we get the last 3 payments made to the order related VAID
+*      If any of the payments are yet to be reconciled we then try to reconcile any of the payments to the order
+*      provided the reconcile flag in settings page is set.
+*      If reconciled display the payment amount and date. If not display that payment is pending, with no date
+*   This is a backup for reconciliation of payments with orders wif the webhook does not work
 */
 function set_orders_newcolumn_values($colname)
 {
@@ -920,7 +926,7 @@ function set_orders_newcolumn_values($colname)
 			return;
 		}
 	$timezone				= new DateTimeZone("Asia/Kolkata");
-	$cashfree_api 			= new CfAutoCollect; // new API object
+	$cashfree_api 			= new CfAutoCollect; // new cashfree Autocollect API object
 	// get the reconcile or not flag from settings. If true then we try to reconcile whatever was missed by webhook
 	$reconcile				= get_option( 'sritoni_settings' )["reconcile"] ?? 0;
 	// get order details up ahead of treating all the cases below
@@ -950,13 +956,12 @@ function set_orders_newcolumn_values($colname)
 			$payment_datetime->setTimezone($timezone);	// adusted for local time zone
 			$payment_date		= $payment_datetime->format('Y-m-d H:i:s');
 
-		break;
+		break;     // out of switch structure
 
-		// for orders on hold extract the payment amount and date from possible unreconciled payments if any
-		case (  ( 'on-hold' == $order_status )    ||
-                ( 'pending' == $order_status )          ):
-			// So first we get a list of payments made to the VAID contained in this HOLD order
-			$payments	= $cashfree_api->getPaymentsForVirtualAccount($va_id);
+		// Reconcile on-hold orders only if reconcile flag in settings is set, otherwise miss
+		case ( ( 'on-hold' == $order_status ) && ( $reconcile == 1 ) ):
+			// So first we get a list of last 3 payments made to the VAID contained in this HOLD order
+			$payments	= $cashfree_api->getPaymentsForVirtualAccount($va_id,3);
             // what happens if there are no payents made and this is null?
             if (empty($payments))
             {
@@ -995,14 +1000,16 @@ function set_orders_newcolumn_values($colname)
 						continue;	// continue next iteration of loop payment
 						}
 					// we now have a reconcilable paymet against this order so we get out of the for loop
+                    // we only reconcile the 1st reconcilable payment.
+                    // if multiple payments are made only 1 payment will be reconciled
 					$reconcilable = true;
 					break;	// out of loop but still in Switch statement. $payment is the payment to be reconciled
 				}	// end of for each loop
 
 		case ( ($reconcilable == true) && ($reconcile == 1) ) :
-
+            // we cannot get here without going through case statement immediately above
 			// we will reconcle since all flags are go
-			reconcile_ma($order, $payment, $reconcile, $reconcilable);
+			reconcile_ma($order, $payment, $reconcile, $reconcilable, $timezone);
             $payment_date       = $payment->paymentTime;    // example 2007-06-28 15:29:26
 			$payment_datetime	=  DateTime::createFromFormat('Y-m-d H:i:s', $payment_date);
 			// $payment_datetime->setTimezone($timezone);
@@ -1041,6 +1048,7 @@ function set_orders_newcolumn_values($colname)
 		switch (true)
 		{
 			case ($payment_method == "vabacs") :
+                // display the VA ID with a link that when clicked takes you to payments made for that account
 				//$link_address = 'https://dashboard.cashfree.com/#/app/virtualaccounts/' . $va_id;
 				$data = array(
 								"va_id"			=>	$va_id,
@@ -1065,6 +1073,9 @@ function set_orders_newcolumn_values($colname)
 }
 
 /**
+*  @param order is the full order object under consideration
+*  @param payment is the full payment object being considered
+*  @param timezone is the full timezone object needed for order objects timestamp
 *  return a boolean value if the payment and order can be reconciled
 *  Conditions for reconciliation are: (We assume payment method is VABACS and this payment is not reconciled in any order before
 *  1. Payments must be equal
@@ -1090,13 +1101,18 @@ function reconcilable_ma($order, $payment, $timezone)
 }
 
 /**
-*  return a boolean value if the payment and order have been reconciled
+*  @param order is the order object
+*  @param payment is the payment object
+*  @param reconcile is a settings boolean option for non-webhook reconciliation
+*  @param reconcilable is a boolean variable indicating wether order and payment are reconcilable or not
+*  @param timezone is passed in to calculate time of order creation using timestamp
+*  return a boolean value if the payment and order have been reconciled successfully
 *  Conditions for reconciliation are: (We assume payment method is VABACS and this payment is not reconciled in any order before
 *  1. Payments must be equal
 *  2. Order creation Date must be before Payment Date
 *  Reconciliation means that payment is marked complete and order meta updated suitably
 */
-function reconcile_ma($order, $payment, $reconcile, $reconcilable)
+function reconcile_ma($order, $payment, $reconcile, $reconcilable, $timezone)
 {
 	if 	(	($reconcile == 0) ||
 			($reconcilable == false)	)
@@ -1130,10 +1146,16 @@ function reconcile_ma($order, $payment, $reconcile, $reconcilable)
 
 	$order->payment_complete($transaction_id);
 
+    return true;
 }
 
 /**
  * Filter products on the shop page based on user meta: sritoni_student_category, grade_or_class
+ * The filter is not applicable to shop managers and administrators
+ * If user meta sritoni_student_category is installment then only products belonging to BOTH
+ *    categories Installment AND that pointed to by user meta "grade_or_class".
+ * If user meta "sritoni_student_category" does not contain installment then only show products
+ *    NOT in Installment category AND any products in Common OR pointed by user meta "grade_or_class"
  * https://docs.woocommerce.com/document/exclude-a-category-from-the-shop-page/
  * https://stackoverflow.com/questions/39004800/how-do-i-hide-woocommerce-products-with-a-given-category-based-on-user-role
  */
@@ -1209,12 +1231,11 @@ add_filter( 'woocommerce_grouped_price_html', 'max_grouped_price', 10, 3 );
 // This adds an action just before saving any order at checkout to update the order meta for va_id
 add_action('woocommerce_checkout_create_order', 'ma_update_order_meta_atcheckout', 20, 2);
 
-/*
-* @param $order is the passed in order object under consideration at checkout
-* @param $data is an aray that contains the order meta keys and values when passed in
-* We can either modify the value sin $data or directly set the order meta explicitly
+/**
+* @param order is the passed in order object under consideration at checkout
+* @param data is an aray that contains the order meta keys and values when passed in
+* We update the order's va_id meta at checkout.
 */
-
 function ma_update_order_meta_atcheckout( $order, $data )
 {
 	// get user associated with this order

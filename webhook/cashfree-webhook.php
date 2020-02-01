@@ -1,5 +1,7 @@
 <?php
 
+// version 1.3 gets setting to verify IP of webhook
+// version 1.2 gets ip_whitelist string from options
 // version 1.1 checks if webhook IP is whitelisted
 
 require_once __DIR__.'/../sritoni_cashfree.php';            // plugin file
@@ -43,48 +45,81 @@ class CF_webhook
      */
     public function process()
     {
-        //$post = file_get_contents('php://input');
-        //$data = json_decode($post, true);   // decode into associative array
-        // verify the IP of get_resource_type
-        /*$whitelist_ip = [
-                        "143.204.29.33" ,
-                        "143.204.29.40" ,
-                        "143.204.29.59" ,
-                        "143.204.29.114",
-                        "24.10.101.115"         // my PC IP
-                            ];
-                            */
-        $whitelist_ip = gethostbynamel('cashfree.com');
-        error_log(print_r($whitelist_ip, true));
+        $ip_whitelist_arr       = array();      // declare an empty array
+        $domain_ip_arr          = array();      // declare empty array
+        $domain_whitelist_arr   = array();      // declare empty array
+        $domain_ip_arr          = array();      // declare empty array
+        // get comma separated string of whitelisted IP's
+        $ip_whitelist_str  = get_option( 'sritoni_settings')['ip_whitelist'];
+        $domain_whitelist  = get_option( 'sritoni_settings')['domain_whitelist'];
+        // convert this into an array of IP's
+        if ( !empty($ip_whitelist_str) )
+            {
+                $ip_whitelist_arr  = explode("," , $ip_whitelist_str);
+            }
+        // get ips associated with domain
+        if ( !empty($domain_whitelist) )
+            {
+                $domain_whitelist_arr = explode("," , $domain_whitelist);
+
+            }
+        foreach ($domain_whitelist_arr as $domain)
+        {
+            $domain_ip      = (array) gethostbynamel($domain);
+            $domain_ip_arr  = array_merge($domain_ip_arr, $domain_ip);
+        }
+        // make a master whitelsited ip array
+        $whitelist_ip_arr = array_merge($ip_whitelist_arr, $domain_ip_arr);
         // get IP of webhook server
         $ip_source = $_SERVER['REMOTE_ADDR'];
-        error_log('ip of source: ' . $ip_source);
-        // check that webhook IP is white listed
-        /*
-        if (!in_array($ip_source, $whitelist_ip))
+
+        // get the setting wether to verify the IP of the webhook
+        $verify_webhook_ip = get_option( 'sritoni_settings')['verify_webhook_ip'] ?? 0;
+        // If flag to verify webhook IP is set then verify if webhook is whitelsited
+        if ($verify_webhook_ip)
         {
-            // do not trust this webhook since its IP is not in whitelist
-            // but log its contents just so we can see what it contains
-            error_log('IP of Webhook not in whitelsit-rejected, below is dump of webhook packet');
-            error_log('IP address of webhook is: ' . $ip_source);
-            foreach ($data as $key => $value)
+            if (!in_array($ip_source, $whitelist_ip_arr))
             {
-                error_log($key." : ".$value);
+                // do not trust this webhook since its IP is not in whitelist
+                // but log its contents just so we can see what it contains
+                error_log('IP of Webhook not in whitelsit-rejected, below is dump of webhook packet');
+                error_log('IP address of webhook is: ' . $ip_source);
+                foreach ($data as $key => $value)
+                {
+                    error_log($key." : ".$value);
+                }
+                return;
             }
-            die;
+            else
+            {
+                ($this->verbose ? error_log('IP of Webhook IS in whitelist..continue processing: ' . $ip_source) : false);
+            }
         }
-        error_log('IP of Webhook IS in whitelsit-Accepted: ' . $ip_source);
-        */
+        else
+        {
+            ($this->verbose ? error_log('Webhook IP NOT checked against whitelist per setting..continue processing: ' . $ip_source) : false);
+        }
+
         $data = $_POST;
         $signature = $_POST["signature"];
 
-        error_log('Signature of Webhook: ' . $signature);
-        error_log(print_r($data, true));
         // prepare data for signature verification
         unset($data["signature"]);
         ksort($data);
         // check if signature is verified
         $signature_verified = $this->verify_signature($data, $signature);
+        if ($this->verbose)
+        {
+            error_log('IP whitelist array');
+            error_log(print_r($whitelist_ip_arr, true));
+
+            error_log('ip of webhook source: ' . $ip_source);
+
+            error_log('Wbhook Signature verified?: ' . $signature_verified);
+
+            error_log('Below is dump of webhook packet');
+            error_log(print_r($data, true));
+        }
         if (!$signature_verified)
         {
             // signature is not valid, log and die
@@ -93,7 +128,7 @@ class CF_webhook
             {
                 error_log($key." : ".$value);
             }
-            die;
+            return;
         }
         // if reached this far, webhook signature is verified, IP is whitelsited, process webhook
         switch ($data['event'])
@@ -146,6 +181,10 @@ class CF_webhook
         else
         {
           error_log("webhook Signature FAILED verification");
+          foreach ($data as $key => $value)
+          {
+              error_log($key." : ".$value);
+          }
           return false;
         }
     }
@@ -167,6 +206,8 @@ class CF_webhook
 		// use this as login to get WP user ID
 		$wp_user 	= get_user_by('login', $moodleuserid);       // get user by login (same as Moodle userid in User tables)
 		$wp_userid 	= $wp_user->ID ?? "web_hook_wpuser_not_found";      // get WP user ID
+        // get payment ID of webhook
+        $payment_id = $data["referenceId"];
         // cannot reconcile using order id in payment info since cashfree doesn't provide any
 		// so we follow the old method of reconciliation by checking all open orders
 		// Idempotent: Is this payment already reconciled?	If so webhook is redundant, exit
@@ -180,7 +221,7 @@ class CF_webhook
 		$open_orders = $this->getOpenOrders($wp_userid);
 
 		// if null exit, there are no open orders for this user to reconcile
-		if ( $open_orders == null )
+		if ( empty($open_orders) )
 			{
                 return;
 			}
@@ -189,7 +230,7 @@ class CF_webhook
 				// we do have open orders for this user, so lets see if we can reconcile the webhook payment to one of these open orders
 				$reconciledOrder = $this->reconcileOrder($open_orders, $data, $payment_datetime, $wp_userid);
 				// if reconciled order is null then exit
-				if ( $reconciledOrder == null )
+				if ( empty($reconciledOrder) )
 					{
 						return;
 					}
@@ -217,13 +258,15 @@ class CF_webhook
 
 
 	/**
+     * @param payment_id
+     * @param wp_userid
      * Gets any orders that maybe already reconciled with this payment
 	 * return false if if no reconciled orders already exist for this webhook payment
 	 * return true if this payment is alreay present in an existing completed / processsing order
      */
     protected function anyReconciledOrders($payment_id, $wp_userid)
     {
-        $payment_id     = $data["referenceId"];
+        //$payment_id     = $data["referenceId"];
         $args = array(
 						'status' 			=> array(
 														'processing',
@@ -241,7 +284,7 @@ class CF_webhook
 		{	// we already have completed orders that reconcile this payment ID so this webhook must be old or redundant, so quit
 			if ($this->verbose)
 			{
-				error_log('Following orders already completed using this payment_id:' . $payment_id);
+				error_log('Following order already completed using this payment_id:' . $payment_id);
 				foreach ($orders_completed as $order)
 						{
 							error_log( 'Order No: ' . $order->get_id() );
@@ -257,6 +300,7 @@ class CF_webhook
 	/**
     * @param wp_userid is the wordpress user id, also the WC customer id
      * returns all vabacs orders for this user thar are on-hold
+     * returns null if there are no orders on-hold for this wp-userid
      */
     protected function getOpenOrders($wp_userid)
     {
