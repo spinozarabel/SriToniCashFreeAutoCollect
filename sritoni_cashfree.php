@@ -1267,7 +1267,7 @@ function spz_change_price($price, $product)
     // check for grade dependent price category, return if not
     if ( !has_term( 'grade-dependent-price', 'product_cat', $product->get_id() ) )
     {
-        return;
+        return $price;
     }
     // Get the current user
     $current_user 	= wp_get_current_user();
