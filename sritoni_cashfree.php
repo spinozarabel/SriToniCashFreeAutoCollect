@@ -1255,6 +1255,26 @@ function ma_update_order_meta_atcheckout( $order, $data )
 	return;
 }
 
+// add filter to change the price of product in shop and product pages
+add_filter( 'woocommerce_get_price_html', 'spz_change_price_html', 10, 2 );
+
+/**
+*  This function changes the price displayed in shop and product pages as follows:
+*  The logged in user's meta for full_price_fee and possibly adjusts it based on user studentcat
+*/
+function spz_change_price_html($price, $product)
+{
+    // Get the current user
+    $current_user 	= wp_get_current_user();
+	$user_id 		= $current_user->ID;
+	$studentcat 	= get_user_meta( $user_id, 'sritoni_student_category', true );
+	$grade_or_class	= get_user_meta( $user_id, 'grade_or_class', true );
+    // get price from user meta
+    $full_price_fee  = get_user_meta( $user_id, 'full_price_fee', true ) ?? "654321";
+    $price_html = '<span class="amount">' . wc_price( $full_price_fee ) . ' </span>';
+    return $price_html;
+}
+
 /**
 * https://sritoni.org/hset-payments/wp-admin/admin-post.php?action=cf_wc_webhook
 * add_action('admin_post_nopriv_cf_wc_webhook', 'cf_webhook_init', 10);
