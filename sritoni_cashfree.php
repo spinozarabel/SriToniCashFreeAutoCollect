@@ -1280,8 +1280,6 @@ function spz_change_price($price, $product)
         return $price;
     }
 
-    error_log(print_r($fees_csv, true));
-
     // this product belongs to category grade-dependent-price
     // lets get the price for this user
     // Get the current user
@@ -1290,14 +1288,7 @@ function spz_change_price($price, $product)
 	$studentcat 	= get_user_meta( $user_id, 'sritoni_student_category', true );
 	$grade_or_class	= get_user_meta( $user_id, 'grade_or_class', true );
 
-    // get the index of array for this grade, in the fees_csv array
-    $key = array_search($grade_or_class, $fees_csv[0]);
-
-    error_log("key: $key");
-
-    $full_price_fee = $fees_csv[0][$key];
-
-    error_log("full price : $full_price_fee");
+    $full_price_fee = $fees_csv[0][$grade_or_class] ?? 0;
 
     return $full_price_fee;
 }
