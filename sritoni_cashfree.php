@@ -1184,14 +1184,14 @@ function installment_pre_get_posts_query( $q )
 
 	$tax_query = (array) $q->get( 'tax_query' );
 
-	if (  "installment" == $studentcat  )
+	if (  strpos($studentcat, "installment") !==false )
 	{
 		$tax_query[] = array(
 			'relation' => 'OR',
 				array(
 				   'taxonomy' => 'product_cat',
 				   'field' => 'slug',
-				   'terms' => array( "installment" , $grade_or_class ), 	//
+				   'terms' => array( "installment2", "installment3", $grade_or_class ), 	//
 				   'operator' => 'AND'										//
 					 ),									// OR
 				array(
@@ -1205,14 +1205,14 @@ function installment_pre_get_posts_query( $q )
 
 
 	}
-	else if (  "installment" != $studentcat  )
+	else
 	{
 		$tax_query[] = array(
 			'relation' => 'AND',
 				array(
 				   'taxonomy' => 'product_cat',
 				   'field' => 'slug',
-				   'terms' => array( "installment"), 				// NOT in Installment category
+				   'terms' => array( "installment", "installment2", "installment3"), 	
 				   'operator' => 'NOT IN'
 					 ),												// AND
 				array(
