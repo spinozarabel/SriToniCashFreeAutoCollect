@@ -24,8 +24,11 @@ if ( is_admin() )
   $sritoniCashfreeSettings = new sritoni_cashfree_settings();
 }
 
-$moodle_token 	= get_option( 'sritoni_settings')["sritoni_token"];
-$moodle_url     = get_option( 'sritoni_settings')["sritoni_url"] . '/webservice/rest/server.php';
+$moodle_token 	     = get_option( 'sritoni_settings')["sritoni_token"];
+$moodle_url         = get_option( 'sritoni_settings')["sritoni_url"] . '/webservice/rest/server.php';
+
+$get_csv_fees_file  = get_option( 'sritoni_settings')["get_csv_fees_file"] ?? false;
+$csv_file           = get_option( 'sritoni_settings')["csv_fees_file_path"];
 
 add_action('plugins_loaded', 'init_vabacs_gateway_class');
 // hook action for post that has action set to cf_wc_webhook
@@ -33,13 +36,12 @@ add_action('plugins_loaded', 'init_vabacs_gateway_class');
 // https://sritoni.org/hset-payments/wp-admin/admin-post.php?action=cf_wc_webhook
 add_action('admin_post_nopriv_cf_wc_webhook', 'cf_webhook_init', 10);
 
-// get file path of CSV used to set programmable price for each grade
-$csv_file = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQQ-1T7FfHzlMVAa-zmPiRU2WJFSz3vO9HRXnypXJNsTap3DD-_XVw-_wKlsvcXAcZxIpsPjCWRe_AV/pub?gid=0&single=true&output=csv";
-// read file and parse to associative array
-$fees_csv = csv_to_associative_array($csv_file);
+if ($get_csv_fees_file)
+{
+    // read file and parse to associative array. To access this in a function, make this a global there
+    $fees_csv = csv_to_associative_array($csv_file);
+}
 
-error_log("dump of read CSV file after parsing to associative array");
-error_log(print_r($fees_csv, true));
 
 function init_vabacs_gateway_class()
 	{
