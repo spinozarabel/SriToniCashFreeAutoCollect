@@ -33,6 +33,14 @@ add_action('plugins_loaded', 'init_vabacs_gateway_class');
 // https://sritoni.org/hset-payments/wp-admin/admin-post.php?action=cf_wc_webhook
 add_action('admin_post_nopriv_cf_wc_webhook', 'cf_webhook_init', 10);
 
+// get file path of CSV used to set programmable price for each grade
+$csv_file = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQQ-1T7FfHzlMVAa-zmPiRU2WJFSz3vO9HRXnypXJNsTap3DD-_XVw-_wKlsvcXAcZxIpsPjCWRe_AV/pub?gid=0&single=true&output=csv";
+// read file and parse to associative array
+$fees_csv = csv_to_associative_array($csv_file);
+
+error_log("dump of read CSV file after parsing to associative array");
+error_log(print_r($fees_csv, true));
+
 function init_vabacs_gateway_class()
 	{
 	class WC_Gateway_VABACS extends WC_Payment_Gateway {  // MA
@@ -1264,21 +1272,35 @@ add_filter( 'woocommerce_get_price', 'spz_change_price', 10, 2 );
 */
 function spz_change_price($price, $product)
 {
+    global $fees_csv;
+
     // check for grade dependent price category, return if not
     if ( !has_term( 'grade-dependent-price', 'product_cat', $product->get_id() ) )
     {
         return $price;
     }
+
+    // this product belongs to category grade-dependent-price
+    // lets get the price for this user
     // Get the current user
     $current_user 	= wp_get_current_user();
 	$user_id 		= $current_user->ID;
 	$studentcat 	= get_user_meta( $user_id, 'sritoni_student_category', true );
 	$grade_or_class	= get_user_meta( $user_id, 'grade_or_class', true );
-    // get price from user meta
-    // $full_price_fee  = get_user_meta( $user_id, 'full_price_fee', true ) ?? "654321";
-    $full_price_fee = 654321;
-    $price = $full_price_fee;
-    return $price;
+
+    // get the index of array for this grade, in the fees_csv array
+    $key = array_search($grade_or_class, $fees_csv);
+    if ($key)
+    {
+        $full_price_fee = $fees_csv($key);
+    }
+    else
+    {
+        // code...
+        $full_price_fee = 0;
+    }
+
+    return $full_price_fee;
 }
 
 /**
@@ -1291,4 +1313,54 @@ function cf_webhook_init()
     $cfWebhook = new CF_webhook();
 
     $cfWebhook->process();
+}
+
+/**
+ * This routine is attributed to https://github.com/rap2hpoutre/csv-to-associative-array
+  *
+ * The items in the 1st line (column headers) become the fields of the array
+ * each line of the CSV file is parsed into a sub-array using these fields
+ * The 1st index of the array is an integer pointing to these sub arrays
+ * The 1st row of the CSV file is ignored and index 0 points to 2nd line of CSV file
+ * This is the example data:
+ *
+ * parentname,studentname,desiredrole
+ * sritoni4,sritoni2,parent
+ * sritoni5,sritoni3,parent
+ *
+ * This is the associative array
+ * Array
+ *(
+ *  [0] => Array
+ *      (
+ *          [parentname] => sritoni4
+ *          [studentname] => sritoni2
+ *          [desiredrole] => parent
+ *      )
+ *  [1] => Array
+ *      (
+ *          [parentname] => sritoni5
+ *          [studentname] => sritoni3
+ *          [desiredrole] => parent
+ *      )
+ */
+function csv_to_associative_array($file, $delimiter = ',', $enclosure = '"')
+{
+    if (($handle = fopen($file, "r")) !== false)
+    {
+        $headers = fgetcsv($handle, 0, $delimiter, $enclosure);
+        $lines = [];
+        while (($data = fgetcsv($handle, 0, $delimiter, $enclosure)) !== false)
+        {
+            $current = [];
+            $i = 0;
+            foreach ($headers as $header)
+            {
+                $current[$header] = $data[$i++];
+            }
+            $lines[] = $current;
+        }
+        fclose($handle);
+        return $lines;
+	}
 }
