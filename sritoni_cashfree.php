@@ -1192,7 +1192,7 @@ function installment_pre_get_posts_query( $q )
 				   'taxonomy' => 'product_cat',
 				   'field' => 'slug',
 				   'terms' => array( "installment" , $grade_or_class ), 	//
-				   'operator' => 'AND'										// 
+				   'operator' => 'AND'										//
 					 ),									// OR
 				array(
 				   'taxonomy' => 'product_cat',
@@ -1296,7 +1296,7 @@ function spz_change_price($price, $product)
     // check if user studentcat is installment2 or installment3
     if (strpos($studentcat, "installment") !== false)
     {
-        $num_installments = trim($studentcat)[-1];
+        $num_installments = $studentcat[-1];
 
         if ($num_installments == 2 || $num_installments == 3)
         {
