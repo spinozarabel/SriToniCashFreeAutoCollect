@@ -1290,15 +1290,12 @@ function spz_change_price($price, $product)
 
     // get the index of array for this grade, in the fees_csv array
     $key = array_search($grade_or_class, $fees_csv[0]);
-    if ($key)
-    {
-        $full_price_fee = $fees_csv[0][$key];
-    }
-    else
-    {
-        // code...
-        $full_price_fee = 0;
-    }
+
+    error_log("key: $key");
+
+    $full_price_fee = $fees_csv[0][$key];
+
+    error_log("full price : $full_price_fee");
 
     return $full_price_fee;
 }
