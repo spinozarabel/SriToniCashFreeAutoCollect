@@ -1216,7 +1216,7 @@ function installment_pre_get_posts_query( $q )
 				array(
 				   'taxonomy' => 'product_cat',
 				   'field' => 'slug',
-				   'terms' => array( $grade_or_class, "common" ), 	// (grade OR "common")
+				   'terms' => array( $grade_or_class, "common", "grade-dependent-price" ), 	// OR of terms
 				   'operator' => 'IN'
 					 )
 							);
