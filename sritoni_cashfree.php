@@ -1289,10 +1289,10 @@ function spz_change_price($price, $product)
 	$grade_or_class	= get_user_meta( $user_id, 'grade_or_class', true );
 
     // get the index of array for this grade, in the fees_csv array
-    $key = array_search($grade_or_class, $fees_csv);
+    $key = array_search($grade_or_class, $fees_csv[0]);
     if ($key)
     {
-        $full_price_fee = $fees_csv($key);
+        $full_price_fee = $fees_csv[0][$key];
     }
     else
     {
