@@ -1,5 +1,6 @@
 <?php
 /**
+ * ver 7 added settings field for reading fees_csv file
  * ver 6 added setting for beneficiary name
  * ver 5 added setting for url hosting moodle
  * ver 4 added setting for verify_webhook_ip
@@ -107,7 +108,9 @@ class sritoni_cashfree_settings {
         add_settings_field( 'whitelist_idnumbers', 'Comma separated list of whitelisted user ID numbers', array( $this, 'whitelist_idnumbers_callback' ), 'sritoni_settings', 'student_section' );
         add_settings_field( 'courseid_groupingid', 'Comma separated pairs of course ID-grouping ID', array( $this, 'courseid_groupingid_callback' ), 'sritoni_settings', 'student_section' );
 
-	}
+        add_settings_field( 'get_csv_fees_file', 'Check box to get CSV fees file and process', array( $this, 'get_csv_fees_file_callback' ), 'sritoni_settings', 'student_section' );
+        add_settings_field( 'csv_fees_file_path', 'Full path of CSV fees file, can be published Google CSV file', array( $this, 'csv_fees_file_path_callback' ), 'sritoni_settings', 'student_section' );
+    }
 
 	/**
      * Print the Section text
@@ -115,6 +118,37 @@ class sritoni_cashfree_settings {
     public function print_section_info()
     {
         print 'Enter your settings below:';
+    }
+
+
+    /**
+     * Get the settings option array and print the full path of theCSV fees file
+     */
+    public function csv_fees_file_path_callback()
+    {
+
+    $settings = (array) get_option( 'sritoni_settings' );
+    $field = "csv_fees_file_path";
+    $value = esc_attr( $settings[$field] );
+
+    echo "<input type='text' name='sritoni_settings[$field]' id='sritoni_settings[$field]'
+            value='$value'  size='80' class='code' />";
+
+    }
+
+    /**
+     * Get the settings option array and print get_csv_fees_file value
+     */
+    public function get_csv_fees_file_callback()
+    {
+        $settings = (array) get_option( 'sritoni_settings' );
+        $field = "get_csv_fees_file";
+        $checked = $settings[$field] ?? 0;
+
+        ?>
+            <input name="sritoni_settings[get_csv_fees_file]" id="sritoni_settings[get_csv_fees_file]" type="checkbox"
+                value="1" class="code"<?php checked( $checked, 1, true ); ?>/>
+        <?php
     }
 
     /**
@@ -360,6 +394,12 @@ class sritoni_cashfree_settings {
         // added in ver 6
         if( isset( $input['beneficiary_name'] ) )
             $new_input['beneficiary_name'] = sanitize_text_field( $input['beneficiary_name'] );
+
+        if( !empty($input['get_csv_fees_file']) )
+            $new_input['get_csv_fees_file'] = 0;
+
+        if( isset( $input['csv_fees_file_path'] ) )
+            $new_input['csv_fees_file_path'] = sanitize_text_field( $input['csv_fees_file_path'] );
 
         return $new_input;
 
