@@ -1191,13 +1191,13 @@ function installment_pre_get_posts_query( $q )
 				array(
 				   'taxonomy' => 'product_cat',
 				   'field' => 'slug',
-				   'terms' => array( "installment" , $grade_or_class ), 	// Do display products in the Installment category AND
-				   'operator' => 'AND'										// grade
+				   'terms' => array( "installment" , $grade_or_class ), 	//
+				   'operator' => 'AND'										// 
 					 ),									// OR
 				array(
 				   'taxonomy' => 'product_cat',
 				   'field' => 'slug',
-				   'terms' => array( "common" ), // Do display products in "common" category
+				   'terms' => array( $grade_or_class, "common", "grade-dependent-price" ),
 				   'operator' => 'IN'
 				     )
 							);
