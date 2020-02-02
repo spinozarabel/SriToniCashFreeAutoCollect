@@ -1280,6 +1280,8 @@ function spz_change_price($price, $product)
         return $price;
     }
 
+    error_log(print_r($fees_csv, true));
+
     // this product belongs to category grade-dependent-price
     // lets get the price for this user
     // Get the current user
