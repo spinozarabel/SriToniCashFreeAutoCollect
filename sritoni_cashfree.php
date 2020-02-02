@@ -60,7 +60,7 @@ function init_vabacs_gateway_class()
 		$this->icon               = apply_filters( 'woocommerce_bacs_icon', '' );
 		$this->has_fields         = false;
 		$this->method_title       = __( 'Bank Transfer to Cashfree Virtual Account', 'woocommerce' );
-		$this->method_description = __( 'BACS to Individual Cashfree Virtual Account. More commonly known as direct bank transfer', 'woocommerce' );
+		$this->method_description = __( 'BACS to Individual Cashfree Virtual Account-offline direct bank transfer', 'woocommerce' );
 		// Load the settings.
 		$this->init_form_fields();
 		$this->init_settings();
@@ -1270,7 +1270,8 @@ add_filter( 'woocommerce_get_price', 'spz_change_price', 10, 2 );
 
 /**
 *  This function changes the price displayed in shop and product pages as follows:
-*  The logged in user's meta for full_price_fee and possibly adjusts it based on user studentcat
+*  It gets the price according grade of logged in user
+*  Price changes applied only to products in product category:grade-dependent-price
 */
 function spz_change_price($price, $product)
 {
@@ -1316,25 +1317,19 @@ function cf_webhook_init()
  * The 1st row of the CSV file is ignored and index 0 points to 2nd line of CSV file
  * This is the example data:
  *
- * parentname,studentname,desiredrole
- * sritoni4,sritoni2,parent
- * sritoni5,sritoni3,parent
+ * grade1,grade2,grade3
+ * 10000,20000,30000
  *
  * This is the associative array
  * Array
  *(
  *  [0] => Array
  *      (
- *          [parentname] => sritoni4
- *          [studentname] => sritoni2
- *          [desiredrole] => parent
+ *          [grade1] => 10000
+ *          [grade2] => 20000
+ *          [grade3] => 30000
  *      )
- *  [1] => Array
- *      (
- *          [parentname] => sritoni5
- *          [studentname] => sritoni3
- *          [desiredrole] => parent
- *      )
+ * )
  */
 function csv_to_associative_array($file, $delimiter = ',', $enclosure = '"')
 {
