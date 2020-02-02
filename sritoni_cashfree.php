@@ -1290,8 +1290,20 @@ function spz_change_price($price, $product)
 	$user_id 		= $current_user->ID;
 	$studentcat 	= get_user_meta( $user_id, 'sritoni_student_category', true );
 	$grade_or_class	= get_user_meta( $user_id, 'grade_or_class', true );
-
+    // set price to full price based on grade of student using lookup table
     $full_price_fee = $fees_csv[0][$grade_or_class] ?? 0;
+
+    // check if user studentcat is installment2 or installment3
+    if (strpos($studentcat, "installment") !== false)
+    {
+        $num_installments = trim($studentcat)[-1];
+
+        if ($num_installments == 2 || $num_installments == 3)
+        {
+            $installment_price = $full_price_fee/$num_installments;
+            return round($installment_price, 2);
+        }
+    }
 
     return $full_price_fee;
 }
