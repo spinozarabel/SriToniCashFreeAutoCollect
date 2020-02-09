@@ -1186,39 +1186,39 @@ function installment_pre_get_posts_query( $q )
 
 	if (  strpos($studentcat, "installment") !==false )
 	{
+        // product has category of installments but just display products belonging to grade_or_class
 		$tax_query[] = array(
 			'relation' => 'OR',
 				array(
 				   'taxonomy' => 'product_cat',
 				   'field' => 'slug',
-				   'terms' => array( "installment2", "installment3", $grade_or_class ), 	//
-				   'operator' => 'AND'										//
+				   'terms' => array( $grade_or_class, "common" ), 	//
+				   'operator' => 'IN'										//
 					 ),									// OR
 				array(
 				   'taxonomy' => 'product_cat',
 				   'field' => 'slug',
-				   'terms' => array( $grade_or_class, "common", "grade-dependent-price" ),
+				   'terms' => array( $grade_or_class, "common" ),
 				   'operator' => 'IN'
 				     )
 							);
 		$q->set( 'tax_query', $tax_query );
-
-
 	}
 	else
 	{
+        // products are for non-installment category just again display products of category grade_or_class
 		$tax_query[] = array(
-			'relation' => 'AND',
+			'relation' => 'OR',
 				array(
 				   'taxonomy' => 'product_cat',
 				   'field' => 'slug',
-				   'terms' => array( "installment", "installment2", "installment3"),
-				   'operator' => 'NOT IN'
+				   'terms' => array( $grade_or_class, "common" ),
+				   'operator' => 'IN'
 					 ),												// AND
 				array(
 				   'taxonomy' => 'product_cat',
 				   'field' => 'slug',
-				   'terms' => array( $grade_or_class, "common", "grade-dependent-price" ), 	// OR of terms
+				   'terms' => array( $grade_or_class, "common" ), 	// OR of terms
 				   'operator' => 'IN'
 					 )
 							);
