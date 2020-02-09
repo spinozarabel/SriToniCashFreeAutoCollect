@@ -59,7 +59,7 @@ function init_vabacs_gateway_class()
 		$this->id                 = 'vabacs';  // MA
 		$this->icon               = apply_filters( 'woocommerce_bacs_icon', '' );
 		$this->has_fields         = false;
-		$this->method_title       = __( 'Bank Transfer to Cashfree Virtual Account', 'woocommerce' );
+		$this->method_title       = __( 'Offline Bank Transfer to Cashfree Virtual Account', 'woocommerce' );
 		$this->method_description = __( 'BACS to Individual Cashfree Virtual Account-offline direct bank transfer', 'woocommerce' );
 		// Load the settings.
 		$this->init_form_fields();
@@ -111,7 +111,7 @@ function init_vabacs_gateway_class()
 				'title'       => __( 'Description', 'woocommerce' ),
 				'type'        => 'textarea',
 				'description' => __( 'Payment method description that the customer will see on your checkout.', 'woocommerce' ),
-				'default'     => __( 'Make your payment directly into our bank account. Please use your Order ID as the payment reference. Your order will not be shipped until the funds have cleared in our account.', 'woocommerce' ),
+				'default'     => __( 'Make your payment directly into Assigned Virtual Bank Account. Please use your Order ID as the payment reference. Your order will not be shipped until the funds have cleared in our account.', 'woocommerce' ),
 				'desc_tip'    => true,
 			),
 			'instructions'    => array(
@@ -1212,7 +1212,7 @@ function installment_pre_get_posts_query( $q )
 				array(
 				   'taxonomy' => 'product_cat',
 				   'field' => 'slug',
-				   'terms' => array( "installment", "installment2", "installment3"), 	
+				   'terms' => array( "installment", "installment2", "installment3"),
 				   'operator' => 'NOT IN'
 					 ),												// AND
 				array(
@@ -1256,11 +1256,13 @@ function ma_update_order_meta_atcheckout( $order, $data )
 		return;
 	}
 	// get the user ID from order
-	$user_id   			= $order->get_user_id(); 					// Get the costumer ID
+	$user_id   			    = $order->get_user_id(); 					// Get the costumer ID
 	// get the user meta for VA
-	$va_id 				= get_user_meta( $user_id, 'va_id', true );	// get the needed user meta value
+	$va_id 				    = get_user_meta( $user_id, 'va_id', true );	// get the needed user meta value
+    $sritoni_institution    = get_user_meta( $user_id, 'sritoni_institution', true ) ?? 'not set';
 
 	$order->update_meta_data('va_id', $va_id);
+    $order->update_meta_data('sritoni_institution', $sritoni_institution);
 
 	return;
 }
