@@ -1268,7 +1268,7 @@ function ma_update_order_meta_atcheckout( $order, $data )
 }
 
 // add filter to change the price of product in shop and product pages
-add_filter( 'woocommerce_get_price', 'spz_change_price', 10, 2 );
+add_filter( 'woocommerce_product_get_price', 'spz_change_price', 10, 2 );
 
 /**
 *  This function changes the price displayed in shop and product pages as follows:
