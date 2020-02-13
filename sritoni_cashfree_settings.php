@@ -281,8 +281,7 @@ class sritoni_cashfree_settings {
 		$value = esc_attr( $settings[$field] );
 
         echo "<input type='text' name='sritoni_settings[$field]' id='sritoni_settings[$field]'
-                value='$value'  size='50' class='code' />
-                Cashfree Account Beneficiary Name, ex: Head Start Educational Trust";
+                value='$value'  size='50' class='code' />Cashfree Account Beneficiary Name, ex: Head Start Educational Trust";
     }
 
 	/**
@@ -295,8 +294,7 @@ class sritoni_cashfree_settings {
 		$value = esc_attr( $settings[$field] );
 
         echo "<input type='text' name='sritoni_settings[$field]' id='sritoni_settings[$field]'
-                value='$value'  size='50' class='code' />
-                Token is an alphanumeric string, ex abcABC123";
+                value='$value'  size='50' class='code' />Token is an alphanumeric string, ex abcABC123";
     }
 
     /**
@@ -309,8 +307,7 @@ class sritoni_cashfree_settings {
 		$value = esc_attr( $settings[$field] );
 
         echo "<input type='text' name='sritoni_settings[$field]' id='sritoni_settings[$field]'
-                value='$value'  size='50' class='code' />
-                example:https://sritonilearningservices.com/sritoni no slash at end";
+                value='$value'  size='50' class='code' />example:https://sritonilearningservices.com/sritoni no slash at end";
     }
 
 	/**
