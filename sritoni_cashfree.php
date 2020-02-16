@@ -1176,6 +1176,9 @@ function installment_pre_get_posts_query( $q )
 	$user_id 		= $current_user->ID;
 	$studentcat 	= get_user_meta( $user_id, 'sritoni_student_category', true );
 	$grade_or_class	= get_user_meta( $user_id, 'grade_or_class', true );
+    $arrears_amount	= get_user_meta( $user_id, 'arrears_amount', true );
+    // if student has arrears we set a string corresponding to arrears category
+    $arrears        = ($arrears_amount > 0) ? "arrears" : "";
 
 	if ( in_array( "shop_manager", $current_user->roles )  || in_array( "administrator", $current_user->roles ) )
 	{
@@ -1206,19 +1209,20 @@ function installment_pre_get_posts_query( $q )
 	}
 	else
 	{
-        // products are for non-installment category just again display products of category grade_or_class
+        // products are for non-installment category just again display all products
+        // of categories: grade, arrears, common
 		$tax_query[] = array(
 			'relation' => 'OR',
 				array(
 				   'taxonomy' => 'product_cat',
 				   'field' => 'slug',
-				   'terms' => array( $grade_or_class, "common" ),
+				   'terms' => array( $grade_or_class, $arrears, "common" ),
 				   'operator' => 'IN'
 					 ),												// AND
 				array(
 				   'taxonomy' => 'product_cat',
 				   'field' => 'slug',
-				   'terms' => array( $grade_or_class, "common" ), 	// OR of terms
+				   'terms' => array( $grade_or_class, $arrears, "common" ), 	// OR of terms
 				   'operator' => 'IN'
 					 )
 							);
