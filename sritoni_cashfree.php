@@ -1309,8 +1309,8 @@ function spz_change_price($price, $product)
 {
     global $fees_csv;
 
-    // check for grade dependent price category, return if not
-    if ( !has_term( 'grade-dependent-price', 'product_cat', $product->get_id() ) )
+    // check for programmable category, return if not
+    if ( !has_term( 'programmable', 'product_cat', $product->get_id() ) )
     {
         return $price;
     }
@@ -1320,7 +1320,7 @@ function spz_change_price($price, $product)
     // Get the current user
     $current_user 	= wp_get_current_user();
 	$user_id 		= $current_user->ID;
-
+    // read the current user's meta
 	$studentcat 	          = get_user_meta( $user_id, 'sritoni_student_category', true );
 	$grade_or_class	          = get_user_meta( $user_id, 'grade_or_class', true );
     $grade_for_current_fees   = get_user_meta( $user_id, 'grade_for_current_fees', true );
