@@ -589,7 +589,7 @@ function moodle_on_order_status_completed( $order_id )
     foreach ($fees_arr as $key => $fees)
     {
         // check if fees is unpaid and payee is belongs to site name for ex: Head Start Educational Trust
-        if ($fees["status"] == "unpaid" && $fees["payee"] == $beneficiary_name)
+        if ($fees["status"] == "not paid" && $fees["payee"] == $beneficiary_name)
         {
             // this is unpaid and belongs to this payee mathces beneficiary of this site
             // this is the payent to mark as paid
