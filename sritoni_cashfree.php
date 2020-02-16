@@ -1290,24 +1290,38 @@ function spz_change_price($price, $product)
     // Get the current user
     $current_user 	= wp_get_current_user();
 	$user_id 		= $current_user->ID;
-	$studentcat 	= get_user_meta( $user_id, 'sritoni_student_category', true );
-	$grade_or_class	= get_user_meta( $user_id, 'grade_or_class', true );
+
+	$studentcat 	          = get_user_meta( $user_id, 'sritoni_student_category', true );
+	$grade_or_class	          = get_user_meta( $user_id, 'grade_or_class', true );
+    $grade_for_current_fees   = get_user_meta( $user_id, 'grade_for_current_fees', true );
+    $current_fees             = get_user_meta( $user_id, 'current_fees', true );
+    $arrears_amount           = get_user_meta( $user_id, 'arrears_amount', true );
     // set price to full price based on grade of student using lookup table
-    $full_price_fee = $fees_csv[0][$grade_or_class] ?? 0;
-
-    // check if user studentcat is installment2 or installment3
-    if (strpos($studentcat, "installment") !== false)
+    // $full_price_fee = $fees_csv[0][$grade_or_class] ?? 0;
+    if (!has_term( 'arrears', 'product_cat', $product->get_id() ))
     {
-        $num_installments = $studentcat[-1];
-
-        if ($num_installments == 2 || $num_installments == 3)
+        // check if user studentcat is installment2 or installment3
+        if (strpos($studentcat, "installment") !== false)
         {
-            $installment_price = $full_price_fee/$num_installments;
-            return round($installment_price, 2);
+            $num_installments = (int) $studentcat[-1];
+
+            if ($num_installments === 2 || $num_installments === 3)
+            {
+                $installment_price = $current_fees/$num_installments;
+                return round($installment_price, 2);
+            }
         }
+        // not installment nor arrears so return full current amount due
+        return $current_fees;
     }
 
-    return $full_price_fee;
+    else
+    {
+        // this is an arrears product as well as programmable product
+        // so return the arrears amount as price
+        return $arrears_amount;
+    }
+
 }
 
 /**
