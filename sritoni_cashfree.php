@@ -455,14 +455,18 @@ function moodle_on_order_status_completed( $order_id )
 	$user_id 					= $order->get_user_id();  // this is WP user id
 	$user						= $order->get_user();     // get wpuser information associated with order
 	$username					= $user->user_login;      // username in WP which is moodle system userid
+    // extract needed user meta
 	$grade_or_class				= get_user_meta( $user_id, 'grade_or_class', true );
+    $va_id_hset 				= get_user_meta( $user_id, 'va_id_hset', true );
+    $beneficiary_name           = get_user_meta( $user_id, 'beneficiary_name', true );
+
 	$moodle_user_id				= strval($username);      // in case a strict string is expected by Moodle API
 	//
 	$order_amount 				= $order->get_total();
 	$order_transaction_id 		= $order->get_transaction_id();
 	$order_completed_date 		= $order->get_date_completed();
 	$order_completed_timestamp 	= $order_completed_date->getTimestamp();
-	$va_id_hset 				= get_user_meta( $user_id, 'va_id_hset', true );
+
 	$items						= $order->get_items();
 
 	// get prodct name associated with this order
@@ -539,7 +543,8 @@ function moodle_on_order_status_completed( $order_id )
 			if ($field["value"]) 		// This is the present value of this field
 			{
 				// strip off html and other tahs that got added on somehow
-				$fees_paid = strtolower(strip_tags(html_entity_decode($field["value"])));
+				$fees_json_read = strip_tags(html_entity_decode($field["value"]));
+                $fees_arr       = json_decode($fees_json_read, true) ?? [];
 
 			}
 			$field_fees_key	= $key;  // this is the key for the payments field
@@ -562,8 +567,8 @@ function moodle_on_order_status_completed( $order_id )
 					error_log("existing payment information in profile field payments");
 					error_log(print_r($existing ,true));
 
-					error_log("status of user profile field fees");
-					error_log(print_r($fees_paid ,true));
+					error_log("existing status of user profile field fees");
+					error_log(print_r($fees_arr ,true));
 	}
 	// if $existing already has elements in it then add this payment at index 0
 	// if not $existing is empty so add this payment explicitly at index 0
@@ -576,21 +581,42 @@ function moodle_on_order_status_completed( $order_id )
 		$existing[0] = $data;
 	}
 
-	$existing_json 		= json_encode($existing);
+	$payments_json_write	= json_encode($existing);
 
-	// create the users array in format needed for Moodle RSET API
+    // put code here to check and update profile_field fees paid based on payments array
+    // we paid for 1st unpaid item where payee is beneficiary_name from this site
+    // we will reuse same code to extract payment to pay to mark it paid
+    foreach ($fees_arr as $key => $fees)
+    {
+        // check if fees is unpaid and payee is belongs to site name for ex: Head Start Educational Trust
+        if ($fees["status"] == "unpaid" && $fees["payee"] == $beneficiary_name)
+        {
+            // this is unpaid and belongs to this payee mathces beneficiary of this site
+            // this is the payent to mark as paid
+            $fees_arr[$key]["status"]   = "paid";
+            // break out of foreach loop, note we have not taken care of arrears payment here
+            break;
+
+        }
+    }
+    // now we need to update the fees field in Moodle
+    $fees_json_write = json_encode($fees_arr);
+
+    // write the data back to Moodle using REST API
+    // create the users array in format needed for Moodle RSET API
 	$users = array("users" => array(array(	"id" 			=> $moodle_user_id,
 											"customfields" 	=> array(array(	"type"	=>	"payments",
-																			"value"	=>	$existing_json,
-																		  )
+																			"value"	=>	$payments_json_write,
+                                                                           ),
+                                                                     array(	"type"	=>	"fees",
+                       														"value"	=>	$fees_json_write,
+                                                                           ),
 																    )
 										 )
 								   )
 				  );
-	// now to update the user's profiel field payments with latest completed payment
+	// now to update the user's profiel field  with completed order and fees paid status
 	$ret = $MoodleRest->request('core_user_update_users', $users, MoodleRest::METHOD_POST);
-
-    // put function here to check and update profile_field fees paid based on payments array
 
 	return;
 }
