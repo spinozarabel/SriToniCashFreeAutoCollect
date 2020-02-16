@@ -1324,7 +1324,7 @@ function spz_change_price($price, $product)
 	$studentcat 	          = get_user_meta( $user_id, 'sritoni_student_category', true );
 	$grade_or_class	          = get_user_meta( $user_id, 'grade_or_class', true );
     $grade_for_current_fees   = get_user_meta( $user_id, 'grade_for_current_fees', true );
-    $current_fees             = get_user_meta( $user_id, 'current_fees', true );
+    $current_fees             = get_user_meta( $user_id, 'current_fees', true ) ?? 0;
     $arrears_amount           = get_user_meta( $user_id, 'arrears_amount', true );
     // set price to full price based on grade of student using lookup table
     // $full_price_fee = $fees_csv[0][$grade_or_class] ?? 0;
