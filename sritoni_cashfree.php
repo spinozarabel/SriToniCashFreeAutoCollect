@@ -574,6 +574,7 @@ function moodle_on_order_status_completed( $order_id )
 	// if not $existing is empty so add this payment explicitly at index 0
 	if($existing)
 	{
+        // there ss something already in the array
         // check to see if payment for this order already exists
         $index_ofanyexisting = array_search($order_id, array_column($existing, 'order_id'));
 
