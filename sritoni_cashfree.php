@@ -11,7 +11,6 @@
 */
 defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 
-require_once(__DIR__."/sritoni_cashfree.php");  	    // main plugin file contains vabacs pg
 require_once(__DIR__."/MoodleRest.php");   				// Moodle REST API driver for PHP
 require_once(__DIR__."/sritoni_cashfree_settings.php"); // file containing class for settings submenu and page
 require_once(__DIR__."/cfAutoCollect.inc.php");         // contains cashfree api class
