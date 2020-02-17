@@ -575,9 +575,12 @@ function moodle_on_order_status_completed( $order_id )
 	if($existing)
 	{
         // check to see if payment for this order already exists
-        if(array_search($order_id, array_column($existing, 'order_id')) !== false)
+        $index_ofanyexisting = array_search($order_id, array_column($existing, 'order_id'));
+
+        if($index_ofanyexisting !== false)
         {
-            // payment for our order already exists so do nothing
+            // payment for our order already exists so we can overwrite existing with latest payment
+            $existing[$index_ofanyexisting] = $data;
         }
         else
         {
