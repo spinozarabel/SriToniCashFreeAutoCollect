@@ -1202,7 +1202,10 @@ function installment_pre_get_posts_query( $q )
 	$user_id 		= $current_user->ID;
 	$studentcat 	= get_user_meta( $user_id, 'sritoni_student_category', true );
 	$grade_or_class	= get_user_meta( $user_id, 'grade_or_class', true );
-    $arrears_amount	= get_user_meta( $user_id, 'arrears_amount', true );
+    // get user meta of grade to pay for
+    $grade_for_current_fees	= get_user_meta( $user_id, 'grade_for_current_fees', true );
+    // get arrears amount from user meta
+    $arrears_amount	        = get_user_meta( $user_id, 'arrears_amount', true );
     // if student has arrears we set a string corresponding to arrears category
     $arrears        = ($arrears_amount > 0) ? "arrears" : "";
 
@@ -1221,13 +1224,13 @@ function installment_pre_get_posts_query( $q )
 				array(
 				   'taxonomy' => 'product_cat',
 				   'field' => 'slug',
-				   'terms' => array( $grade_or_class, "common" ), 	//
+				   'terms' => array( $grade_or_class, $arrears, $grade_for_current_fees, "common" ), 	//
 				   'operator' => 'IN'										//
 					 ),									// OR
 				array(
 				   'taxonomy' => 'product_cat',
 				   'field' => 'slug',
-				   'terms' => array( $grade_or_class, "common" ),
+				   'terms' => array( $grade_or_class, $arrears, $grade_for_current_fees, "common" ),
 				   'operator' => 'IN'
 				     )
 							);
@@ -1242,13 +1245,13 @@ function installment_pre_get_posts_query( $q )
 				array(
 				   'taxonomy' => 'product_cat',
 				   'field' => 'slug',
-				   'terms' => array( $grade_or_class, $arrears, "common" ),
+				   'terms' => array( $grade_or_class, $arrears, $grade_for_current_fees, "common" ),
 				   'operator' => 'IN'
 					 ),												// AND
 				array(
 				   'taxonomy' => 'product_cat',
 				   'field' => 'slug',
-				   'terms' => array( $grade_or_class, $arrears, "common" ), 	// OR of terms
+				   'terms' => array( $grade_or_class, $arrears, $grade_for_current_fees, "common" ), 	// OR of terms
 				   'operator' => 'IN'
 					 )
 							);
