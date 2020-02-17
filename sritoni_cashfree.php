@@ -1334,6 +1334,7 @@ function spz_change_price($price, $product)
     if (!has_term( 'arrears', 'product_cat', $product->get_id() ))
     {
         // check if user studentcat is installment2 or installment3
+        /*
         if (strpos($studentcat, "installment") !== false)
         {
             $num_installments = (int) $studentcat[-1];
@@ -1344,6 +1345,7 @@ function spz_change_price($price, $product)
                 return round($installment_price, 2);
             }
         }
+        */
         // not installment nor arrears so return full current amount due
         return $current_fees;
     }
