@@ -1389,13 +1389,15 @@ add_filter( 'woocommerce_before_add_to_cart_button', 'spz_product_add_on_txt');
 function spz_product_add_on_txt()
 {
 
-	$output 	= "<ul>";
+	$output 	= "";
 
 	// get user meta in an array
 	$grade_for_current_fees 	= spz_get_user_meta("grade_for_current_fees");
 
+    $output = "<div>Payment for <strong>$grade_for_current_fees</strong></div>";
+
 	// Print out the information on the product page before add to cart button
-	echo "Payment for $grade_for_current_fees";
+	echo $output;
 
 }
 
