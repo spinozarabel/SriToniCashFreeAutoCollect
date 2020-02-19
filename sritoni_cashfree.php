@@ -1379,7 +1379,25 @@ function spz_change_price($price, $product)
 
 }
 
+add_filter( 'woocommerce_before_add_to_cart_button', 'spz_product_add_on_txt');
 
+/**
+*  setup by add_filter( 'woocommerce_before_add_to_cart_button', 'spz_product_add_on_txt');
+*  This function adds the selected schools as a list to the current product
+*  No check is made wether user is looged in. Callers responsibility!
+*/
+function spz_product_add_on_txt()
+{
+
+	$output 	= "<ul>";
+
+	// get user meta in an array
+	$grade_for_current_fees 	= spz_get_user_meta("grade_for_current_fees");
+
+	// Print out the information on the product page before add to cart button
+	echo "Payment for $grade_for_current_fees";
+
+}
 
 /**
 * https://sritoni.org/hset-payments/wp-admin/admin-post.php?action=cf_wc_webhook
@@ -1435,4 +1453,15 @@ function csv_to_associative_array($file, $delimiter = ',', $enclosure = '"')
         fclose($handle);
         return $lines;
 	}
+}
+
+/**
+*
+*/
+function spz_get_user_meta($field)
+{
+    $current_user 	= wp_get_current_user();
+	$user_id 		= $current_user->ID;
+    $meta           = get_user_meta( $user_id, $field, true );
+    return $meta;
 }
