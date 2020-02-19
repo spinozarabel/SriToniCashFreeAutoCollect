@@ -1398,8 +1398,7 @@ function spz_product_add_on_txt()
                 Payment for:
             </td>
             <td>
-                <input type = "text" name = "grade_for_current_fees" id = "grade_for_current_fees"
-                       value = "<?php echo htmlspecialchars($grade_for_current_fees); ?>">
+                <?php echo htmlspecialchars($grade_for_current_fees); ?>
             </td>
         </tr>
     </table>
