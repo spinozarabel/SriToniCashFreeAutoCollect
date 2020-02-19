@@ -1422,10 +1422,10 @@ function spz_add_cart_item_data( $cart_item_data, $product_id, $variation_id )
     // get user meta in an array of logged in user
 	$grade_for_current_fees 	= spz_get_user_meta("grade_for_current_fees");
 
-    $output = "Payment for <strong>$grade_for_current_fees</strong><br>";
+    $output = "<strong>$grade_for_current_fees</strong>";
 
 	// add as cart item data, otherwise won;t see this when product is in cart
-	 $cart_item_data['grade_for_current_fees'] = $output;
+	 $cart_item_data['item paying for'] = $output;
 
 	 return $cart_item_data;
 }
@@ -1438,11 +1438,11 @@ add_filter( 'woocommerce_get_item_data', 'spz_get_item_data', 10, 2 );
  */
 function spz_get_item_data( $item_data, $cart_item_data )
 {
-	 if( isset( $cart_item_data['grade_for_current_fees'] ) )
+	 if( isset( $cart_item_data['item paying for'] ) )
 		 {
 		 	$item_data[] = array(
-		 						'key' => 'grade_for_current_fees',
-		 						'value' => wc_clean( $cart_item_data['grade_for_current_fees'] ),
+		 						'key' => 'item paying for',
+		 						'value' => wc_clean( $cart_item_data['item paying for'] ),
 		 					 	);
 		 }
 	 return $item_data;
