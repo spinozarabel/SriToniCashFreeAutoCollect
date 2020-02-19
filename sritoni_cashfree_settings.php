@@ -253,7 +253,7 @@ class sritoni_cashfree_settings {
 	$value = esc_attr( $settings[$field] );
 
 	echo "<input type='text' name='sritoni_settings[$field]' id='sritoni_settings[$field]'
-            value='$value'  size='50' class='code' />";
+            value='$value'  size='50' class='code' />Cashfree Account API access Key";
 
     }
 
@@ -267,8 +267,8 @@ class sritoni_cashfree_settings {
 		$field = "cashfree_secret";
 		$value = esc_attr( $settings[$field] );
 
-        echo "<input type='text' name='sritoni_settings[$field]' id='sritoni_settings[$field]'
-                value='$value'  size='50' class='code' />";
+        echo "<input type='password' name='sritoni_settings[$field]' id='sritoni_settings[$field]'
+                value='$value'  size='50' class='code' />Cashfree Account API access Secret";
     }
 
     /**
