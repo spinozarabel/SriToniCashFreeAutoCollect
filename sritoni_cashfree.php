@@ -1401,6 +1401,7 @@ function spz_product_add_on_txt()
 
 }
 
+add_filter( 'woocommerce_add_cart_item_data', 'spz_add_cart_item_data', 10, 3 );
 
 /**
 *  setup by add_filter( 'woocommerce_add_cart_item_data', 'spz_add_cart_item_data', 10, 3 );
@@ -1427,6 +1428,24 @@ function spz_add_cart_item_data( $cart_item_data, $product_id, $variation_id )
 	 $cart_item_data['grade_for_current_fees'] = $output;
 
 	 return $cart_item_data;
+}
+
+add_filter( 'woocommerce_get_item_data', 'spz_get_item_data', 10, 2 );
+
+/**
+*  setup by add_filter( 'woocommerce_get_item_data', 'spz_get_item_data', 10, 2 );
+ * Display custom item data in the cart
+ */
+function spz_get_item_data( $item_data, $cart_item_data )
+{
+	 if( isset( $cart_item_data['grade_for_current_fees'] ) )
+		 {
+		 	$item_data[] = array(
+		 						'key' => 'grade_for_current_fees',
+		 						'value' => wc_clean( $cart_item_data['grade_for_current_fees'] ),
+		 					 	);
+		 }
+	 return $item_data;
 }
 
 
