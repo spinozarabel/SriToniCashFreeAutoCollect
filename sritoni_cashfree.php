@@ -1308,12 +1308,14 @@ function ma_update_order_meta_atcheckout( $order, $data )
 	}
 	// get the user ID from order
 	$user_id   			    = $order->get_user_id(); 					// Get the costumer ID
-	// get the user meta for VA
+	// get the user meta
 	$va_id 				    = get_user_meta( $user_id, 'va_id', true );	// get the needed user meta value
     $sritoni_institution    = get_user_meta( $user_id, 'sritoni_institution', true ) ?? 'not set';
-
+    $grade_for_current_fees = get_user_meta( $user_id, 'grade_for_current_fees', true ) ?? 'not set';
+    // update order meta using above
 	$order->update_meta_data('va_id', $va_id);
-    $order->update_meta_data('sritoni_institution', $sritoni_institution);
+    $order->update_meta_data('sritoni_institution',     $sritoni_institution);
+    $order->update_meta_data('grade_for_current_fees',  $grade_for_current_fees);
 
 	return;
 }
@@ -1376,6 +1378,8 @@ function spz_change_price($price, $product)
     }
 
 }
+
+
 
 /**
 * https://sritoni.org/hset-payments/wp-admin/admin-post.php?action=cf_wc_webhook
