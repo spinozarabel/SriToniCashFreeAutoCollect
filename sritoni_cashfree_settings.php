@@ -293,8 +293,8 @@ class sritoni_cashfree_settings {
 		$field = "sritoni_token";
 		$value = esc_attr( $settings[$field] );
 
-        echo "<input type='text' name='sritoni_settings[$field]' id='sritoni_settings[$field]'
-                value='$value'  size='50' class='code' />Token is an alphanumeric string, ex abcABC123";
+        echo "<input type='password' name='sritoni_settings[$field]' id='sritoni_settings[$field]'
+                value='$value'  size='50' class='code' />Token is an alphanumeric string, and not displayed due to security";
     }
 
     /**
