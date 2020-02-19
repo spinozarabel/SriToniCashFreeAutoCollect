@@ -1394,7 +1394,7 @@ function spz_product_add_on_txt()
 	// get user meta in an array
 	$grade_for_current_fees 	= spz_get_user_meta("grade_for_current_fees");
 
-    $output = "<div>Payment for <strong>$grade_for_current_fees</strong></div>";
+    $output = "Payment for <strong>$grade_for_current_fees</strong><br>";
 
 	// Print out the information on the product page before add to cart button
 	echo $output;
