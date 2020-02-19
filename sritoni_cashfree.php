@@ -1011,8 +1011,11 @@ function set_orders_newcolumn_values($colname)
 
 		// Reconcile on-hold orders only if reconcile flag in settings is set, otherwise miss
 		case ( ( 'on-hold' == $order_status ) && ( $reconcile == 1 ) ):
+
+            // since wee need to interact with Cashfree ,ets create a new API instamve
+            $cashfree_api    = new CfAutoCollect; // new cashfree Autocollect API object
 			// So first we get a list of last 3 payments made to the VAID contained in this HOLD order
-			$payments	= $cashfree_api->getPaymentsForVirtualAccount($va_id,3);
+			$payments        = $cashfree_api->getPaymentsForVirtualAccount($va_id,3);
             // what happens if there are no payents made and this is null?
             if (empty($payments))
             {
