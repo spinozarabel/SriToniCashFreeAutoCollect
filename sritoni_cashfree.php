@@ -1391,7 +1391,7 @@ function spz_product_add_on_txt()
 	// get user meta for logged in user
 	$grade_for_current_fees 	= spz_get_user_meta("grade_for_current_fees") ?? "Check with Admin";
     // display this right below product short description
-    echo "Payment for: $grade_for_current_fees";
+    echo "Payment for: $grade_for_current_fees <br>";
 
 }
 
