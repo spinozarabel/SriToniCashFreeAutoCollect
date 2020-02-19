@@ -977,7 +977,7 @@ function set_orders_newcolumn_values($colname)
 			return;
 		}
 	$timezone				= new DateTimeZone("Asia/Kolkata");
-	$cashfree_api 			= new CfAutoCollect; // new cashfree Autocollect API object
+	//$cashfree_api 			= new CfAutoCollect; // new cashfree Autocollect API object
 	// get the reconcile or not flag from settings. If true then we try to reconcile whatever was missed by webhook
 	$reconcile				= get_option( 'sritoni_settings' )["reconcile"] ?? 0;
 	// get order details up ahead of treating all the cases below
