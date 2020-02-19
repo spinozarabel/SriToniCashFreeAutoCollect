@@ -934,13 +934,15 @@ function orders_add_mycolumns($columns)
 
 			if ( 'order_status' === $column_name )
 				{
-				$new_columns['Student'] = "Student";
+                    // add a new column called student AFTER order status column
+				    $new_columns['Student'] = "Student";
 				}
 
 			if ( 'order_total' === $column_name )
 				{
-				$new_columns['VApymnt'] = "VApymnt";
-				$new_columns['VAid'] = "VAid";
+                    // add these new columns AFTER order_total column
+    				$new_columns['VApymnt'] = "VApymnt";
+    				$new_columns['VAid'] = "VAid";
 				}
 		}
 
