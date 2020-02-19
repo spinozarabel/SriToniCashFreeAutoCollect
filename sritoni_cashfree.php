@@ -1383,7 +1383,7 @@ add_filter( 'woocommerce_before_add_to_cart_button', 'spz_product_add_on_txt');
 
 /**
 *  setup by add_filter( 'woocommerce_before_add_to_cart_button', 'spz_product_add_on_txt');
-*  This function adds the selected schools as a list to the current product
+*  This function adds text below description
 *  No check is made wether user is looged in. Callers responsibility!
 */
 function spz_product_add_on_txt()
@@ -1404,22 +1404,16 @@ add_filter( 'woocommerce_add_cart_item_data', 'spz_add_cart_item_data', 10, 3 );
 */
 function spz_add_cart_item_data( $cart_item_data, $product_id, $variation_id )
 {
-	if (!is_user_logged_in()) return;
 	/*
 	 error_log('cart item_data object');
 	 error_log(print_r($cart_item_data, true));
 	*/
 
-	// build a string as a numbered list of selected schools
-	$output = "";
-
-    // get user meta in an array of logged in user
+    // get user meta of logged in user
 	$grade_for_current_fees 	= spz_get_user_meta("grade_for_current_fees");
 
-    $output = "<strong>$grade_for_current_fees</strong>";
-
 	// add as cart item data, otherwise won;t see this when product is in cart
-	 $cart_item_data['item paying for'] = $output;
+	 $cart_item_data['item paying for'] = $grade_for_current_fees;
 
 	 return $cart_item_data;
 }
@@ -1435,8 +1429,8 @@ function spz_get_item_data( $item_data, $cart_item_data )
 	 if( isset( $cart_item_data['item paying for'] ) )
 		 {
 		 	$item_data[] = array(
-		 						'key' => 'item paying for',
-		 						'value' => wc_clean( $cart_item_data['item paying for'] ),
+		 						'name' => 'item paying for',
+		 						'display' => wc_clean( $cart_item_data['item paying for'] ),
 		 					 	);
 		 }
 	 return $item_data;
