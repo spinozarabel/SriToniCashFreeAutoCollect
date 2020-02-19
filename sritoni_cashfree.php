@@ -1389,7 +1389,7 @@ add_filter( 'woocommerce_before_add_to_cart_button', 'spz_product_add_on_txt');
 function spz_product_add_on_txt()
 {
 	// get user meta for logged in user
-	$grade_for_current_fees 	= spz_get_user_meta("grade_for_current_fees");
+	$grade_for_current_fees 	= spz_get_user_meta("grade_for_current_fees") ?? "Check with Admin";
     // display this right below product short description
     ?>
     <table>
