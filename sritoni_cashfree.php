@@ -1379,19 +1379,39 @@ function spz_change_price($price, $product)
 
 }
 
-add_filter( 'woocommerce_before_add_to_cart_button', 'spz_product_add_on_txt');
+add_filter( 'woocommerce_before_add_to_cart_button', 'spz_product_customfield_display');
 
 /**
-*  setup by add_filter( 'woocommerce_before_add_to_cart_button', 'spz_product_add_on_txt');
-*  This function adds text below description
-*  No check is made wether user is looged in. Callers responsibility!
+*  setup by add_filter( 'woocommerce_before_add_to_cart_button', 'spz_product_customfield_display');
+*  This function adds text to product just before add-o-cart button
+* The text is grabbed from user meta dependent on product category
+* if category is
 */
-function spz_product_add_on_txt()
+function spz_product_customfield_display()
 {
-	// get user meta for logged in user
-	$grade_for_current_fees 	= spz_get_user_meta("grade_for_current_fees") ?? "Check with Admin";
-    // display this right below product short description
-    echo "Payment for: $grade_for_current_fees <br>";
+    // loop through all products in the Cart
+    foreach (WC()->cart->get_cart() as $cart_item)
+    {
+        if (!has_term( 'programmable', 'product_cat', $cart_item['product_id']))
+        {
+            // don't do anything to this product
+            break;
+        }
+        if (!has_term( 'arrears', 'product_cat', $cart_item['product_id']))
+        {
+        	// get user meta for curent fees description
+        	$current_fee_description 	= spz_get_user_meta("current_fee_description");
+            // display this right below product short description
+            echo "$current_fee_description <br>";
+        }
+        else
+        {
+            // get user meta for arrears description
+            $arrears_description = spz_get_user_meta("arrears_description");
+            // display this right below product short description
+            echo "$arrears_description <br>";
+        }
+    }
 
 }
 
@@ -1413,7 +1433,7 @@ function spz_add_cart_item_data( $cart_item_data, $product_id, $variation_id )
 	$grade_for_current_fees 	= spz_get_user_meta("grade_for_current_fees");
 
 	// add as cart item data, otherwise won;t see this when product is in cart
-	 $cart_item_data['item paying for'] = $grade_for_current_fees;
+	 $cart_item_data['items'] = $grade_for_current_fees;
 
 	 return $cart_item_data;
 }
@@ -1429,13 +1449,27 @@ function spz_get_item_data( $item_data, $cart_item_data )
 	 if( isset( $cart_item_data['item paying for'] ) )
 		 {
 		 	$item_data[] = array(
-		 						'name' => 'item paying for',
-		 						'display' => wc_clean( $cart_item_data['item paying for'] ),
+		 						'key' => 'items',
+		 						'value' => wc_clean( $cart_item_data['items'] ),
 		 					 	);
 		 }
 	 return $item_data;
 }
 
+/**
+ * Add order item meta.
+ */
+
+add_action( 'woocommerce_add_order_item_meta', 'add_order_item_meta' , 10, 2);
+
+function add_order_item_meta ( $item_id, $values ) {
+
+	if ( isset( $values [ 'items' ] ) ) {
+
+		$custom_data  = $values [ 'items' ];
+		wc_add_order_item_meta( $item_id, 'items', $custom_data['items'] );
+	}
+}
 
 /**
 * https://sritoni.org/hset-payments/wp-admin/admin-post.php?action=cf_wc_webhook
