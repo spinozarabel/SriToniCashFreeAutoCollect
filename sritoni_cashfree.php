@@ -1437,7 +1437,7 @@ function spz_add_cart_item_data( $cart_item_data, $product_id, $variation_id )
 	$current_fee_description 	= spz_get_user_meta("current_fee_description");
 
 	// add as cart item data, otherwise won;t see this when product is in cart
-	 $cart_item_data['current_fee_description'] = $current_fee_description;
+	 $cart_item_data['item'] = $current_fee_description;
 
 	 return $cart_item_data;
 }
@@ -1450,11 +1450,11 @@ add_filter( 'woocommerce_get_item_data', 'spz_get_item_data', 10, 2 );
  */
 function spz_get_item_data( $item_data, $cart_item_data )
 {
-	 if( isset( $cart_item_data['current_fee_description'] ) )
+	 if( isset( $cart_item_data['item'] ) )
 		 {
 		 	$item_data[] = array(
-		 						'key' => 'current_fee_description',
-		 						'value' => wc_clean( $cart_item_data['current_fee_description'] ),
+		 						'key' => 'item',
+		 						'value' => wc_clean( $cart_item_data['item'] ),
 		 					 	);
 		 }
 	 return $item_data;
@@ -1468,10 +1468,10 @@ add_action( 'woocommerce_add_order_item_meta', 'add_order_item_meta' , 10, 2);
 
 function add_order_item_meta ( $item_id, $values ) {
 
-	if ( isset( $values [ 'current_fee_description' ] ) ) {
+	if ( isset( $values [ 'item' ] ) ) {
 
-		$custom_data  = $values [ 'current_fee_description' ];
-		wc_add_order_item_meta( $item_id, 'current_fee_description', $custom_data['current_fee_description'] );
+		$custom_data  = $values [ 'item' ];
+		wc_add_order_item_meta( $item_id, 'item', $custom_data['item'] );
 	}
 }
 
