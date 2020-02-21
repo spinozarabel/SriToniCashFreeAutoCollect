@@ -1389,6 +1389,7 @@ add_filter( 'woocommerce_before_add_to_cart_button', 'spz_product_customfield_di
 */
 function spz_product_customfield_display()
 {
+/*
     // loop through all products in the Cart
     foreach (WC()->cart->get_cart() as $cart_item)
     {
@@ -1412,7 +1413,11 @@ function spz_product_customfield_display()
             echo "$arrears_description <br>";
         }
     }
-
+*/
+// get user meta for curent fees description
+$current_fee_description 	= spz_get_user_meta("current_fee_description");
+// display this right below product short description
+echo "$current_fee_description <br>";
 }
 
 add_filter( 'woocommerce_add_cart_item_data', 'spz_add_cart_item_data', 10, 3 );
