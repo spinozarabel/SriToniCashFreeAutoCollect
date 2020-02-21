@@ -1425,7 +1425,6 @@ add_filter( 'woocommerce_add_cart_item_data', 'spz_add_cart_item_data', 10, 3 );
 /**
 *  setup by add_filter( 'woocommerce_add_cart_item_data', 'spz_add_cart_item_data', 10, 3 );
 *  This function adds the selected schools to cart item data
-*  No check is made wether user is looged in. Callers responsibility!
 */
 function spz_add_cart_item_data( $cart_item_data, $product_id, $variation_id )
 {
@@ -1435,10 +1434,10 @@ function spz_add_cart_item_data( $cart_item_data, $product_id, $variation_id )
 	*/
 
     // get user meta of logged in user
-	$grade_for_current_fees 	= spz_get_user_meta("grade_for_current_fees");
+	$current_fee_description 	= spz_get_user_meta("current_fee_description");
 
 	// add as cart item data, otherwise won;t see this when product is in cart
-	 $cart_item_data['items'] = $grade_for_current_fees;
+	 $cart_item_data['current_fee_description'] = $current_fee_description;
 
 	 return $cart_item_data;
 }
@@ -1451,11 +1450,11 @@ add_filter( 'woocommerce_get_item_data', 'spz_get_item_data', 10, 2 );
  */
 function spz_get_item_data( $item_data, $cart_item_data )
 {
-	 if( isset( $cart_item_data['item paying for'] ) )
+	 if( isset( $cart_item_data['current_fee_description'] ) )
 		 {
 		 	$item_data[] = array(
-		 						'key' => 'items',
-		 						'value' => wc_clean( $cart_item_data['items'] ),
+		 						'key' => 'current_fee_description',
+		 						'value' => wc_clean( $cart_item_data['current_fee_description'] ),
 		 					 	);
 		 }
 	 return $item_data;
@@ -1469,10 +1468,10 @@ add_action( 'woocommerce_add_order_item_meta', 'add_order_item_meta' , 10, 2);
 
 function add_order_item_meta ( $item_id, $values ) {
 
-	if ( isset( $values [ 'items' ] ) ) {
+	if ( isset( $values [ 'current_fee_description' ] ) ) {
 
-		$custom_data  = $values [ 'items' ];
-		wc_add_order_item_meta( $item_id, 'items', $custom_data['items'] );
+		$custom_data  = $values [ 'current_fee_description' ];
+		wc_add_order_item_meta( $item_id, 'current_fee_description', $custom_data['current_fee_description'] );
 	}
 }
 
