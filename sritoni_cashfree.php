@@ -1422,7 +1422,7 @@ function spz_product_customfield_display()
 $current_fee_description 	= spz_get_user_meta("current_fee_description");
 $arrears_description        = spz_get_user_meta("arrears_description");
 // display this right below product short description
-echo "item: $current_fee_description <br> $arrears_description";
+echo "$current_fee_description <br> $arrears_description";
 }
 
 add_filter( 'woocommerce_add_cart_item_data', 'spz_add_cart_item_data', 10, 3 );
@@ -1440,6 +1440,7 @@ function spz_add_cart_item_data( $cart_item_data, $product_id, $variation_id )
 
     // get user meta of logged in user
 	$current_fee_description 	= spz_get_user_meta("current_fee_description");
+    $arrears_description        = spz_get_user_meta("arrears_description");
 
 	// add as cart item data, otherwise won;t see this when product is in cart
 	 $cart_item_data['item'] = $current_fee_description . " " . $arrears_description;
