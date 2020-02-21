@@ -1351,6 +1351,7 @@ function spz_change_price($price, $product)
     $arrears_amount           = get_user_meta( $user_id, 'arrears_amount', true );
     // set price to full price based on grade of student using lookup table
     // $full_price_fee = $fees_csv[0][$grade_or_class] ?? 0;
+    /*
     if (!has_term( 'arrears', 'product_cat', $product->get_id() ))
     {
         // check if user studentcat is installment2 or installment3
@@ -1365,7 +1366,7 @@ function spz_change_price($price, $product)
                 return round($installment_price, 2);
             }
         }
-        */
+
         // not installment nor arrears so return full current amount due
         return $current_fees;
     }
@@ -1376,6 +1377,8 @@ function spz_change_price($price, $product)
         // so return the arrears amount as price
         return $arrears_amount;
     }
+    */
+    return $current_fees + $arrears_amount;
 
 }
 
@@ -1414,10 +1417,12 @@ function spz_product_customfield_display()
         }
     }
 */
+// TODO check for programmable product category before doing this
 // get user meta for curent fees description
 $current_fee_description 	= spz_get_user_meta("current_fee_description");
+$arrears_description        = spz_get_user_meta("arrears_description");
 // display this right below product short description
-echo "item: $current_fee_description <br>";
+echo "item: $current_fee_description <br> $arrears_description";
 }
 
 add_filter( 'woocommerce_add_cart_item_data', 'spz_add_cart_item_data', 10, 3 );
@@ -1437,7 +1442,7 @@ function spz_add_cart_item_data( $cart_item_data, $product_id, $variation_id )
 	$current_fee_description 	= spz_get_user_meta("current_fee_description");
 
 	// add as cart item data, otherwise won;t see this when product is in cart
-	 $cart_item_data['item'] = $current_fee_description;
+	 $cart_item_data['item'] = $current_fee_description . " " . $arrears_description;
 
 	 return $cart_item_data;
 }
