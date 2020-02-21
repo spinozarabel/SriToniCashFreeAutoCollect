@@ -1461,11 +1461,11 @@ function spz_get_item_data( $item_data, $cart_item_data )
 }
 
 /**
- * Add order item meta.
+ * Add order item meta. This is deprecated and no longer used see function below instead
  */
-
+/*
 add_action( 'woocommerce_add_order_item_meta', 'add_order_item_meta' , 10, 2);
-
+*/
 function add_order_item_meta ( $item_id, $values ) {
 
 	if ( isset( $values [ 'item' ] ) ) {
@@ -1473,6 +1473,25 @@ function add_order_item_meta ( $item_id, $values ) {
 		$custom_data  = $values [ 'item' ];
 		wc_add_order_item_meta( $item_id, 'item', $custom_data['item'] );
 	}
+}
+
+
+add_action( 'woocommerce_checkout_create_order_line_item', 'spz_checkout_create_order_line_item', 10, 4 );
+/**
+*  This is used instead of deprecated woocommerce_add_order_item_meta above
+*  @param item is an instance of WC_Order_Item_Product
+*  @param cart_item_key is the cart item unique hash key
+*  @param values is the cart item
+*  @param order an instance of the WC_Order object
+*  We are copying data from cart item to order item
+*/
+function spz_checkout_create_order_line_item($item, $cart_item_key, $values, $order)
+{
+    if( isset( $values['item'] ) )
+    {
+        // overwrite if it exists already
+        $item->add_meta_data('item', $values['item'], true);
+    }
 }
 
 /**
