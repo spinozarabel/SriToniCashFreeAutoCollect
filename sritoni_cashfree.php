@@ -1417,7 +1417,7 @@ function spz_product_customfield_display()
 // get user meta for curent fees description
 $current_fee_description 	= spz_get_user_meta("current_fee_description");
 // display this right below product short description
-echo "$current_fee_description <br>";
+echo "item: $current_fee_description <br>";
 }
 
 add_filter( 'woocommerce_add_cart_item_data', 'spz_add_cart_item_data', 10, 3 );
