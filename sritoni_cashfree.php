@@ -1392,70 +1392,47 @@ add_filter( 'woocommerce_before_add_to_cart_button', 'spz_product_customfield_di
 */
 function spz_product_customfield_display()
 {
-/*
-    // loop through all products in the Cart
-    foreach (WC()->cart->get_cart() as $cart_item)
+    // TODO check for programmable product category before doing this
+    // get user meta for curent fees description
+    $current_user 	= wp_get_current_user();
+    $user_id 		= $current_user->ID;
+    // read the current user's meta
+    $current_fee_description 	= get_user_meta( $user_id, 'current_fee_description', true );
+    $arrears_description        = get_user_meta( $user_id, 'arrears_description', true );
+    // decode json to object
+    $current_item               = json_decode($current_fee_description, true);
+    // start building HTML for ordered list display
+    $output = "<ol>
+                    <li>Current fees for " . $current_item["fees_for"]
+                                           . " for AY:"
+                                           . $current_item["ay"]
+                                           . " of "
+                                           . get_woocommerce_currency_symbol()
+                                           . number_format($current_item["amount"])
+                . "</li>";
+    // decode the arrears array and list them out also
+    $arrears_items = json_decode($arrears_description, true);
+    foreach ($arrear_items as $item)
     {
-        if (!has_term( 'programmable', 'product_cat', $cart_item['product_id']))
-        {
-            // don't do anything to this product
-            break;
-        }
-        if (!has_term( 'arrears', 'product_cat', $cart_item['product_id']))
-        {
-        	// get user meta for curent fees description
-        	$current_fee_description 	= spz_get_user_meta("current_fee_description");
-            // display this right below product short description
-            echo "$current_fee_description <br>";
-        }
-        else
-        {
-            // get user meta for arrears description
-            $arrears_description = spz_get_user_meta("arrears_description");
-            // display this right below product short description
-            echo "$arrears_description <br>";
-        }
+        $output .= "<li>Arrears fees for " . $item["fees_for"]
+                               . " for AY:"
+                               . $item["ay"]
+                               . " of "
+                               . get_woocommerce_currency_symbol()
+                               . number_format($item["amount"])
+                               . "</li>";
     }
-*/
-// TODO check for programmable product category before doing this
-// get user meta for curent fees description
-$current_user 	= wp_get_current_user();
-$user_id 		= $current_user->ID;
-// read the current user's meta
-$current_fee_description 	= get_user_meta( $user_id, 'current_fee_description', true );
-$arrears_description        = get_user_meta( $user_id, 'arrears_description', true );
-// decode json to object
-$current_item               = json_decode($current_fee_description, true);
-$output = "<ol>
-                <li>Current fees for " . $current_item["fees_for"]
-                                       . "AY:"
-                                       . $current_item["ay"]
-                                       . " of "
-                                       . get_woocommerce_currency_symbol()
-                                       . number_format($current_item["amount"])
-            . "</li>";
-// decode the arrears array and list them out also
-$arrears_items = json_decode($arrears_description, true);
-foreach ($arrear_items as $item)
-{
-    $output .= "<li>Arrears fees for " . $item["fees_for"]
-                           . "AY:"
-                           . $item["ay"]
-                           . " of "
-                           . get_woocommerce_currency_symbol()
-                           . number_format($item["amount"])
-                           . "</li>";
-}
-// close the tag
-$output .= "</ol>";
-echo $output;
+    // close the tag
+    $output .= "</ol>";
+    // display this just above the add-to-cart button`
+    echo $output;
 }
 
 add_filter( 'woocommerce_add_cart_item_data', 'spz_add_cart_item_data', 10, 3 );
 
 /**
 *  setup by add_filter( 'woocommerce_add_cart_item_data', 'spz_add_cart_item_data', 10, 3 );
-*  This function adds the selected schools to cart item data
+*  This function adds the fee payment items to cart item data
 */
 function spz_add_cart_item_data( $cart_item_data, $product_id, $variation_id )
 {
@@ -1474,19 +1451,19 @@ function spz_add_cart_item_data( $cart_item_data, $product_id, $variation_id )
     $current_item               = json_decode($current_fee_description, true);
 
 	// add as cart item data, otherwise won;t see this when product is in cart
-	 $cart_item_data['current_item'] = "Current fees for "  . $current_item["fees_for"]
-                                                            . "AY:"
-                                                            . $current_item["ay"]
-                                                            . " of "
-                                                            . get_woocommerce_currency_symbol()
-                                                            . number_format($current_item["amount"]);
+	 $cart_item_data['current_item'] = "Current fees due for "  . $current_item["fees_for"]
+																. " for AY:"
+																. $current_item["ay"]
+																. " of "
+																. get_woocommerce_currency_symbol()
+																. number_format($current_item["amount"]);
 
     $arrears_items = json_decode($arrears_description, true);
     foreach ($arrears_items as $key => $item)
     {
-        $index                   = "arrears" . ($key + 1);
-         $cart_item_data[$index] = "Arrears fees for " . $item["fees_for"]
-                                . "AY:"
+        $index                  = "arrears" . ($key + 1);
+        $cart_item_data[$index] = "Arrears fees for " . $item["fees_for"]
+                                . " for AY:"
                                 . $item["ay"]
                                 . " of "
                                 . get_woocommerce_currency_symbol()
@@ -1496,13 +1473,14 @@ function spz_add_cart_item_data( $cart_item_data, $product_id, $variation_id )
 	 return $cart_item_data;
 }
 
-add_filter( 'woocommerce_get_item_data', 'spz_get_item_data', 10, 2 );
+add_filter( 'woocommerce_get_item_data', 'spz_get_cart_item_data', 10, 2 );
 
 /**
-*  setup by add_filter( 'woocommerce_get_item_data', 'spz_get_item_data', 10, 2 );
- * Display custom item data in the cart
- */
-function spz_get_item_data( $item_data, $cart_item_data )
+*  setup by add_filter( 'woocommerce_get_item_data', 'spz_get_cart_item_data', 10, 2 );
+*  Display custom item data in the cart we added above
+*  we take the cart item data we added previously and copy that into the returned item_data
+*/
+function spz_get_cart_item_data( $item_data, $cart_item_data )
 {
 	 if( isset( $cart_item_data['current_item'] ) )
 		 {
@@ -1533,9 +1511,8 @@ function spz_get_item_data( $item_data, $cart_item_data )
 
 /**
  * Add order item meta. This is deprecated and no longer used see function below instead
- */
-/*
-add_action( 'woocommerce_add_order_item_meta', 'add_order_item_meta' , 10, 2);
+ *
+ * add_action( 'woocommerce_add_order_item_meta', 'add_order_item_meta' , 10, 2);
 */
 function add_order_item_meta ( $item_id, $values )
 {
