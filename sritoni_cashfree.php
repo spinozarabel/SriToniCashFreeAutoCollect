@@ -1414,7 +1414,7 @@ function spz_product_customfield_display()
     $arrears_items = json_decode($arrears_description, true);
     foreach ($arrears_items as $item)
     {
-        $output .= "<li>Arrears fees for " . $item["fees_for"]
+        $output .= "<li>Arrears fees due for " . $item["fees_for"]
                                . " for AY:"
                                . $item["ay"]
                                . " of "
@@ -1462,7 +1462,7 @@ function spz_add_cart_item_data( $cart_item_data, $product_id, $variation_id )
     foreach ($arrears_items as $key => $item)
     {
         $index                  = "arrears" . ($key + 1);
-        $cart_item_data[$index] = "Arrears fees for " . $item["fees_for"]
+        $cart_item_data[$index] = "Arrears fees due for " . $item["fees_for"]
                                 . " for AY:"
                                 . $item["ay"]
                                 . " of "
