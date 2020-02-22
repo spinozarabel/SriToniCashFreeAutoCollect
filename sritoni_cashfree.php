@@ -1403,7 +1403,7 @@ function spz_product_customfield_display()
     $current_item               = json_decode($current_fee_description, true);
     // start building HTML for ordered list display
     $output = "<ol>
-                    <li>Current fees for " . $current_item["fees_for"]
+                    <li>Current fees due for " . $current_item["fees_for"]
                                            . " for AY:"
                                            . $current_item["ay"]
                                            . " of "
@@ -1412,7 +1412,7 @@ function spz_product_customfield_display()
                 . "</li>";
     // decode the arrears array and list them out also
     $arrears_items = json_decode($arrears_description, true);
-    foreach ($arrear_items as $item)
+    foreach ($arrears_items as $item)
     {
         $output .= "<li>Arrears fees for " . $item["fees_for"]
                                . " for AY:"
