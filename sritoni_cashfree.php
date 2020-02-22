@@ -601,15 +601,10 @@ function moodle_on_order_status_completed( $order_id )
     // we will reuse same code to extract payment to pay to mark it paid
     foreach ($fees_arr as $key => $fees)
     {
-        // check if fees is unpaid and payee is belongs to site name for ex: Head Start Educational Trust
+        // mark all unpaid payments to this beneficiary as paid
         if ($fees["status"] == "not paid" && $fees["payee"] == $beneficiary_name)
         {
-            // this is unpaid and belongs to this payee mathces beneficiary of this site
-            // this is the payent to mark as paid
             $fees_arr[$key]["status"]   = "paid";
-            // break out of foreach loop, note we have not taken care of arrears payment here
-            break;
-
         }
     }
     // now we need to update the fees field in Moodle
