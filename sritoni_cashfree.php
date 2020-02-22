@@ -1560,7 +1560,7 @@ function spz_checkout_create_order_line_item($item, $cart_item_key, $values, $or
     $arrears_description   = spz_get_user_meta("arrears_description");
     $arrears_items         = json_decode($arrears_description, true);
 
-    foreach ($arrears_items as $key => $item)
+    foreach ($arrears_items as $key => $arrears_item)
     {
         $index = "arrears" . ($key + 1);
         if ( isset( $values [ $index ] ) )
