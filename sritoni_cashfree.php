@@ -978,6 +978,8 @@ function set_orders_newcolumn_values($colname)
 	// get order details up ahead of treating all the cases below
 	$order_status			= $order->get_status();
 	$payment_method			= $order->get_payment_method();
+    $customer_note          = $order->get_customer_note();
+    error_log("Customer Note for Order: $order->id is: $customer_note");
 	$va_id 					= get_post_meta($order->id, 'va_id', true) ?? ""; 	// this is the VA _ID contained in order meta
 	$user_id 				= $order->get_user_id();
 	$order_user 			= get_user_by('id', $user_id);
