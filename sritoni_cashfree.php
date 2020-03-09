@@ -822,13 +822,12 @@ function reconcile_payments_callback()
         print "Customer Note: $customer_note";
 
         // check to see if this customer note matches the payment particulars field in the payments_csv array
-        $payments_matching    = array_filter($payments_csv, function($el) use ($customer_note)
+        $payments_matching    = array_filter($payments_csv, function($el) use ($customer_note, $search_column_id)
                                         {
                                             return ( strpos($el[$search_column_id], $customer_note) !== false );
                                         }
                                   );
-        print_r($payments_csv);
-        print_r($payments_matching);
+
         $keys_array  = array_keys($payments_matching);
         // we expect only match but the key is unknown. Here we get an array containing a payment array but at unknown index
         // so we get the array of indices and since there is only 1 we choose oth one.
