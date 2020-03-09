@@ -1640,7 +1640,7 @@ function csv_to_associative_array($file, $delimiter = ',', $enclosure = '"')
             $i = 0;
             foreach ($headers as $header)
             {
-                $current[$header] = $data[$i++];
+                $current[$header] = $data[$i++] ?? "";
             }
             $lines[] = $current;
         }
