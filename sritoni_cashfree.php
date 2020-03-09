@@ -802,6 +802,34 @@ function reconcile_payments_callback()
 		return;
 	}
 
+    // top line displayed on CSV Reconcialiation page
+    echo 'Reconcile Open Orders from CSV payments';
+
+	?>
+	<style>
+	  table {
+		border-collapse: collapse;
+	  }
+	  th, td {
+		border: 1px solid orange;
+		padding: 10px;
+		text-align: left;
+	  }
+</style>
+	<table style="width:100%">
+		<tr>
+            <th>Order ID</th>
+            <th>Order Amount</th>
+			<th>Order Created Date</th>
+			<th>Order Item</th>
+			<th>Payer Notes</th>
+			<th>Transaction ID</th>
+			<th>Payment Amount</th>
+			<th>Payment Date</th>
+			<th>Payment Details</th>
+		</tr>
+	<?php
+
     // so we do have some orders on hold for reconciliation
     // lets go and fetch payments from csv file, and convert everything to lower case
     $payments_csv = (array) fetch_payments_from_csv();
@@ -815,6 +843,20 @@ function reconcile_payments_callback()
 	$order_count = 0;
 	foreach ($orders as $order)
 	{
+        $order_created_datetime	= new DateTime( '@' . $order->get_date_created()->getTimestamp());
+        $order_created_datetime->setTimezone($timezone);
+
+        $items						= $order->get_items();
+
+        // get prodct name associated with this order
+        // per our restrictions there should be only 1 bundled item per order
+        // however, since we only want the bundled order name, we break after 1st item in loop below
+        foreach ($items as $item_key => $item )
+        {
+            $item_name    = $item->get_name();	// this is the name of the bundled product
+            break;
+        }
+
 		// get user payment account ID details from order
 		$va_id		= get_post_meta($order->id, 'va_id', true) ?? 'unable to get VAID from order meta';
 		// get the customer note for this order. This should contain the bank reference or UTR
@@ -857,13 +899,38 @@ function reconcile_payments_callback()
             {
                 // payment is reconcilable, so lets reconcile the damn payment with order
                 reconcile1_ma($order, $payment_csv, $timezone);
-                echo 'Order No: ' . $order->id . ' Reconciled with Reference: ' . $customer_note;
+                // print out row of table for this reconciled payment
+				?>
+				<tr>
+                    <td><?php echo htmlspecialchars($order->id); ?></td>
+                    <td><?php echo htmlspecialchars(get_woocommerce_currency_symbol() . $order->get_total()); ?></td>
+                    <td><?php echo htmlspecialchars($order_created_datetime->format('M-d-Y H:i:s')); ?></td>
+                    <td><?php echo htmlspecialchars($item_name); ?></td>
+                    <td><?php echo htmlspecialchars($customer_note); ?></td>
+                    <td><?php echo htmlspecialchars($payment_csv->transaction_id); ?></td>
+					<td><?php echo htmlspecialchars(get_woocommerce_currency_symbol() . $payment_csv->amount); ?></td>
+					<td><?php echo htmlspecialchars($payment_csv->date); ?></td>
+					<td><?php echo htmlspecialchars($payment_csv->details); ?></td>
+				</tr>
+				<?php
             }
         }
         else
         {
             // our order does not match this payment
-            echo 'Order No: ' . $order->id . ' Coun not be reconciled with any payments in CSV';
+            ?>
+            <tr>
+                <td><?php echo htmlspecialchars($order->id); ?></td>
+                <td><?php echo htmlspecialchars(get_woocommerce_currency_symbol() . $order->get_total()); ?></td>
+                <td><?php echo htmlspecialchars($order_created_datetime->format('M-d-Y H:i:s')); ?></td>
+                <td><?php echo htmlspecialchars($item_name); ?></td>
+                <td><?php echo htmlspecialchars($customer_note); ?></td>
+                <td><?php echo htmlspecialchars("Not reconciled"); ?></td>
+                <td><?php echo htmlspecialchars("NA"); ?></td>
+                <td><?php echo htmlspecialchars("NA"); ?></td>
+                <td><?php echo htmlspecialchars("NA"); ?></td>
+            </tr>
+            <?php
         }
 
         //
