@@ -819,7 +819,6 @@ function reconcile_payments_callback()
 		$va_id		= get_post_meta($order->id, 'va_id', true) ?? 'unable to get VAID from order meta';
 		// get the customer note for this order. This should contain the bank reference or UTR
         $customer_note = $order->get_customer_note();
-        print "Customer Note: $customer_note";
 
         // check to see if this customer note matches the payment particulars field in the payments_csv array
         $payments_matching    = array_filter($payments_csv, function($el) use ($customer_note, $search_column_id)
@@ -901,7 +900,7 @@ function reconcilable1_ma($order, $payment, $timezone)
     $payment_date       = $payment->date;     // example 2007-06-28 15:29:26
 
     // no need to adjust payment datetime for timezone since it is from IST already
-    $payment_datetime	=  DateTime::createFromFormat('d-m-Y', $payment_date);
+    $payment_datetime	=  DateTime::createFromFormat('d/m/Y', $payment_date);
     $dteDiff  = $order_created_datetime->diff($payment_datetime);
     $daysDiff = (integer) $dteDiff->format("%d");
 
@@ -929,7 +928,7 @@ function reconcile1_ma($order, $payment, $timezone)
 	$order_created_datetime->setTimezone($timezone);
 
     $payment_date       = $payment->date;     // example 2007-06-28 15:29:26
-    $payment_datetime	=  DateTime::createFromFormat('d-m-Y', $payment_date); // this is already IST
+    $payment_datetime	=  DateTime::createFromFormat('d/m/Y', $payment_date); // this is already IST
 	$order_note = 'Payment received by ID: ' . get_post_meta($order->id, 'va_id', true) .
 					' Transaction ID: ' . $payment->transaction_id . '  on: ' . $payment_date .
 					' Payment details: ' . $payment->details;
