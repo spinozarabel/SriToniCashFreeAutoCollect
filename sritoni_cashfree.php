@@ -826,11 +826,12 @@ function reconcile_payments_callback()
                                             return ( strpos($el[$search_column_id], $customer_note) !== false );
                                         }
                                   );
-        print_r($payments_csv);
+        print_r($payments_matching);
         $keys_array  = array_keys($payments_matching);
         // we expect only match but the key is unknown. Here we get an array containing a payment array but at unknown index
         // so we get the array of indices and since there is only 1 we choose oth one.
         $payment = $payments_matching[$keys_array[0]];
+        print_r($payment);
 
         if ($payment)
         {
@@ -1675,7 +1676,7 @@ function fetch_payments_from_csv(): array
 
     $payments_csv = csv_to_associative_array($csv_reconcile_file_path);
 
-    /* drop all rows that don't have entries in amount
+    // drop all rows that don't have entries in amount
     foreach ($payments_csv as $key=>$payment)
     {
         if (empty($payment["amount"]))
@@ -1684,7 +1685,7 @@ function fetch_payments_from_csv(): array
             unset ($payments_csv[$key]);
         }
     }
-    */
+    //
     return $payments_csv;
 }
 
