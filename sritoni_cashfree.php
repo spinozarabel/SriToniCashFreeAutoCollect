@@ -849,6 +849,11 @@ function reconcile_payments_callback()
                 echo 'Order No: ' . $order->id . ' Reconciled with Reference: ' . $customer_note;
             }
         }
+        else
+        {
+            // our order does not match this payment
+            echo 'Order No: ' . $order->id . ' Coun not be reconciled with any payments in CSV';
+        }
 
         //
 		$order_count +=	1;
