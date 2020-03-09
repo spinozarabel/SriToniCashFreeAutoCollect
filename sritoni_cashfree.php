@@ -832,17 +832,17 @@ function reconcile_payments_callback()
         // we expect only match but the key is unknown. Here we get an array containing a payment array but at unknown index
         // so we get the array of indices and since there is only 1 we choose oth one.
         $payment = $payments_matching[$keys_array[0]];
-        print_r($payment);
+
 
         if ($payment)
         {
             // there is a payment entry in the CSV that corresponds to an open Order
             // lets capture full details of that payment entry in CSV
-            $payment_csv->amount            = $payment[0]["amount"];
-            $payment_csv->date              = $payment[0]["date"];
-            $payment_csv->details           = $payment[0][$search_column_id];
-            $payment_csv->transaction_id    = $payment[0]["transaction_id"];
-            $payment_csv->utr               = $payment[0]["utr"];
+            $payment_csv->amount            = $payment["amount"];
+            $payment_csv->date              = $payment["date"];
+            $payment_csv->details           = $payment[$search_column_id];
+            $payment_csv->transaction_id    = $payment["transaction_id"];
+            $payment_csv->utr               = $payment["utr"];
             $payment_csv->$customer_note    = $customer_note;
 
             // add the matching order info into this object for good meqsure
