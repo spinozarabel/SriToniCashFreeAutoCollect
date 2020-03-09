@@ -826,7 +826,7 @@ function reconcile_payments_callback()
                                             return ( strpos($el[$search_column_id], $customer_note) !== false );
                                         }
                                   );
-        print_r($payments_matching);
+        print_r($payments_csv);
         $keys_array  = array_keys($payments_matching);
         // we expect only match but the key is unknown. Here we get an array containing a payment array but at unknown index
         // so we get the array of indices and since there is only 1 we choose oth one.
