@@ -821,7 +821,7 @@ function reconcile_payments_callback()
         $customer_note = $order->get_customer_note();
 
         // check to see if this customer note matches the payment particulars field in the payments_csv array
-        $payment    = array_filter($payment_csv, function($el) use ($search_text)
+        $payment    = array_filter($payments_csv, function($el) use ($search_text)
                                         {
                                             return ( strpos($el[$search_column_id], $search_text) !== false );
                                         }
