@@ -821,17 +821,22 @@ function reconcile_payments_callback()
         $customer_note = $order->get_customer_note();
 
         // check to see if this customer note matches the payment particulars field in the payments_csv array
-        $index_match = array_search($customer_note, array_column($payments_csv, $search_column_id));
-        if (false !== $index_match)
+        $payment    = array_filter($a, function($el) use ($search_text)
+                                        {
+                                            return ( strpos($el[$search_column_id], $search_text) !== false );
+                                        }
+                                  );
+
+        if ($payment)
         {
             // there is a payment entry in the CSV that corresponds to an open Order
             // lets capture full details of that payment entry in CSV
-            $payment_csv->amount    = $payments_csv[$index_match]["amount"];
-            $payment_csv->date      = $payments_csv[$index_match]["date"];
-            $payment_csv->details   = $payments_csv[$index_match][$search_column_id];
-            $payment_csv->transaction_id = $payments_csv[$index_match]["transaction_id"];
-            $payment_csv->utr       = $payments_csv[$index_match]["utr"];
-            $payment_csv->$customer_note = $customer_note;
+            $payment_csv->amount            = $payment[0]["amount"];
+            $payment_csv->date              = $payment[0]["date"];
+            $payment_csv->details           = $payment[0][$search_column_id];
+            $payment_csv->transaction_id    = $payment[0]["transaction_id"];
+            $payment_csv->utr               = $payment[0]["utr"];
+            $payment_csv->$customer_note    = $customer_note;
 
             // add the matching order info into this object for good meqsure
             $payment_csv->order_id  = $order->id;
