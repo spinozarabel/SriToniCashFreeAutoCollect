@@ -1640,7 +1640,7 @@ function csv_to_associative_array($file, $delimiter = ',', $enclosure = '"')
             $i = 0;
             foreach ($headers as $header)
             {
-                $current[$header] = $data[$i++] ?? "";
+                $current[$header] = $data[$i++];
             }
             $lines[] = $current;
         }
@@ -1668,6 +1668,7 @@ function fetch_payments_from_csv(): array
             unset ($payments_csv[$key]);
         }
     }
+    error_log(print_r($payments_csv, true));
 
     return $payments_csv;
 }
