@@ -24,10 +24,8 @@ if ( is_admin() )
 }
 
 $moodle_token 	     = get_option( 'sritoni_settings')["sritoni_token"];
-$moodle_url         = get_option( 'sritoni_settings')["sritoni_url"] . '/webservice/rest/server.php';
+$moodle_url          = get_option( 'sritoni_settings')["sritoni_url"] . '/webservice/rest/server.php';
 
-$get_csv_fees_file  = get_option( 'sritoni_settings')["get_csv_fees_file"] ?? false;
-$csv_file           = get_option( 'sritoni_settings')["csv_fees_file_path"];
 
 add_action('plugins_loaded', 'init_vabacs_gateway_class');
 // hook action for post that has action set to cf_wc_webhook
@@ -35,11 +33,6 @@ add_action('plugins_loaded', 'init_vabacs_gateway_class');
 // https://sritoni.org/hset-payments/wp-admin/admin-post.php?action=cf_wc_webhook
 add_action('admin_post_nopriv_cf_wc_webhook', 'cf_webhook_init', 10);
 
-if ($get_csv_fees_file)
-{
-    // read file and parse to associative array. To access this in a function, make this a global there
-    $fees_csv = csv_to_associative_array($csv_file);
-}
 
 
 function init_vabacs_gateway_class()
@@ -801,42 +794,70 @@ function reconcile_payments_callback()
 						'payment_method' 	=> 'vabacs',
 				  );
 	$orders = wc_get_orders( $args );
-	// if no orders on-hold then nothing t reconcile so exit
+
+	// if no orders on-hold then nothing to reconcile so exit
 	if (empty($orders))
 	{
 		echo 'No orders on-hold, nothing to reconcile';
 		return;
 	}
-	// Instantiate payment gateway API along with authetication
-	$cashfree_api 			= new CfAutoCollect; // new cashfree Autocollect API object
-	// For each order get the last 3 payments made. Assumption is that there are not more than 3 payments made after an order is placed
+
+    // so we do have some orders on hold for reconciliation
+    // lets go and fetch payments from csv file, and convert everything to lower case
+    $payments_csv = (array) fetch_payments_from_csv();
+
+    // define a new payment object that maybe extracted from the CSV
+    $payment_csv = new stdClass;
+
+    // set the column heading to use for searching for bank reference
+    $search_column_id = "details";
+
 	$order_count = 0;
 	foreach ($orders as $order)
 	{
 		// get user payment account ID details from order
 		$va_id		= get_post_meta($order->id, 'va_id', true) ?? 'unable to get VAID from order meta';
-		// get the last few payments bade by tis account
-		$payments	= $cashfree_api->getPaymentsForVirtualAccount($va_id, $maxReturn);
-		foreach ($payments as $payment)
-		{
-			if ( !reconcilable1_ma($order, $payment, $timezone) )
-				{
-				// this payment is not reconcilable either due to mismatch in payment or dates or both
-				continue;	// continue next payment
-				}
-			else
-				{
-					reconcile1_ma($order, $payment, $timezone);
-                    echo 'Order No: ' . $order->id . ' Reconciled with Payment ID: ' . $payment->referenceId;
-					break;	// break out of payment loop and process next order
-				}
-		}
+		// get the customer note for this order. This should contain the bank reference or UTR
+        $customer_note = $order->get_customer_note();
+
+        // check to see if this customer note matches the payment particulars field in the payments_csv array
+        $index_match = array_search($customer_note, array_column($payments_csv, $search_column_id));
+        if (false !== $index_match)
+        {
+            // there is a payment entry in the CSV that corresponds to an open Order
+            // lets capture full details of that payment entry in CSV
+            $payment_csv->amount    = $payments_csv[$index_match]["amount"];
+            $payment_csv->date      = $payments_csv[$index_match]["date"];
+            $payment_csv->details   = $payments_csv[$index_match][$search_column_id];
+            $payment_csv->transaction_id = $payments_csv[$index_match]["transaction_id"];
+            $payment_csv->utr       = $payments_csv[$index_match]["utr"];
+            $payment_csv->$customer_note = $customer_note;
+
+            // add the matching order info into this object for good meqsure
+            $payment_csv->order_id  = $order->id;
+
+            // check if this pament order pair are reconcilable
+            if ( !reconcilable1_ma($order, $payment_csv, $timezone) )
+            {
+                // this payment is not reconcilable either due to mismatch in payment or dates or both
+                echo 'Order No: ' . $order->id . ' contains Bank Reference: ' . $customer_note . 'but does not match, Reconcile manually';
+            }
+            else
+            {
+                // payment is reconcilable, so lets reconcile the damn payment with order
+                reconcile1_ma($order, $payment_csv, $timezone);
+                echo 'Order No: ' . $order->id . ' Reconciled with Reference: ' . $customer_note;
+            }
+        }
+
+        //
 		$order_count +=	1;
 		if ($order_count >= $max_orders)
 		{
+            echo "Processed upto maximum of $max_orders Redo Reconcile to any remaining Open Orders";
 			break; // exit out of orders loop
 		}
-	}
+	}   // end of foreach open orders loop
 
 }
 
@@ -847,7 +868,7 @@ function reconcile_payments_callback()
 *  return a boolean value if the payment and order can be reconciled
 *  Conditions for reconciliation are: (We assume payment method is VABACS and this payment is not reconciled in any order before
 *  1. Payments must be equal
-*  2. Order creation Date must be before Payment Date
+*  2.
 */
 function reconcilable1_ma($order, $payment, $timezone)
 {
@@ -858,13 +879,18 @@ function reconcilable1_ma($order, $payment, $timezone)
 	$order_created_datetime	= new DateTime( '@' . $order->get_date_created()->getTimestamp());
     $order_created_datetime->setTimezone($timezone);
     // we don't care about the time zone adjustment since it will be common for all dates for comparison purpses
-	//
-	$payment_amount 		= $payment->amount;      // in ruppees
-    $payment_date       = $payment->paymentTime;     // example 2007-06-28 15:29:26
-    $payment_datetime	=  DateTime::createFromFormat('Y-m-d H:i:s', $payment_date);
-    // $payment_datetime->setTimezone($timezone);
 
-	return ( ($order_total == $payment_amount) && ($payment_datetime > $order_created_datetime) );
+	$payment_amount 	= $payment->amount;   // in ruppees
+    $payment_date       = $payment->date;     // example 2007-06-28 15:29:26
+
+    // no need to adjust payment datetime for timezone since it is from IST already
+    $payment_datetime	=  DateTime::createFromFormat('d-m-Y', $payment_date);
+    $dteDiff  = $order_created_datetime->diff($payment_datetime);
+    $daysDiff = (integer) $dteDiff->format("%d");
+
+    // $payment_datetime->setTimezone($timezone);
+    // return true if payment amount equals order total and diffrence in days of payment to order is less than 10 days
+	return (($order_total == $payment_amount) && ($daysDiff < 10));
 
 }
 
@@ -877,7 +903,7 @@ function reconcilable1_ma($order, $payment, $timezone)
 *  return a boolean value if the payment and order have been reconciled successfully
 *  Conditions for reconciliation are: (We assume payment method is VABACS and this payment is not reconciled in any order before
 *  1. Payments must be equal
-*  2. Order creation Date must be before Payment Date
+*  2.
 *  Reconciliation means that payment is marked complete and order meta updated suitably
 */
 function reconcile1_ma($order, $payment, $timezone)
@@ -885,24 +911,24 @@ function reconcile1_ma($order, $payment, $timezone)
 	$order_created_datetime	= new DateTime( '@' . $order->get_date_created()->getTimestamp());
 	$order_created_datetime->setTimezone($timezone);
 
-    $payment_date       = $payment->paymentTime;     // example 2007-06-28 15:29:26
-    $payment_datetime	=  DateTime::createFromFormat('Y-m-d H:i:s', $payment_date); // this is already IST
-	$order_note = 'Payment received by cashfree Virtual Account ID: ' . get_post_meta($order->id, 'va_id', true) .
-					' Payment ID: ' . $payment->referenceId . '  on: ' . $payment_datetime->format('Y-m-d H:i:s') .
-					' UTR reference: ' . $payment->utr;
+    $payment_date       = $payment->date;     // example 2007-06-28 15:29:26
+    $payment_datetime	=  DateTime::createFromFormat('d-m-Y', $payment_date); // this is already IST
+	$order_note = 'Payment received by ID: ' . get_post_meta($order->id, 'va_id', true) .
+					' Transaction ID: ' . $payment->transaction_id . '  on: ' . $payment_date .
+					' Payment details: ' . $payment->details;
 	$order->add_order_note($order_note);
 
-	$order->update_meta_data('va_payment_id', 				$payment->referenceId);
+	$order->update_meta_data('va_payment_id', 				$payment->details);
 	$order->update_meta_data('amount_paid_by_va_payment', 	$payment->amount);  // in Rs
-	$order->update_meta_data('bank_reference', 				$payment->utr);
+	$order->update_meta_data('bank_reference', 				$payment->customer_note);
 	// $order->update_meta_data('payment_notes_by_customer', 	$payment_obj->description);
 	$order->save;
 
 	$transaction_arr	= array(
-									'payment_id'		=> $payment->referenceId,
-									'payment_date'		=> $payment_datetime->format('Y-m-d H:i:s'),
-									'va_id'				=> get_post_meta($order->id, 'va_id', true),
-									'utr'	            => $payment->utr,
+									'transaction_id'   => $payment->transaction_id,
+									'date'		       => $payment_date,
+									'va_id'			   => get_post_meta($order->id, 'va_id', true),
+									'details'	       => $payment->details,
 								);
 
 	$transaction_id = json_encode($transaction_arr);
@@ -978,7 +1004,7 @@ function set_orders_newcolumn_values($colname)
 	// get order details up ahead of treating all the cases below
 	$order_status			= $order->get_status();
 	$payment_method			= $order->get_payment_method();
-    
+
 	$va_id 					= get_post_meta($order->id, 'va_id', true) ?? ""; 	// this is the VA _ID contained in order meta
 	$user_id 				= $order->get_user_id();
 	$order_user 			= get_user_by('id', $user_id);
@@ -1621,6 +1647,29 @@ function csv_to_associative_array($file, $delimiter = ',', $enclosure = '"')
         fclose($handle);
         return $lines;
 	}
+}
+
+/**
+*  @return array of payments as an associative array read from CSV file
+*/
+function fetch_payments_from_csv(): array
+{
+    $get_csv_reconcile_file  = get_option( 'sritoni_settings')["get_csv_reconcile_file"] ?? false;
+    $csv_reconcile_file_path = get_option( 'sritoni_settings')["csv_reconcile_file_path"] ?? "CSV reconcile file path not set";
+
+    $payments_csv = csv_to_associative_array($csv_reconcile_file_path);
+
+    // drop all rows that don't have entries in amount
+    foreach ($payments_csv as $key=>$payment)
+    {
+        if (empty($payment["amount"]))
+        {
+            // this is not a deposit but a withdrawl so drop this row
+            unset ($payments_csv[$key]);
+        }
+    }
+
+    return $payments_csv;
 }
 
 /**
