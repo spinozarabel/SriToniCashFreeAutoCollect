@@ -1675,7 +1675,7 @@ function fetch_payments_from_csv(): array
 
     $payments_csv = csv_to_associative_array($csv_reconcile_file_path);
 
-    // drop all rows that don't have entries in amount
+    /* drop all rows that don't have entries in amount
     foreach ($payments_csv as $key=>$payment)
     {
         if (empty($payment["amount"]))
@@ -1684,7 +1684,7 @@ function fetch_payments_from_csv(): array
             unset ($payments_csv[$key]);
         }
     }
-
+    */
     return $payments_csv;
 }
 
