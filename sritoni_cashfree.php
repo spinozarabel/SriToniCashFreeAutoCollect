@@ -1633,8 +1633,6 @@ function csv_to_associative_array($file, $delimiter = ',', $enclosure = '"')
     if (($handle = fopen($file, "r")) !== false)
     {
         $headers = fgetcsv($handle, 0, $delimiter, $enclosure);
-        error_log("headers array below:");
-        error_log(print_r($headers, true));
         return [];
         $lines = [];
         while (($data = fgetcsv($handle, 0, $delimiter, $enclosure)) !== false)
