@@ -51,8 +51,8 @@ function init_vabacs_gateway_class()
 		$this->id                 = 'vabacs';  // MA
 		$this->icon               = apply_filters( 'woocommerce_bacs_icon', '' );
 		$this->has_fields         = false;
-		$this->method_title       = __( 'Offline Bank Transfer to Cashfree Virtual Account', 'woocommerce' );
-		$this->method_description = __( 'BACS to Individual Cashfree Virtual Account-offline direct bank transfer', 'woocommerce' );
+		$this->method_title       = __( 'Offline SriToni Bank Transfer', 'woocommerce' );
+		$this->method_description = __( 'VABACS-SriToni offline direct bank transfer', 'woocommerce' );
 		// Load the settings.
 		$this->init_form_fields();
 		$this->init_settings();
@@ -103,7 +103,7 @@ function init_vabacs_gateway_class()
 				'title'       => __( 'Description', 'woocommerce' ),
 				'type'        => 'textarea',
 				'description' => __( 'Payment method description that the customer will see on your checkout.', 'woocommerce' ),
-				'default'     => __( 'Make your payment directly into Assigned Virtual Bank Account. Please use your Order ID as the payment reference. Your order will not be shipped until the funds have cleared in our account.', 'woocommerce' ),
+				'default'     => __( 'Make your payment by offline Bank Transfer. Please input the UTR number in the order. Your order will not be reconciled until the funds have cleared in our account.', 'woocommerce' ),
 				'desc_tip'    => true,
 			),
 			'instructions'    => array(
@@ -297,11 +297,11 @@ function init_vabacs_gateway_class()
 						),
 						'account_number' => array(
 							'label' => __( 'Account number', 'woocommerce' ),
-							'value' => $va_account_number,
+							'value' => $bacs_account->account_number,
 						),
 						'sort_code'      => array(
 							'label' => $sortcode,
-							'value' => $va_ifsc_code,
+							'value' => $bacs_account->sort_code,
 						),
 						'iban'           => array(
 							'label' => __( 'IBAN', 'woocommerce' ),
