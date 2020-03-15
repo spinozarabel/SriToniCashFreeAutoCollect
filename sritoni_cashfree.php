@@ -103,7 +103,7 @@ function init_vabacs_gateway_class()
 				'title'       => __( 'Description', 'woocommerce' ),
 				'type'        => 'textarea',
 				'description' => __( 'Payment method description that the customer will see on your checkout.', 'woocommerce' ),
-				'default'     => __( 'Make your payment by offline Bank Transfer. Please input the UTR number in the order. Your order will not be reconciled until the funds have cleared in our account.', 'woocommerce' ),
+				'default'     => __( 'Make your payment by offline Bank Transfer. Please input the UTR number or bank reference in the order. Your order will not be reconciled until the funds have cleared in our account.', 'woocommerce' ),
 				'desc_tip'    => true,
 			),
 			'instructions'    => array(
@@ -1114,65 +1114,6 @@ function set_orders_newcolumn_values($colname)
 
 		break;     // out of switch structure
 
-		// Reconcile on-hold orders only if reconcile flag in settings is set, otherwise miss
-		case ( ( 'on-hold' == $order_status ) && ( $reconcile == 1 ) ):
-
-            // since wee need to interact with Cashfree ,ets create a new API instamve
-            $cashfree_api    = new CfAutoCollect; // new cashfree Autocollect API object
-			// So first we get a list of last 3 payments made to the VAID contained in this HOLD order
-			$payments        = $cashfree_api->getPaymentsForVirtualAccount($va_id,3);
-            // what happens if there are no payents made and this is null?
-            if (empty($payments))
-            {
-                $payment_amount     = "n/a";
-                $payment_datetime   = "n/a";
-                break;  // break out of switch structure and go to print
-            }
-			// Loop through the paymenst to check which one is already reconciled and which one is not
-			foreach ($payments as $key=> $payment)
-				{
-
-					$payment_id			= $payment->referenceId;
-					$args 				= array(
-												'status' 			=> array(
-																				'processing',
-																				'completed',
-																			),
-												'limit'				=> 1,			// at least one order exists for this payment?
-												'payment_method' 	=> "vabacs",
-												'customer_id'		=> $user_id,
-												'meta-key'			=> "va_payment_id",
-												'meta_value'		=> $payment_id,
-												);
-					// get all orderes in process or completed with search parameters as shown above
-					$payment_already_reconciled 	= !empty( wc_get_orders( $args ) );
-
-					if ( $payment_already_reconciled )
-						{
-							// this payment is already reconciled so loop over to next payment
-							continue;	// continue the for each loop next iteration
-						}
-					// Now we have a payment that is unreconciled. See if it is a potential candidate for reconciliation
-					if ( !reconcilable_ma($order, $payment, $timezone) )
-						{
-						// this payment is not reconcilable either due to mismatch in payment or dates or both
-						continue;	// continue next iteration of loop payment
-						}
-					// we now have a reconcilable paymet against this order so we get out of the for loop
-                    // we only reconcile the 1st reconcilable payment.
-                    // if multiple payments are made only 1 payment will be reconciled
-					$reconcilable = true;
-					break;	// out of loop but still in Switch statement. $payment is the payment to be reconciled
-				}	// end of for each loop
-
-		case ( ($reconcilable == true) && ($reconcile == 1) ) :
-            // we cannot get here without going through case statement immediately above
-			// we will reconcle since all flags are go
-			reconcile_ma($order, $payment, $reconcile, $reconcilable, $timezone);
-            $payment_date       = $payment->paymentTime;    // example 2007-06-28 15:29:26
-			$payment_datetime	=  DateTime::createFromFormat('Y-m-d H:i:s', $payment_date);
-			// $payment_datetime->setTimezone($timezone);
-			$payment_amount 		= $payment->amount;    // already in rupees
 	}		// end of SWITCH structure
 
 	if ( 'VApymnt' === $colname )
@@ -1185,10 +1126,6 @@ function set_orders_newcolumn_values($colname)
 		{
 			case ( $payment_method != "vabacs" ) :
 				echo $payment_method;
-			break;
-
-			case ( ($reconcilable == true) && ($reconcile == 1) ) :
-				echo get_woocommerce_currency_symbol() . number_format($payment_amount) . " " . $payment_datetime->format('M-d-Y H:i:s');
 			break;
 
 			case ( ( 'processing' == $order_status ) || ( 'completed' == $order_status ) ) :
