@@ -18,24 +18,32 @@ class sritoni_va_ec
   {
     $this->verbose      = self::VERBOSE;
 
-    /* hook for adding custom columns on woocommerce orders page
-    add_filter( 'manage_edit-shop_order_columns',         'orders_add_mycolumns' );
+    // hook for adding custom columns on woocommerce orders page
+    add_filter( 'manage_edit-shop_order_columns',         [$this, 'orders_add_mycolumns'] );
     // hook for updating my new column valus based on passed order details
-    add_action( 'manage_shop_order_posts_custom_column',  'set_orders_newcolumn_values', 2 );
+    add_action( 'manage_shop_order_posts_custom_column',  [$this, 'set_orders_newcolumn_values'], 2 );
     // hook for callback function to be done after order's status is changed to completed
-    add_action( 'woocommerce_order_status_completed',     'moodle_on_order_status_completed', 10, 1 );
-    */
+    add_action( 'woocommerce_order_status_completed',     [$this, 'moodle_on_order_status_completed'], 10, 1 );
 
-    // add_action('plugins_loaded', array($this, 'init_class_functions'));
+    add_action( 'woocommerce_product_query',              [$this, 'installment_pre_get_posts_query'] );
 
-  }
+    // This adds an action just before saving any order at checkout to update the order meta for va_id
+    add_action('woocommerce_checkout_create_order',       [$this, 'ma_update_order_meta_atcheckout'], 20, 2);
 
-  public function init_class_functions()
-  {
-    add_submenu_page( 'woocommerce',	'VA-payments',	'VA-payments',	'manage_options',	'woo-VA-payments',		array($this, 'VA_payments_callback' ));
+    // add filter to change the price of product in shop and product pages
+    add_filter( 'woocommerce_product_get_price',          [$this, 'spz_change_price'], 10, 2 );
 
-    //add_submenu_page( 'woocommerce',	'reconcile',	'reconcile',	'manage_options',	'reconcile-payments',	array($this, 'reconcile_payments_callback' ));
-  }
+    add_filter( 'woocommerce_before_add_to_cart_button',  [$this, 'spz_product_customfield_display']);
+
+    add_filter( 'woocommerce_add_cart_item_data',         [$this, 'spz_add_cart_item_data'], 10, 3 );
+
+    add_filter( 'woocommerce_get_item_data',              [$this, 'spz_get_cart_item_data'], 10, 2 );
+
+    add_action( 'woocommerce_checkout_create_order_line_item', [$this, 'spz_checkout_create_order_line_item'], 10, 4 );
+
+    // add_filter( 'woocommerce_grouped_price_html', 'max_grouped_price', 10, 3 );
+
+  } // End Of Constructor
 
   /** add_VA_payments_submenu()
   *   is the callback function for the add_action admin_menu hook above
@@ -58,7 +66,10 @@ class sritoni_va_ec
 
   	return;
   }
-
+  /**
+  *   Callback function for
+  *   add_submenu_page( 'woocommerce',	'VA-payments',	'VA-payments',	'manage_options',	'woo-VA-payments',		[$this, 'VA_payments_callback'] );
+  */
   public function VA_payments_callback()
   {
   	$timezone = new DateTimeZone('Asia/Kolkata');
@@ -181,10 +192,12 @@ class sritoni_va_ec
   }         // end of public function VA_payments_callback
 
   /**
-  *	This implements the callback for the sub-menu page reconcile.
+  *	  This implements the callback for the sub-menu page reconcile.
+  *   add_submenu_page( 'woocommerce',	'reconcile',	'reconcile',	'manage_options',	'reconcile-payments',	[$this, 'reconcile_payments_callback'] );
   *   When this manu page is accessed from the admin menu under Woocommerce, it tries to reconcile all open orders against payments made
   *   Normally the reconciliation should be done as soon as a payment is made by a webhook issued by the payment gateway.
-  *	Should the webhook reconciliation fail for whatever reason, an on-demand reconciliation can be forced by accessing this page.
+  *	  Should the webhook reconciliation fail for whatever reason, an on-demand reconciliation can be forced by accessing this page.
+  *
   */
   public function reconcile_payments_callback()
   {
@@ -262,7 +275,7 @@ class sritoni_va_ec
 
   	return ( ($order_total == $payment_amount) && ($payment_datetime > $order_created_datetime) );
 
-  } // END OF function reconcilable1_ma($order, $payment, $timezone)
+  } // END OF function reconcilable1_ma
 
   /**
   *  @param order is the order object
@@ -306,6 +319,573 @@ class sritoni_va_ec
   	$order->payment_complete($transaction_id);
 
       return true;
+  } // End Of  function reconcile1_ma
+
+  /** function orders_add_mycolumns($columns)
+  *   @param columns
+  *   This function is called by add_filter( 'manage_edit-shop_order_columns', 'orders_add_mycolumns' )
+  *   adds new columns after order_status column called Student
+  *   adds 2 new columns after order_total called VApymnt and VAid
+  */
+  public function orders_add_mycolumns($columns)
+  {
+  	$new_columns = array();
+
+      foreach ( $columns as $column_name => $column_info )
+  		{
+
+  			$new_columns[ $column_name ] = $column_info;
+
+  			if ( 'order_status' === $column_name )
+  				{
+                      // add a new column called student AFTER order status column
+  				    $new_columns['Student'] = "Student";
+  				}
+
+  			if ( 'order_total' === $column_name )
+  				{
+                      // add these new columns AFTER order_total column
+      				$new_columns['VApymnt'] = "VApymnt";
+      				$new_columns['VAid'] = "VAid";
+  				}
+  		}
+
+      return $new_columns;
+  } // end of function orders_add_mycolumns
+
+  /** set_orders_newcolumn_values($columns)
+  *   @param colname
+  *   sets values to be displayed in the new columns in orders page
+  *   This is callback for add_action( 'manage_shop_order_posts_custom_column', 'set_orders_newcolumn_values', 2 );
+  *   For Student we display students display name.
+  *   For VAid we display the VAid with a link to the payments page if payment method is VABACS
+  *   If a VABACS order is completed or processed we display the payment amount and date extracted from order
+  *   If a VABACS order is on-hold, we get the last 3 payments made to the order related VAID
+  *      If any of the payments are yet to be reconciled we then try to reconcile any of the payments to the order
+  *      provided the reconcile flag in settings page is set.
+  *      If reconciled display the payment amount and date. If not display that payment is pending, with no date
+  *   This is a backup for reconciliation of payments with orders wif the webhook does not work
+  */
+  public function set_orders_newcolumn_values($colname)
+  {
+  	global $post;
+  	// Proceed only for new columns added by us
+  	if ( !( ($colname == 'VApymnt') || ($colname == 'VAid') || ($colname == 'Student') )  )
+  		{
+  			return;
+  		}
+  	$order = wc_get_order( $post->ID );
+  	// Only continue if we have an order.
+  	if ( empty( $order ) )
+  		{
+  			return;
+  		}
+  	$timezone				= new DateTimeZone("Asia/Kolkata");
+  	//$cashfree_api 			= new CfAutoCollect; // new cashfree Autocollect API object
+  	// get the reconcile or not flag from settings. If true then we try to reconcile whatever was missed by webhook
+  	$reconcile				= get_option( 'sritoni_settings' )["reconcile"] ?? 0;
+  	// get order details up ahead of treating all the cases below
+  	$order_status			= $order->get_status();
+  	$payment_method			= $order->get_payment_method();
+  	$va_id 					= get_post_meta($order->id, 'va_id', true) ?? ""; 	// this is the VA _ID contained in order meta
+  	$user_id 				= $order->get_user_id();
+  	$order_user 			= get_user_by('id', $user_id);
+  	$user_display_name 		= $order_user->display_name;
+
+  	$reconcilable = false;	// preset flag to indicate that order is not reconcilable
+
+  	switch (true)
+  	{
+
+  		case ( $payment_method != "vabacs" ) :
+  			// for orders that are not VABACS no need to do anything go to print section breaking out of switch
+  		break;
+
+
+  		case ( ( 'processing' == $order_status ) || ( 'completed' == $order_status ) ) :
+
+  			// for orders processing or completed get payment data from order for display later on
+  			$payment_amount 	= get_post_meta($order->id, 'amount_paid_by_va_payment', true); // in Rs.
+
+  			$payment_datetime	= new DateTime( '@' . $order->get_date_paid()->getTimestamp());
+  			$payment_datetime->setTimezone($timezone);	// adusted for local time zone
+  			$payment_date		= $payment_datetime->format('Y-m-d H:i:s');
+
+  		break;     // out of switch structure
+
+  		// Reconcile on-hold orders only if reconcile flag in settings is set, otherwise miss
+  		case ( ( 'on-hold' == $order_status ) && ( $reconcile == 1 ) ):
+
+              // since wee need to interact with Cashfree ,ets create a new API instamve
+              $cashfree_api    = new CfAutoCollect; // new cashfree Autocollect API object
+  			// So first we get a list of last 3 payments made to the VAID contained in this HOLD order
+  			$payments        = $cashfree_api->getPaymentsForVirtualAccount($va_id,3);
+              // what happens if there are no payents made and this is null?
+              if (empty($payments))
+              {
+                  $payment_amount     = "n/a";
+                  $payment_datetime   = "n/a";
+                  break;  // break out of switch structure and go to print
+              }
+  			// Loop through the paymenst to check which one is already reconciled and which one is not
+  			foreach ($payments as $key=> $payment)
+  				{
+
+  					$payment_id			= $payment->referenceId;
+  					$args 				= array(
+  												'status' 			=> array(
+  																				'processing',
+  																				'completed',
+  																			),
+  												'limit'				=> 1,			// at least one order exists for this payment?
+  												'payment_method' 	=> "vabacs",
+  												'customer_id'		=> $user_id,
+  												'meta-key'			=> "va_payment_id",
+  												'meta_value'		=> $payment_id,
+  												);
+  					// get all orderes in process or completed with search parameters as shown above
+  					$payment_already_reconciled 	= !empty( wc_get_orders( $args ) );
+
+  					if ( $payment_already_reconciled )
+  						{
+  							// this payment is already reconciled so loop over to next payment
+  							continue;	// continue the for each loop next iteration
+  						}
+  					// Now we have a payment that is unreconciled. See if it is a potential candidate for reconciliation
+  					if ( !reconcilable_ma($order, $payment, $timezone) )
+  						{
+  						// this payment is not reconcilable either due to mismatch in payment or dates or both
+  						continue;	// continue next iteration of loop payment
+  						}
+  					// we now have a reconcilable paymet against this order so we get out of the for loop
+                      // we only reconcile the 1st reconcilable payment.
+                      // if multiple payments are made only 1 payment will be reconciled
+  					$reconcilable = true;
+  					break;	// out of loop but still in Switch statement. $payment is the payment to be reconciled
+  				}	// end of for each loop
+
+  		case ( ($reconcilable == true) && ($reconcile == 1) ) :
+              // we cannot get here without going through case statement immediately above
+  			// we will reconcle since all flags are go
+  			reconcile_ma($order, $payment, $reconcile, $reconcilable, $timezone);
+              $payment_date       = $payment->paymentTime;    // example 2007-06-28 15:29:26
+  			$payment_datetime	=  DateTime::createFromFormat('Y-m-d H:i:s', $payment_date);
+  			// $payment_datetime->setTimezone($timezone);
+  			$payment_amount 		= $payment->amount;    // already in rupees
+  	}		// end of SWITCH structure
+
+  	if ( 'VApymnt' === $colname )
+  	{
+  		// for orders completed this will be information extracted from the order details
+  		// for orders on hold, if no payments exist for this VAID then 0 and Jan 1, 1970 is displayed
+  		// for orders on hold, if last payment exists for this VAID, amount and last payment date are displayed
+
+  		switch (true)
+  		{
+  			case ( $payment_method != "vabacs" ) :
+  				echo $payment_method;
+  			break;
+
+  			case ( ($reconcilable == true) && ($reconcile == 1) ) :
+  				echo get_woocommerce_currency_symbol() . number_format($payment_amount) . " " . $payment_datetime->format('M-d-Y H:i:s');
+  			break;
+
+  			case ( ( 'processing' == $order_status ) || ( 'completed' == $order_status ) ) :
+  				echo get_woocommerce_currency_symbol() . number_format($payment_amount) . " " . $payment_datetime->format('M-d-Y H:i:s');
+  			break;
+
+  			default:
+  				echo "Payment Pending";
+
+  		}
+  	}
+
+
+  	if ( 'VAid' === $colname  )
+  	{
+  		switch (true)
+  		{
+  			case ($payment_method == "vabacs") :
+                  // display the VA ID with a link that when clicked takes you to payments made for that account
+  				//$link_address = 'https://dashboard.cashfree.com/#/app/virtualaccounts/' . $va_id;
+  				$data = array(
+  								"va_id"			=>	$va_id,
+  								"display_name"	=> $user_display_name,
+  								"user_id"		=>	$user_id,
+  							 );
+  				$url_va_payments			= admin_url( 'admin.php?page=woo-VA-payments&', 'https' );
+  				$url_va_payments_given_vaid	= $url_va_payments . http_build_query($data, '', '&amp;');
+  				echo "<a href='$url_va_payments_given_vaid'>$va_id</a>";
+  			break;
+
+  			default:
+  				echo "N/A";
+  		}
+  	}
+
+
+  	if ( 'Student' === $colname )
+  	{
+  		echo $order_user->display_name;
+  	}
+  } // end of function set_orders_newcolumn_values
+
+  /**
+  *  @param order is the full order object under consideration
+  *  @param payment is the full payment object being considered
+  *  @param timezone is the full timezone object needed for order objects timestamp
+  *  return a boolean value if the payment and order can be reconciled
+  *  Conditions for reconciliation are: (We assume payment method is VABACS and this payment is not reconciled in any order before
+  *  1. Payments must be equal
+  *  2. Order creation Date must be before Payment Date
+  */
+  public function reconcilable_ma($order, $payment, $timezone)
+  {
+      // since order datetime is from time stamp whereas payment datetime is form actula date and time
+      // we will only use settimezone for order datetime and not payment datetime.
+  	$order_total			= $order->get_total();
+  	// $order_total_p			= (int) round($order_total * 100);
+  	$order_created_datetime	= new DateTime( '@' . $order->get_date_created()->getTimestamp());
+      $order_created_datetime->setTimezone($timezone);
+      // we don't care about the time zone adjustment since it will be common for all dates for comparison purpses
+  	//
+  	$payment_amount 		= $payment->amount;      // in ruppees
+      $payment_date       = $payment->paymentTime;     // example 2007-06-28 15:29:26
+      $payment_datetime	=  DateTime::createFromFormat('Y-m-d H:i:s', $payment_date);
+      // $payment_datetime->setTimezone($timezone);
+
+  	return ( ($order_total == $payment_amount) && ($payment_datetime > $order_created_datetime) );
+
+  } // end of function reconcilable_ma
+
+  /**
+  *  @param order is the order object
+  *  @param payment is the payment object
+  *  @param reconcile is a settings boolean option for non-webhook reconciliation
+  *  @param reconcilable is a boolean variable indicating wether order and payment are reconcilable or not
+  *  @param timezone is passed in to calculate time of order creation using timestamp
+  *  return a boolean value if the payment and order have been reconciled successfully
+  *  Conditions for reconciliation are: (We assume payment method is VABACS and this payment is not reconciled in any order before
+  *  1. Payments must be equal
+  *  2. Order creation Date must be before Payment Date
+  *  Reconciliation means that payment is marked complete and order meta updated suitably
+  */
+  public function reconcile_ma($order, $payment, $reconcile, $reconcilable, $timezone)
+  {
+  	if 	(	($reconcile == 0) ||
+  			($reconcilable == false)	)
+  		{
+  			return false;	// just a safety check
+  		}
+  	$order_created_datetime	= new DateTime( '@' . $order->get_date_created()->getTimestamp());
+  	$order_created_datetime->setTimezone($timezone);
+
+      $payment_date       = $payment->paymentTime;     // example 2007-06-28 15:29:26
+      $payment_datetime	=  DateTime::createFromFormat('Y-m-d H:i:s', $payment_date); // this is already IST
+  	$order_note = 'Payment received by cashfree Virtual Account ID: ' . get_post_meta($order->id, 'va_id', true) .
+  					' Payment ID: ' . $payment->referenceId . '  on: ' . $payment_datetime->format('Y-m-d H:i:s') .
+  					' UTR reference: ' . $payment->utr;
+  	$order->add_order_note($order_note);
+
+  	$order->update_meta_data('va_payment_id', 				$payment->referenceId);
+  	$order->update_meta_data('amount_paid_by_va_payment', 	$payment->amount);  // in Rs
+  	$order->update_meta_data('bank_reference', 				$payment->utr);
+  	// $order->update_meta_data('payment_notes_by_customer', 	$payment_obj->description);
+  	$order->save;
+
+  	$transaction_arr	= array(
+  									'payment_id'		=> $payment->referenceId,
+  									'payment_date'		=> $payment_datetime->format('Y-m-d H:i:s'),
+  									'va_id'				=> get_post_meta($order->id, 'va_id', true),
+  									'utr'	            => $payment->utr,
+  								);
+
+  	$transaction_id = json_encode($transaction_arr);
+
+  	$order->payment_complete($transaction_id);
+
+      return true;
+  } // end of function reconcile_ma
+
+  /**
+  * @param order is the passed in order object under consideration at checkout
+  * @param data is an aray that contains the order meta keys and values when passed in
+  * We update the order's va_id meta at checkout.
+  */
+  public function ma_update_order_meta_atcheckout( $order, $data )
+  {
+  	// get user associated with this order
+  	$payment_method 	= $order->get_payment_method(); 			// Get the payment method ID
+  	// if not vabacs then return, do nothing
+  	if ( $payment_method != 'vabacs' )
+  	{
+  		return;
+  	}
+  	// get the user ID from order
+  	$user_id   			    = $order->get_user_id(); 					// Get the costumer ID
+  	// get the user meta
+  	$va_id 				    = get_user_meta( $user_id, 'va_id', true );	// get the needed user meta value
+      $sritoni_institution    = get_user_meta( $user_id, 'sritoni_institution', true ) ?? 'not set';
+      $grade_for_current_fees = get_user_meta( $user_id, 'grade_for_current_fees', true ) ?? 'not set';
+      // update order meta using above
+  	$order->update_meta_data('va_id', $va_id);
+      $order->update_meta_data('sritoni_institution',     $sritoni_institution);
+      $order->update_meta_data('grade_for_current_fees',  $grade_for_current_fees);
+
+  	return;
+  } // end of function ma_update_order_meta_atcheckout
+
+  /**
+  *  This function changes the price displayed in shop and product pages as follows:
+  *  It gets the price according grade of logged in user
+  *  Price changes applied only to products in product category:grade-dependent-price
+  */
+  function spz_change_price($price, $product)
+  {
+      global $fees_csv;
+
+      // check for programmable category, return if not
+      if ( !has_term( 'programmable', 'product_cat', $product->get_id() ) )
+      {
+          return $price;
+      }
+
+      // this product belongs to category grade-dependent-price
+      // lets get the price for this user
+      // Get the current user
+      $current_user 	= wp_get_current_user();
+  	$user_id 		= $current_user->ID;
+      // read the current user's meta
+  	$studentcat 	          = get_user_meta( $user_id, 'sritoni_student_category', true );
+  	$grade_or_class	          = get_user_meta( $user_id, 'grade_or_class', true );
+      $grade_for_current_fees   = get_user_meta( $user_id, 'grade_for_current_fees', true );
+      $current_fees             = get_user_meta( $user_id, 'current_fees', true ) ?? 0;
+      $arrears_amount           = get_user_meta( $user_id, 'arrears_amount', true );
+      // set price to full price based on grade of student using lookup table
+      // $full_price_fee = $fees_csv[0][$grade_or_class] ?? 0;
+      /*
+      if (!has_term( 'arrears', 'product_cat', $product->get_id() ))
+      {
+          // check if user studentcat is installment2 or installment3
+          /*
+          if (strpos($studentcat, "installment") !== false)
+          {
+              $num_installments = (int) $studentcat[-1];
+
+              if ($num_installments === 2 || $num_installments === 3)
+              {
+                  $installment_price = $current_fees/$num_installments;
+                  return round($installment_price, 2);
+              }
+          }
+
+          // not installment nor arrears so return full current amount due
+          return $current_fees;
+      }
+
+      else
+      {
+          // this is an arrears product as well as programmable product
+          // so return the arrears amount as price
+          return $arrears_amount;
+      }
+      */
+      return $current_fees + $arrears_amount;
+
+  } // end of function spz_change_price
+
+  /**
+  *  setup by add_filter( 'woocommerce_before_add_to_cart_button', 'spz_product_customfield_display');
+  *  This function adds text to product just before add-o-cart button
+  * The text is grabbed from user meta dependent on product category
+  * if category is
+  */
+  public function spz_product_customfield_display()
+  {
+      // TODO check for programmable product category before doing this
+      // get user meta for curent fees description
+      $current_user 	= wp_get_current_user();
+      $user_id 		= $current_user->ID;
+      // read the current user's meta
+      $current_fee_description 	= get_user_meta( $user_id, 'current_fee_description', true );
+      $arrears_description        = get_user_meta( $user_id, 'arrears_description', true );
+      // decode json to object
+      $current_item               = json_decode($current_fee_description, true);
+      // start building HTML for ordered list display
+      $output = "<ol>
+                      <li>Current fees due for " . $current_item["fees_for"]
+                                             . " for AY:"
+                                             . $current_item["ay"]
+                                             . " of "
+                                             . get_woocommerce_currency_symbol()
+                                             . number_format($current_item["amount"])
+                  . "</li>";
+      // decode the arrears array and list them out also
+      $arrears_items = json_decode($arrears_description, true);
+      foreach ($arrears_items as $item)
+      {
+          $output .= "<li>Arrears fees due for " . $item["fees_for"]
+                                 . " for AY:"
+                                 . $item["ay"]
+                                 . " of "
+                                 . get_woocommerce_currency_symbol()
+                                 . number_format($item["amount"])
+                                 . "</li>";
+      }
+      // close the tag
+      $output .= "</ol>";
+      // display this just above the add-to-cart button`
+      echo $output;
+  } // end of function spz_product_customfield_display
+
+  /**
+  *  setup by add_filter( 'woocommerce_add_cart_item_data', 'spz_add_cart_item_data', 10, 3 );
+  *  This function adds the fee payment items to cart item data
+  */
+  public function spz_add_cart_item_data( $cart_item_data, $product_id, $variation_id )
+  {
+  	/*
+  	 error_log('cart item_data object');
+  	 error_log(print_r($cart_item_data, true));
+  	*/
+
+      // get user meta of logged in user
+      $current_user 	= wp_get_current_user();
+      $user_id 		= $current_user->ID;
+      // read the current user's meta
+      $current_fee_description 	= get_user_meta( $user_id, 'current_fee_description', true );
+      $arrears_description        = get_user_meta( $user_id, 'arrears_description', true );
+      // decode json to object
+      $current_item               = json_decode($current_fee_description, true);
+
+  	// add as cart item data, otherwise won;t see this when product is in cart
+  	 $cart_item_data['current_item'] = "Current fees due for "  . $current_item["fees_for"]
+  																. " for AY:"
+  																. $current_item["ay"]
+  																. " of "
+  																. get_woocommerce_currency_symbol()
+  																. number_format($current_item["amount"]);
+
+      $arrears_items = json_decode($arrears_description, true);
+      foreach ($arrears_items as $key => $item)
+      {
+          $index                  = "arrears" . ($key + 1);
+          $cart_item_data[$index] = "Arrears fees due for " . $item["fees_for"]
+                                  . " for AY:"
+                                  . $item["ay"]
+                                  . " of "
+                                  . get_woocommerce_currency_symbol()
+                                  . number_format($item["amount"]);
+      }
+
+  	 return $cart_item_data;
+  }  // end of function spz_add_cart_item_data
+
+  public function spz_get_cart_item_data( $item_data, $cart_item_data )
+  {
+  	 if( isset( $cart_item_data['current_item'] ) )
+  		 {
+  		 	$item_data[] = array(
+  		 						'key' => 'current_item',
+  		 						'value' => wc_clean( $cart_item_data['current_item'] ),
+  		 					 	);
+  		 }
+
+           $arrears_description   = $this->spz_get_user_meta("arrears_description");
+           $arrears_items         = json_decode($arrears_description, true);
+
+           foreach ($arrears_items as $key => $item)
+           {
+               $index = "arrears" . ($key + 1);
+               if( isset( $cart_item_data[$index] ) )
+          		 {
+          		 	$item_data[] = array(
+          		 						'key' => $index,
+          		 						'value' => wc_clean( $cart_item_data[$index] ),
+          		 					 	);
+          		 }
+           }
+
+
+  	 return $item_data;
+  } // end of function spz_get_cart_item_data
+
+  /**
+   * Add order item meta. This is deprecated and no longer used see function below instead
+   *
+   * add_action( 'woocommerce_add_order_item_meta', 'add_order_item_meta' , 10, 2);
+  */
+  public function add_order_item_meta ( $item_id, $values )
+  {
+
+  	if ( isset( $values [ 'current_item' ] ) )
+      {
+
+  		$custom_data  = $values [ 'current_item' ];
+  		wc_add_order_item_meta( $item_id, 'current_item', $custom_data['current_item'] );
+  	}
+      $arrears_description   = $this->spz_get_user_meta("arrears_description");
+      $arrears_items         = json_decode($arrears_description, true);
+
+      foreach ($arrears_items as $key => $item)
+      {
+          $index = "arrears" . ($key + 1);
+          if ( isset( $values [ $index ] ) )
+          {
+
+      		$custom_data  = $values [ $index ];
+      		wc_add_order_item_meta( $item_id, $index, $custom_data[$index] );
+      	}
+      }
+
+  }  // end of function add_order_item_meta
+
+  /**
+  *  This is used instead of deprecated woocommerce_add_order_item_meta above
+  *  @param item is an instance of WC_Order_Item_Product
+  *  @param cart_item_key is the cart item unique hash key
+  *  @param values is the cart item
+  *  @param order an instance of the WC_Order object
+  *  We are copying data from cart item to order item
+  */
+  public function spz_checkout_create_order_line_item($item, $cart_item_key, $values, $order)
+  {
+      if( isset( $values['current_item'] ) )
+      {
+          // overwrite if it exists already
+          $item->add_meta_data('current_item', $values['current_item'], true);
+      }
+
+      $arrears_description   = $this->spz_get_user_meta("arrears_description");
+      $arrears_items         = json_decode($arrears_description, true);
+
+      foreach ($arrears_items as $key => $arrears_item)
+      {
+          $index = "arrears" . ($key + 1);
+          if ( isset( $values [ $index ] ) )
+          {
+              // overwrite if it exists already
+              $item->add_meta_data($index, $values[$index], true);
+      	}
+      }
+  } // end of function spz_checkout_create_order_line_item
+
+  /**
+  *
+  */
+  function spz_get_user_meta($field)
+  {
+    $current_user = wp_get_current_user();
+  	$user_id 		  = $current_user->ID;
+    $meta         = get_user_meta( $user_id, $field, true );
+    return $meta;
   }
+
+
+  public function max_grouped_price( $price_this_get_price_suffix, $instance, $child_prices )
+  {
+
+      return wc_price(array_sum($child_prices));
+  } // end of unused function max_grouped_price
 
 }           // end of class definition
