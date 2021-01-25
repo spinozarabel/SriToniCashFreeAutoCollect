@@ -654,10 +654,10 @@ class sritoni_va_ec
       // lets get the price for this user
       // Get the current user
       $current_user 	= wp_get_current_user();
-  	$user_id 		= $current_user->ID;
+  	  $user_id 		    = $current_user->ID;
       // read the current user's meta
-  	$studentcat 	          = get_user_meta( $user_id, 'sritoni_student_category', true );
-  	$grade_or_class	          = get_user_meta( $user_id, 'grade_or_class', true );
+  	  $studentcat 	            = get_user_meta( $user_id, 'sritoni_student_category', true );
+  	  $grade_or_class	          = get_user_meta( $user_id, 'grade_or_class', true );
       $grade_for_current_fees   = get_user_meta( $user_id, 'grade_for_current_fees', true );
       $current_fees             = get_user_meta( $user_id, 'current_fees', true ) ?? 0;
       $arrears_amount           = get_user_meta( $user_id, 'arrears_amount', true );
