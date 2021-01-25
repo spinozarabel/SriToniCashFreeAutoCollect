@@ -54,7 +54,7 @@ class sritoni_va_ec
   	/*
   	* add another submenu page for reconciling orders and payments on demand from admin menu
   	*/
-  	//add_submenu_page( 'woocommerce',	'reconcile',	'reconcile',	'manage_options',	'reconcile-payments',	'reconcile_payments_callback' );
+  	add_submenu_page( 'woocommerce',	'reconcile',	'reconcile',	'manage_options',	'reconcile-payments',	[$this, 'reconcile_payments_callback'] );
 
   	return;
   }
@@ -178,10 +178,134 @@ class sritoni_va_ec
   				continue;
   			}
   		}
-
-
-
-
   }         // end of public function VA_payments_callback
+
+  /**
+  *	This implements the callback for the sub-menu page reconcile.
+  *   When this manu page is accessed from the admin menu under Woocommerce, it tries to reconcile all open orders against payments made
+  *   Normally the reconciliation should be done as soon as a payment is made by a webhook issued by the payment gateway.
+  *	Should the webhook reconciliation fail for whatever reason, an on-demand reconciliation can be forced by accessing this page.
+  */
+  public function reconcile_payments_callback()
+  {
+  	$maxReturn		=	3;					// maximum number of payments to be returned for any payment account to reconcile
+  	$max_orders		=	30;					// maximum number of orders that are reconciled in one go
+  	$timezone		= new DateTimeZone("Asia/Kolkata");
+  	// get all open orders for all users
+  	$args = array(
+  						'status' 			=> 'on-hold',
+  						'payment_method' 	=> 'vabacs',
+  				  );
+  	$orders = wc_get_orders( $args );
+  	// if no orders on-hold then nothing t reconcile so exit
+  	if (empty($orders))
+  	{
+  		echo 'No orders on-hold, nothing to reconcile';
+  		return;
+  	}
+  	// Instantiate payment gateway API along with authetication
+  	$cashfree_api 			= new CfAutoCollect; // new cashfree Autocollect API object
+  	// For each order get the last 3 payments made. Assumption is that there are not more than 3 payments made after an order is placed
+  	$order_count = 0;
+  	foreach ($orders as $order)
+  	{
+  		// get user payment account ID details from order
+  		$va_id		= get_post_meta($order->id, 'va_id', true) ?? 'unable to get VAID from order meta';
+  		// get the last few payments bade by tis account
+  		$payments	= $cashfree_api->getPaymentsForVirtualAccount($va_id, $maxReturn);
+  		foreach ($payments as $payment)
+  		{
+  			if ( !reconcilable1_ma($order, $payment, $timezone) )
+  				{
+  				// this payment is not reconcilable either due to mismatch in payment or dates or both
+  				continue;	// continue next payment
+  				}
+  			else
+  				{
+  					reconcile1_ma($order, $payment, $timezone);
+                      echo 'Order No: ' . $order->id . ' Reconciled with Payment ID: ' . $payment->referenceId;
+  					break;	// break out of payment loop and process next order
+  				}
+  		}
+  		$order_count +=	1;
+  		if ($order_count >= $max_orders)
+  		{
+  			break; // exit out of orders loop
+  		}
+  	}
+
+  }
+
+  /**
+  *  @param order is the full order object under consideration
+  *  @param payment is the full payment object being considered
+  *  @param timezone is the full timezone object needed for order objects timestamp
+  *  return a boolean value if the payment and order can be reconciled
+  *  Conditions for reconciliation are: (We assume payment method is VABACS and this payment is not reconciled in any order before
+  *  1. Payments must be equal
+  *  2. Order creation Date must be before Payment Date
+  */
+  function reconcilable1_ma($order, $payment, $timezone)
+  {
+      // since order datetime is from time stamp whereas payment datetime is form actula date and time
+      // we will only use settimezone for order datetime and not payment datetime.
+  	$order_total			= $order->get_total();
+  	// $order_total_p			= (int) round($order_total * 100);
+  	$order_created_datetime	= new DateTime( '@' . $order->get_date_created()->getTimestamp());
+      $order_created_datetime->setTimezone($timezone);
+      // we don't care about the time zone adjustment since it will be common for all dates for comparison purpses
+  	//
+  	$payment_amount 		= $payment->amount;      // in ruppees
+      $payment_date       = $payment->paymentTime;     // example 2007-06-28 15:29:26
+      $payment_datetime	=  DateTime::createFromFormat('Y-m-d H:i:s', $payment_date);
+      // $payment_datetime->setTimezone($timezone);
+
+  	return ( ($order_total == $payment_amount) && ($payment_datetime > $order_created_datetime) );
+
+  } // END OF function reconcilable1_ma($order, $payment, $timezone)
+
+  /**
+  *  @param order is the order object
+  *  @param payment is the payment object
+  *  @param reconcile is a settings boolean option for non-webhook reconciliation
+  *  @param reconcilable is a boolean variable indicating wether order and payment are reconcilable or not
+  *  @param timezone is passed in to calculate time of order creation using timestamp
+  *  return a boolean value if the payment and order have been reconciled successfully
+  *  Conditions for reconciliation are: (We assume payment method is VABACS and this payment is not reconciled in any order before
+  *  1. Payments must be equal
+  *  2. Order creation Date must be before Payment Date
+  *  Reconciliation means that payment is marked complete and order meta updated suitably
+  */
+  public function reconcile1_ma($order, $payment, $timezone)
+  {
+  	$order_created_datetime	= new DateTime( '@' . $order->get_date_created()->getTimestamp());
+  	$order_created_datetime->setTimezone($timezone);
+
+      $payment_date       = $payment->paymentTime;     // example 2007-06-28 15:29:26
+      $payment_datetime	=  DateTime::createFromFormat('Y-m-d H:i:s', $payment_date); // this is already IST
+  	$order_note = 'Payment received by cashfree Virtual Account ID: ' . get_post_meta($order->id, 'va_id', true) .
+  					' Payment ID: ' . $payment->referenceId . '  on: ' . $payment_datetime->format('Y-m-d H:i:s') .
+  					' UTR reference: ' . $payment->utr;
+  	$order->add_order_note($order_note);
+
+  	$order->update_meta_data('va_payment_id', 				$payment->referenceId);
+  	$order->update_meta_data('amount_paid_by_va_payment', 	$payment->amount);  // in Rs
+  	$order->update_meta_data('bank_reference', 				$payment->utr);
+  	// $order->update_meta_data('payment_notes_by_customer', 	$payment_obj->description);
+  	$order->save;
+
+  	$transaction_arr	= array(
+  									'payment_id'		=> $payment->referenceId,
+  									'payment_date'		=> $payment_datetime->format('Y-m-d H:i:s'),
+  									'va_id'				=> get_post_meta($order->id, 'va_id', true),
+  									'utr'	            => $payment->utr,
+  								);
+
+  	$transaction_id = json_encode($transaction_arr);
+
+  	$order->payment_complete($transaction_id);
+
+      return true;
+  }
 
 }           // end of class definition
