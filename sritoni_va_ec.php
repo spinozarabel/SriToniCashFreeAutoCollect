@@ -26,7 +26,13 @@ class sritoni_va_ec
     add_action( 'woocommerce_order_status_completed',     'moodle_on_order_status_completed', 10, 1 );
     */
 
-    // $this->add_VA_payments_submenu();
+    add_action('plugins_loaded', array($this, 'init_class_functions'));
+
+  }
+
+  public function init_class_functions()
+  {
+    $this->add_VA_payments_submenu();
   }
 
   public function add_VA_payments_submenu()
