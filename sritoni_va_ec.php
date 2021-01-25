@@ -32,25 +32,12 @@ class sritoni_va_ec
 
   public function init_class_functions()
   {
-    $this->add_VA_payments_submenu();
+    add_submenu_page( 'woocommerce',	'VA-payments',	'VA-payments',	'manage_options',	'woo-VA-payments',		array($this, 'VA_payments_callback' ));
+
+    //add_submenu_page( 'woocommerce',	'reconcile',	'reconcile',	'manage_options',	'reconcile-payments',	array($this, 'reconcile_payments_callback' ));
   }
 
-  public function add_VA_payments_submenu()
-  {
-
-      /*
-  	add_submenu_page( string $parent_slug, string $page_title, string $menu_title, string $capability, string $menu_slug, callable $function = '' )
-  	*					parent slug		newsubmenupage	submenu title  	capability			new submenu slug		callback for display page
-  	*/
-  	add_submenu_page( 'woocommerce',	'VA-payments',	'VA-payments',	'manage_options',	'woo-VA-payments',		array($this, 'VA_payments_callback' ));
-
-  	/*
-  	* add another submenu page for reconciling orders and payments on demand from admin menu
-  	*/
-  // 	add_submenu_page( 'woocommerce',	'reconcile',	'reconcile',	'manage_options',	'reconcile-payments',	'reconcile_payments_callback' );
-
-  	return;
-  }         // end of function add_VA_payments_submenu() definition
+         // end of function add_VA_payments_submenu() definition
 
   public function VA_payments_callback()
   {
