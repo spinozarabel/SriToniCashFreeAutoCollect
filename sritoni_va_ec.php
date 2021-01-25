@@ -18,14 +18,15 @@ class sritoni_va_ec
   {
     $this->verbose      = self::VERBOSE;
 
-    // hook for adding custom columns on woocommerce orders page
+    /* hook for adding custom columns on woocommerce orders page
     add_filter( 'manage_edit-shop_order_columns',         'orders_add_mycolumns' );
     // hook for updating my new column valus based on passed order details
     add_action( 'manage_shop_order_posts_custom_column',  'set_orders_newcolumn_values', 2 );
     // hook for callback function to be done after order's status is changed to completed
     add_action( 'woocommerce_order_status_completed',     'moodle_on_order_status_completed', 10, 1 );
+    */
 
-    $this->add_VA_payments_submenu();
+    // $this->add_VA_payments_submenu();
   }
 
   public function add_VA_payments_submenu()
@@ -40,7 +41,7 @@ class sritoni_va_ec
   	/*
   	* add another submenu page for reconciling orders and payments on demand from admin menu
   	*/
-  	add_submenu_page( 'woocommerce',	'reconcile',	'reconcile',	'manage_options',	'reconcile-payments',	'reconcile_payments_callback' );
+  // 	add_submenu_page( 'woocommerce',	'reconcile',	'reconcile',	'manage_options',	'reconcile-payments',	'reconcile_payments_callback' );
 
   	return;
   }         // end of function add_VA_payments_submenu() definition
