@@ -968,7 +968,7 @@ class sritoni_va_ec
   /**
   *
   */
-  private spz_get_user_meta($field)
+  private function spz_get_user_meta($field)
   {
     $current_user = wp_get_current_user();
   	$user_id 		  = $current_user->ID;
