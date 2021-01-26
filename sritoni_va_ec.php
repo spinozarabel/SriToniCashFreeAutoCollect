@@ -99,7 +99,7 @@ class sritoni_va_ec
   *   displays Virtual payments. Normal access to this page is by clicking on a VA payment from the Orders menu
   *   By clicking on the payment, the user details are passed into this page, even though admin is viewing this page
   */
-  private function VA_payments_callback()
+  public function VA_payments_callback()
   {
   	$timezone          = $this->timezone;   // new DateTimeZone('Asia/Kolkata');
   	// values passed in from orders page VA_ID link, see around line 1049
@@ -228,7 +228,7 @@ class sritoni_va_ec
   *	  Should the webhook reconciliation fail for whatever reason, an on-demand reconciliation can be forced by accessing this page.
   *
   */
-  private function reconcile_payments_callback()
+  public function reconcile_payments_callback()
   {
   	$maxReturn	=	3;					// maximum number of payments to be returned for any payment account to reconcile
   	$max_orders	=	30;					// maximum number of orders that are reconciled in one go
