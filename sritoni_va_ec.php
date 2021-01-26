@@ -382,7 +382,7 @@ class sritoni_va_ec
   *   adds new columns after order_status column called Student
   *   adds 2 new columns after order_total called VApymnt and VAid
   */
-  private function orders_add_mycolumns($columns)
+  public function orders_add_mycolumns($columns)
   {
   	$new_columns = array();
 
@@ -421,7 +421,7 @@ class sritoni_va_ec
   *      If reconciled display the payment amount and date. If not display that payment is pending, with no date
   *   This is a backup for reconciliation of payments with orders wif the webhook does not work
   */
-  private function set_orders_newcolumn_values($colname)
+  public function set_orders_newcolumn_values($colname)
   {
   	global $post;
 
