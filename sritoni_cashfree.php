@@ -27,35 +27,24 @@ if ( is_admin() )
 { // add sub-menu for a new payments page. This function is a method belonging to the class sritoni_va_ec
   add_action('admin_menu', [$sritoni_va_ec ,'add_VA_payments_submenu']);
 
-
-
-  // Now add a new submenu for sritoni cashfree plugin settings in Woocommerce. This is to be done only once!!!!
+  // add a new submenu for sritoni cashfree plugin settings in Woocommerce. This is to be done only once!!!!
   $sritoniCashfreeSettings = new sritoni_cashfree_settings();
 }
-
-
-$moodle_token 	    = get_option( 'sritoni_settings')["sritoni_token"];
-$moodle_url         = get_option( 'sritoni_settings')["sritoni_url"] . '/webservice/rest/server.php';
-
-$get_csv_fees_file  = get_option( 'sritoni_settings')["get_csv_fees_file"] ?? false;
-$csv_file           = get_option( 'sritoni_settings')["csv_fees_file_path"];
-
+// wait for all plugins to be loaded before initializing the new VABACS gateway
 add_action('plugins_loaded', 'init_vabacs_gateway_class');
+
 // hook action for post that has action set to cf_wc_webhook
 // When that action is discovered the function cf_webhook_init is fired
 // https://sritoni.org/hset-payments/wp-admin/admin-post.php?action=cf_wc_webhook
 add_action('admin_post_nopriv_cf_wc_webhook', 'cf_webhook_init', 10);
 
-if ($get_csv_fees_file)
-{
-    // read file and parse to associative array. To access this in a function, make this a global there
-    $fees_csv = csv_to_associative_array($csv_file);
-}
+
 
 
 function init_vabacs_gateway_class()
-	{
-	class WC_Gateway_VABACS extends WC_Payment_Gateway {  // MA
+{
+	class WC_Gateway_VABACS extends WC_Payment_Gateway
+  {  // MA
 	/**
 	 * Array of locales
 	 *
@@ -372,8 +361,10 @@ function init_vabacs_gateway_class()
 	 *
 	 * @return array
 	 */
-	public function get_country_locale() {
-		if ( empty( $this->locale ) ) {
+	public function get_country_locale()
+  {
+		if ( empty( $this->locale ) )
+    {
 			// Locale information to be used - only those that are not 'Sort Code'.
 			$this->locale = apply_filters(
 				'woocommerce_get_bacs_locale',
@@ -423,12 +414,13 @@ function init_vabacs_gateway_class()
 		}
 		return $this->locale;
 	}
-	}
-	add_filter( 'woocommerce_payment_gateways', 'add_vabacs' );
-		function add_vabacs( $methods ) {
-		    $methods[] = 'WC_Gateway_VABACS';
-		    return $methods;
-		}
+  }
+  add_filter( 'woocommerce_payment_gateways', 'add_vabacs' );
+  function add_vabacs( $methods )
+  {
+    $methods[] = 'WC_Gateway_VABACS';
+    return $methods;
+  }
 }
 
 // -------------------------payment gateway ends here--------------------------------------------
@@ -445,48 +437,4 @@ function cf_webhook_init()
     $cfWebhook = new CF_webhook();
 
     $cfWebhook->process();
-}
-
-/**
- * This routine is attributed to https://github.com/rap2hpoutre/csv-to-associative-array
-  *
- * The items in the 1st line (column headers) become the fields of the array
- * each line of the CSV file is parsed into a sub-array using these fields
- * The 1st index of the array is an integer pointing to these sub arrays
- * The 1st row of the CSV file is ignored and index 0 points to 2nd line of CSV file
- * This is the example data:
- *
- * grade1,grade2,grade3
- * 10000,20000,30000
- *
- * This is the associative array
- * Array
- *(
- *  [0] => Array
- *      (
- *          [grade1] => 10000
- *          [grade2] => 20000
- *          [grade3] => 30000
- *      )
- * )
- */
-function csv_to_associative_array($file, $delimiter = ',', $enclosure = '"')
-{
-    if (($handle = fopen($file, "r")) !== false)
-    {
-        $headers = fgetcsv($handle, 0, $delimiter, $enclosure);
-        $lines = [];
-        while (($data = fgetcsv($handle, 0, $delimiter, $enclosure)) !== false)
-        {
-            $current = [];
-            $i = 0;
-            foreach ($headers as $header)
-            {
-                $current[$header] = $data[$i++];
-            }
-            $lines[] = $current;
-        }
-        fclose($handle);
-        return $lines;
-	}
 }
