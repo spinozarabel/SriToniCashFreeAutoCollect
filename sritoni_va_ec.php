@@ -300,7 +300,7 @@ class sritoni_va_ec
   *  1. Payments must be equal
   *  2. Order creation Date must be before Payment Date
   */
-  private function reconcilable1_ma()
+  public function reconcilable1_ma()
   {
     $timezone = $this->timezone;
     $order    = $this->order;
@@ -337,7 +337,7 @@ class sritoni_va_ec
   *  2. Order creation Date must be before Payment Date
   *  Reconciliation means that payment is marked complete and order meta updated suitably
   */
-  private function reconcile1_ma()
+  public function reconcile1_ma()
   {
     $timezone = $this->timezone;
     $order    = $this->order;
@@ -611,7 +611,7 @@ class sritoni_va_ec
   *  1. Payments must be equal
   *  2. Order creation Date must be before Payment Date
   */
-  private function reconcilable_ma()
+  public function reconcilable_ma()
   {
     // since order datetime is from time stamp whereas payment datetime is form actula date and time
     // we will only use settimezone for order datetime and not payment datetime.
@@ -644,7 +644,7 @@ class sritoni_va_ec
   *  2. Order creation Date must be before Payment Date
   *  Reconciliation means that payment is marked complete and order meta updated suitably
   */
-  private function reconcile_ma($order, $payment, $reconcile, $reconcilable, $timezone)
+  public function reconcile_ma($order, $payment, $reconcile, $reconcilable, $timezone)
   {
     $reconcile    = $this->reconcile;
     $reconcilable = $this->reconcilable;
@@ -694,7 +694,7 @@ class sritoni_va_ec
   * @param data is an aray that contains the order meta keys and values when passed in
   * We update the order's va_id meta at checkout.
   */
-  private function ma_update_order_meta_atcheckout( $order, $data )
+  public function ma_update_order_meta_atcheckout( $order, $data )
   {
   	// get user associated with this order
   	$payment_method 	    = $order->get_payment_method(); 			// Get the payment method ID
@@ -725,7 +725,7 @@ class sritoni_va_ec
   *  It gets the price according grade of logged in user
   *  Price changes applied only to products in product category:grade-dependent-price
   */
-  private function spz_change_price($price, $product)
+  public function spz_change_price($price, $product)
   {
       global $fees_csv;
 
@@ -787,7 +787,7 @@ class sritoni_va_ec
   *  The text is grabbed from user meta dependent on product category: includes current fee, arrears fee, etc.
   *
   */
-  private function spz_product_customfield_display()
+  public function spz_product_customfield_display()
   {
       // TODO check for programmable product category before doing this
       // get user meta for curent fees description
@@ -836,7 +836,7 @@ class sritoni_va_ec
   *  setup by add_filter( 'woocommerce_add_cart_item_data', 'spz_add_cart_item_data', 10, 3 );
   *  This function adds the fee payment items to cart item data
   */
-  private function spz_add_cart_item_data( $cart_item_data, $product_id, $variation_id )
+  public function spz_add_cart_item_data( $cart_item_data, $product_id, $variation_id )
   {
   	/*
   	 error_log('cart item_data object');
@@ -879,7 +879,7 @@ class sritoni_va_ec
   /**
   *   This callback gets the cart item data
   */
-  private function spz_get_cart_item_data( $item_data, $cart_item_data )
+  public function spz_get_cart_item_data( $item_data, $cart_item_data )
   {
     if( isset( $cart_item_data['current_item'] ) )
      {
@@ -910,7 +910,7 @@ class sritoni_va_ec
    *  Deprecated Add order item meta.  see function below instead
    *
   */
-  private function add_order_item_meta ( $item_id, $values )
+  public function add_order_item_meta ( $item_id, $values )
   {
 
   	if ( isset( $values [ 'current_item' ] ) )
@@ -943,7 +943,7 @@ class sritoni_va_ec
   *  @param order an instance of the WC_Order object
   *  We are copying data from cart item to order item
   */
-  private function spz_checkout_create_order_line_item($item, $cart_item_key, $values, $order)
+  public function spz_checkout_create_order_line_item($item, $cart_item_key, $values, $order)
   {
       if( isset( $values['current_item'] ) )
       {
@@ -968,7 +968,7 @@ class sritoni_va_ec
   /**
   *
   */
-  private function spz_get_user_meta($field)
+  public function spz_get_user_meta($field)
   {
     $current_user = wp_get_current_user();
   	$user_id 		  = $current_user->ID;
@@ -999,7 +999,7 @@ class sritoni_va_ec
    *      )
    * )
    */
-  private function csv_to_associative_array($file, $delimiter = ',', $enclosure = '"')
+  public function csv_to_associative_array($file, $delimiter = ',', $enclosure = '"')
   {
       if (($handle = fopen($file, "r")) !== false)
       {
@@ -1020,7 +1020,7 @@ class sritoni_va_ec
   	}
   }
 
-  private function max_grouped_price( $price_this_get_price_suffix, $instance, $child_prices )
+  public function max_grouped_price( $price_this_get_price_suffix, $instance, $child_prices )
   {
 
       return wc_price(array_sum($child_prices));
