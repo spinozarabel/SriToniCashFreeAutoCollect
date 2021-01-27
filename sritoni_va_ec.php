@@ -58,6 +58,9 @@ class sritoni_va_ec
 
   private function init_function()
   {
+    $this->$blog_id                 = get_current_blog_id();
+    ($this->verbose ?  error_log('extracted blog_id: ' . $this->$blog_id) : false);
+
     $this->moodle_token 	          = get_option( 'sritoni_settings')["sritoni_token"];
     $this->moodle_url               = get_option( 'sritoni_settings')["sritoni_url"] . '/webservice/rest/server.php';
 
@@ -1029,10 +1032,8 @@ class sritoni_va_ec
   /**
  * Filter products on the shop page based on user meta: sritoni_student_category, grade_or_class
  * The filter is not applicable to shop managers and administrators
- * If user meta sritoni_student_category is installment then only products belonging to BOTH
- *    categories Installment AND that pointed to by user meta "grade_or_class".
- * If user meta "sritoni_student_category" does not contain installment then only show products
- *    NOT in Installment category AND any products in Common OR pointed by user meta "grade_or_class"
+ * Currently the filter is display products belonging any of grade_or_class, arrears, grade_for_current_fees
+ * independent of if installment or not.
  * https://docs.woocommerce.com/document/exclude-a-category-from-the-shop-page/
  * https://stackoverflow.com/questions/39004800/how-do-i-hide-woocommerce-products-with-a-given-category-based-on-user-role
  */
@@ -1102,5 +1103,209 @@ class sritoni_va_ec
   		$q->set( 'tax_query', $tax_query );
   	}
   }           // end of function installment_pre_get_posts_query
+
+  /** moodle_on_order_status_completed()
+  *   is the callback function for the add_action woocommerce_order_status_completed action hook above
+  *   It calls the Moodle REST API using the php driver included at very top
+  *   It gets the associated moodle user details and updates the user payments meta with order data
+  *   It gets the user details from Moodle using $order
+  *   Any existing order details are in the 'payments' field and extracted as a json string and decoded
+  *   The new order data is inserted into the array. All of this is encoded back into JSON
+  *   The JSON encoded data is written back to SRiToni by using core-users-update API
+  *   Based on payments array conditions are checked for valid 'fees paid' status.
+  *   Based on the conditions the user field 'fees paid' is updated to yes or no
+  * No API calls are made to any payment gateway, relies only on order data and meta data
+  */
+  public function moodle_on_order_status_completed( $order_id )
+  {
+  	   // global $blog_id, $moodle_token, $moodle_url;
+    $blog_id      = $this->blog_id;
+    $moodle_token = $this->moodle_token;
+    $moodle_url   = $this->moodle_url;
+
+  	$debug						= $this->verbose;  // controls debug messages to error log
+
+      // get all details from order and nothing but order using just order_id
+  	$order 		= wc_get_order( $order_id );
+  	$user_id 	= $order->get_user_id();  // this is WP user id
+  	$user			= $order->get_user();     // get wpuser information associated with order
+  	$username	= $user->user_login;      // username in WP which is moodle system userid
+      // extract needed user meta
+  	$grade_or_class		= get_user_meta( $user_id, 'grade_or_class', true );
+    $va_id_hset 			= get_user_meta( $user_id, 'va_id_hset', true );
+    $beneficiary_name = get_user_meta( $user_id, 'beneficiary_name', true );
+
+  	$moodle_user_id		= strval($username);      // in case a strict string is expected by Moodle API
+  	//
+  	$order_amount 				     = $order->get_total();
+  	$order_transaction_id 		 = $order->get_transaction_id();
+  	$order_completed_date 		 = $order->get_date_completed();
+  	$order_completed_timestamp = $order_completed_date->getTimestamp();
+
+  	$items = $order->get_items();
+
+  	// get prodct name associated with this order
+  	// per our restrictions there should be only 1 bundled item per order
+  	// however, since we only want the bundled order name, we break after 1st item in loop below
+  	foreach ($items as $item_key => $item )
+  	{
+  		$item_name = $item->get_name();	// this is the name of the bundled product
+  		break;
+  	}
+  	// get sub-site name which will serve as payee name for listing in SriToni Moodle user profile field
+  	$order_payee =	get_blog_details( $blog_id )->blogname;
+  	// prepare the data we want to write to Moodle user field called payments, of type text area
+    // all data is extracted from order
+  	$data = array(
+        					"order_id"					        =>	$order_id,
+        					"order_amount"				      =>	$order_amount,
+        					"order_transaction_id"		  =>	$order_transaction_id,
+        					"order_product_name"		    =>	$item_name,
+        					"order_completed_timestamp"	=>	$order_completed_timestamp,
+        					"order_payee"				        =>  $order_payee,               // this will be hset-payments or hsea-llp-payments
+        					"order_grade"				        =>  $grade_or_class,            // this is the grade that the user is/was when payment was made
+        				 );
+  	// prepare the Moodle Rest API object
+  	$MoodleRest = new MoodleRest();
+  	$MoodleRest->setServerAddress($moodle_url);
+  	$MoodleRest->setToken( $moodle_token ); // get token from ignore_key file
+  	$MoodleRest->setReturnFormat(MoodleRest::RETURN_ARRAY); // Array is default. You can use RETURN_JSON or RETURN_XML too.
+  	// $MoodleRest->setDebug();
+  	// get moodle user details associated with this completed order from SriToni
+  	$parameters   = array("criteria" => array(array("key" => "id", "value" => $moodle_user_id)));
+
+  	// get moodle user satisfying above criteria
+  	$moodle_users = $MoodleRest->request('core_user_get_users', $parameters, MoodleRest::METHOD_GET);
+
+  	if ( !( $moodle_users["users"][0] ) )
+  	{
+  		// failed to communicate effectively to moodle server so exit
+  		error_log(print_r("couldn't communicate to moodle server regarding order: " . $order_id ,true));
+  		return;
+  	}
+
+  	$moodle_user   = $moodle_users["users"][0]; // see object returned in documentation
+
+  	$custom_fields = $moodle_user["customfields"];  // get custom fields associative array
+
+  	$existing 			= null ; //initialize to null
+
+  	// search for index key of our field having shorname as payments
+  	foreach ($custom_fields as $key => $field )
+  	{
+  		// $field is an array for an individual user profile field with 4 elements in this array
+  		if ( $field["shortname"] == "payments" )
+  		{
+  			if ($debug)
+  			{
+  					error_log("existing raw value in profile field payments");
+  					error_log(print_r($field["value"] ,true));
+
+  			}
+
+  			if ($field["value"]) 		// if value exists assume it is a json string and decode it
+  			{
+  				// strip off html and other tags that got added on by Moodle
+  				$string_without_tags = strip_tags(html_entity_decode($field["value"]));
+
+  				$existing	= json_decode($string_without_tags, true); // decode into an array
+
+  			}
+  			$field_payments_key	= $key;  // this is the key for the payments field
+
+  		}
+  		if ( $field["shortname"] == "fees" )
+  		{
+  			if ($field["value"]) 		// This is the present value of this field
+  			{
+  				// strip off html and other tahs that got added on somehow
+  				$fees_json_read = strip_tags(html_entity_decode($field["value"]));
+          $fees_arr       = json_decode($fees_json_read, true) ?? [];
+
+  			}
+  			$field_fees_key	= $key;  // this is the key for the payments field
+  		}
+
+  		if ( $field["shortname"] == "studentcat" )
+  		{
+  			if ($field["value"]) 		// for example: {general, installment, etc}
+  			{
+  				// strip off html and other tahs that got added on somehow
+  				$studentcat			= strtolower(strip_tags(html_entity_decode($field["value"])));
+
+  			}
+  			$field_studentcat_key		= $key;  // this is the key for studentcat field
+  		}
+  	}
+
+  	if ($debug)
+  	{
+  					error_log("existing payment information in profile field payments");
+  					error_log(print_r($existing ,true));
+
+  					error_log("existing status of user profile field fees");
+  					error_log(print_r($fees_arr ,true));
+  	}
+  	// if $existing already has elements in it then add this payment at index 0
+  	// if not $existing is empty so add this payment explicitly at index 0
+  	if ($existing)
+  	{
+          // there ss something already in the array
+          // check to see if payment for this order already exists
+          $index_ofanyexisting = array_search($order_id, array_column($existing, 'order_id'));
+
+          if ($index_ofanyexisting !== false)
+          {
+              // payment for our order already exists so we can overwrite existing with latest payment
+              $existing[$index_ofanyexisting] = $data;
+          }
+          else
+          {
+              // payment doesn't exist for this oredr_id so write to array at very top
+  		        array_unshift($existing, $data);
+          }
+  	}
+  	else
+  	{
+      // payment doesn't exist at all let alone for this order_id so write to 1st elemt
+  		$existing[0] = $data;
+  	}
+
+  	$payments_json_write	= json_encode($existing);
+
+      // put code here to check and update profile_field fees paid based on payments array
+      // we paid for 1st unpaid item where payee is beneficiary_name from this site
+      // we will reuse same code to extract payment to pay to mark it paid
+      foreach ($fees_arr as $key => $fees)
+      {
+          // mark all unpaid payments to this beneficiary as paid
+          if ($fees["status"] == "not paid" && $fees["payee"] == $beneficiary_name)
+          {
+              $fees_arr[$key]["status"]   = "paid";
+          }
+      }
+      // now we need to update the fees field in Moodle
+      $fees_json_write = json_encode($fees_arr);
+
+      // write the data back to Moodle using REST API
+      // create the users array in format needed for Moodle RSET API
+    	$users = array("users" => array(
+                                        array(	"id" 			      => $moodle_user_id,
+    											                      "customfields" 	=> array(
+                                                                          array(	"type"	=>	"payments",
+    																			                                        "value"	=>	$payments_json_write,
+                                                                               ),
+                                                                          array(	"type"	=>	"fees",
+                           														                            "value"	=>	$fees_json_write,
+                                                                               ),
+    																                                     )
+    										                      )
+    								                  )
+    				         );
+  	// now to update the user's profiel field  with completed order and fees paid status
+  	$ret = $MoodleRest->request('core_user_update_users', $users, MoodleRest::METHOD_POST);
+
+  	return;
+  }
 
 }             // end of class definition
