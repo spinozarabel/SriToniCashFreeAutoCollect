@@ -1026,4 +1026,81 @@ class sritoni_va_ec
       return wc_price(array_sum($child_prices));
   } // end of unused function max_grouped_price
 
-}           // end of class definition
+  /**
+ * Filter products on the shop page based on user meta: sritoni_student_category, grade_or_class
+ * The filter is not applicable to shop managers and administrators
+ * If user meta sritoni_student_category is installment then only products belonging to BOTH
+ *    categories Installment AND that pointed to by user meta "grade_or_class".
+ * If user meta "sritoni_student_category" does not contain installment then only show products
+ *    NOT in Installment category AND any products in Common OR pointed by user meta "grade_or_class"
+ * https://docs.woocommerce.com/document/exclude-a-category-from-the-shop-page/
+ * https://stackoverflow.com/questions/39004800/how-do-i-hide-woocommerce-products-with-a-given-category-based-on-user-role
+ */
+  public function installment_pre_get_posts_query( $q )
+  {
+  	// Get the current user
+    $current_user 	= wp_get_current_user();
+  	$user_id 		    = $current_user->ID;
+  	$studentcat 	  = get_user_meta( $user_id, 'sritoni_student_category', true );
+  	$grade_or_class	= get_user_meta( $user_id, 'grade_or_class', true );
+
+    // get user meta of grade to pay for
+    $grade_for_current_fees	= get_user_meta( $user_id, 'grade_for_current_fees', true );
+
+    // get arrears amount from user meta
+    $arrears_amount	        = get_user_meta( $user_id, 'arrears_amount', true );
+
+    // if student has arrears we set a string corresponding to arrears category
+    $arrears        = ($arrears_amount > 0) ? "arrears" : "";
+
+  	if ( in_array( "shop_manager", $current_user->roles )  || in_array( "administrator", $current_user->roles ) )
+  	{
+  		return; // no product filter for admin and shop_manager just return
+  	}
+
+  	$tax_query = (array) $q->get( 'tax_query' );
+
+  	if (  strpos($studentcat, "installment") !==false )
+  	{
+          // product has category of installments but just display products belonging to grade_or_class
+  		$tax_query[] = array(
+  			'relation' => 'OR',
+  				array(
+  				   'taxonomy' => 'product_cat',
+  				   'field' => 'slug',
+  				   'terms' => array( $grade_or_class, $arrears, $grade_for_current_fees, "common" ), 	//
+  				   'operator' => 'IN'										//
+  					 ),									// OR
+  				array(
+  				   'taxonomy' => 'product_cat',
+  				   'field' => 'slug',
+  				   'terms' => array( $grade_or_class, $arrears, $grade_for_current_fees, "common" ),
+  				   'operator' => 'IN'
+  				     )
+  							);
+  		$q->set( 'tax_query', $tax_query );
+  	}
+  	else
+  	{
+          // products are for non-installment category just again display all products
+          // of categories: grade, arrears, common
+  		$tax_query[] = array(
+  			'relation' => 'OR',
+  				array(
+  				   'taxonomy' => 'product_cat',
+  				   'field' => 'slug',
+  				   'terms' => array( $grade_or_class, $arrears, $grade_for_current_fees, "common" ),
+  				   'operator' => 'IN'
+  					 ),												// AND
+  				array(
+  				   'taxonomy' => 'product_cat',
+  				   'field' => 'slug',
+  				   'terms' => array( $grade_or_class, $arrears, $grade_for_current_fees, "common" ), 	// OR of terms
+  				   'operator' => 'IN'
+  					 )
+  							);
+  		$q->set( 'tax_query', $tax_query );
+  	}
+  }           // end of function installment_pre_get_posts_query
+
+}             // end of class definition
