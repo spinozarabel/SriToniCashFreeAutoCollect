@@ -1,7 +1,4 @@
 <?php
-/*
-*/
-
 // if directly called die. Use standard WP and Moodle practices
 if (!defined( "ABSPATH" ) && !defined( "MOODLE_INTERNAL" ) )
     {
@@ -45,12 +42,11 @@ class sritoni_va_ec
     // Display custom item data in the cart we added above
     add_filter( 'woocommerce_get_item_data',                    [$this, 'spz_get_cart_item_data'], 10, 2 );
 
-    //
+    // line item data to checkout
     add_action( 'woocommerce_checkout_create_order_line_item',  [$this, 'spz_checkout_create_order_line_item'], 10, 4 );
 
+    // execute an initialization routime conveniently placed in a function called init_function
     $this->init_function();
-    //
-    // add_action('plugins_loaded',                                [$this, 'init_function']);
 
     // add_filter( 'woocommerce_grouped_price_html', 'max_grouped_price', 10, 3 );
 
@@ -86,7 +82,7 @@ class sritoni_va_ec
 
       /*
   	add_submenu_page( string $parent_slug, string $page_title, string $menu_title, string $capability, string $menu_slug, callable $function = '' )
-  	*					parent slug		newsubmenupage	submenu title  	capability			new submenu slug		callback for display page
+  	*					        parent slug		 newsubmenupage	 submenu title  	  capability			new submenu slug		callback for display page
   	*/
   	add_submenu_page( 'woocommerce',	'VA-payments',	'VA-payments',	'manage_options',	'woo-VA-payments',		[$this, 'VA_payments_callback'] );
 
@@ -1188,7 +1184,7 @@ class sritoni_va_ec
 
   	$custom_fields = $moodle_user["customfields"];  // get custom fields associative array
 
-  	$existing 			= null ; //initialize to null
+  	$existing 		 = null ; // initialize to null. This will hold any any existing payments in Moodle user field
 
   	// search for index key of our field having shorname as payments
   	foreach ($custom_fields as $key => $field )
@@ -1246,22 +1242,22 @@ class sritoni_va_ec
   					error_log("existing status of user profile field fees");
   					error_log(print_r($fees_arr ,true));
   	}
-  	// if $existing already has elements in it then add this payment at index 0
+  	// if $existing already has elements in it then add this payment in front
   	// if not $existing is empty so add this payment explicitly at index 0
   	if ($existing)
   	{
-          // there ss something already in the array
+          // there is something already in the array
           // check to see if payment for this order already exists
           $index_ofanyexisting = array_search($order_id, array_column($existing, 'order_id'));
 
           if ($index_ofanyexisting !== false)
           {
-              // payment for our order already exists so we can overwrite existing with latest payment
+              // payment for our order already exists so we have to overwrite existing with latest payment
               $existing[$index_ofanyexisting] = $data;
           }
           else
           {
-              // payment doesn't exist for this oredr_id so write to array at very top
+              // payment doesn't exist for this order_id so write to array at very top
   		        array_unshift($existing, $data);
           }
   	}
@@ -1279,12 +1275,13 @@ class sritoni_va_ec
       foreach ($fees_arr as $key => $fees)
       {
           // mark all unpaid payments to this beneficiary as paid
+          // since older unpaid items would have been included as arrears
           if ($fees["status"] == "not paid" && $fees["payee"] == $beneficiary_name)
           {
               $fees_arr[$key]["status"]   = "paid";
           }
       }
-      // now we need to update the fees field in Moodle
+      // now we need to update the fees and payments custom fields in Moodle
       $fees_json_write = json_encode($fees_arr);
 
       // write the data back to Moodle using REST API
