@@ -1100,7 +1100,8 @@ class sritoni_va_ec
   	}
   }           // end of function installment_pre_get_posts_query
 
-  /** moodle_on_order_status_completed()
+  /**
+  *   moodle_on_order_status_completed()
   *   is the callback function for the add_action woocommerce_order_status_completed action hook above
   *   It calls the Moodle REST API using the php driver included at very top
   *   It gets the associated moodle user details and updates the user payments meta with order data
