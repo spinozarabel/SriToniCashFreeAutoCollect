@@ -69,10 +69,6 @@ class sritoni_va_ec
         // read file and parse to associative array. To access this in a function, make this a global there
         $this->fees_csv             = $this->csv_to_associative_array($this->csv_file);
     }
-    // capture user data to the object for easy use elsewhere
-    // get the logged in user
-    $current_user                   = wp_get_current_user();
-    $this->current_user             = $current_user;
   }
 
   /** add_VA_payments_submenu()
@@ -1326,7 +1322,7 @@ class sritoni_va_ec
       $site_name        = $this->site_name;
       $blog_id          = $this->blog_id;
 
-      $current_user     = $this->current_user;    // this is a WP user object of logged in user
+      $current_user     = wp_get_current_user();    // this is a WP user object of logged in user
 
       // get user info to pass onto CashFree for new VA if needed
       $employeenumber 	= get_user_meta($current_user->ID, 'sritoni_idnumber', true);	//unique sritoni idnumber
