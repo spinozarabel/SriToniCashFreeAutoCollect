@@ -16,6 +16,12 @@ class sritoni_va_ec
     $this->verbose  = self::VERBOSE;
     $this->timezone = new DateTimeZone('Asia/Kolkata');
 
+    if ( is_admin() )
+
+    { // add sub-menu for a new payments page. This function is a method belonging to the class sritoni_va_ec
+      add_action('admin_menu', [$this, 'add_VA_payments_submenu']);
+    }
+
     // hook for adding custom columns on woocommerce orders page
     add_filter( 'manage_edit-shop_order_columns',               [$this, 'orders_add_mycolumns'] );
 
@@ -96,17 +102,23 @@ class sritoni_va_ec
   */
   public function add_VA_payments_submenu()
   {
-
-      /*
-  	add_submenu_page( string $parent_slug, string $page_title, string $menu_title, string $capability, string $menu_slug, callable $function = '' )
-  	*					        parent slug		 newsubmenupage	 submenu title  	  capability			new submenu slug		callback for display page
-  	*/
-  	add_submenu_page( 'woocommerce',	'VA-payments',	'VA-payments',	'manage_options',	'woo-VA-payments',		[$this, 'VA_payments_callback'] );
+  	add_submenu_page( 
+                      'woocommerce',	                  // string $parent_slug
+                      'VA-payments',	                  // string $page_title
+                      'VA-payments',                    // string $menu_title	
+                      'manage_options',                 // string $capability	
+                      'woo-VA-payments',                // string $menu_slug		
+                      [$this, 'VA_payments_callback'] );// callable $function = ''
 
   	/*
   	* add another submenu page for reconciling orders and payments on demand from admin menu
   	*/
-  	add_submenu_page( 'woocommerce',	'reconcile',	'reconcile',	'manage_options',	'reconcile-payments',	[$this, 'reconcile_payments_callback'] );
+  	add_submenu_page( 'woocommerce',	                          // parent slug
+                      'reconcile',                              // page title	
+                      'reconcile',	                            // menu title
+                      'manage_options',	                        // capability
+                      'reconcile-payments',	                    // menu slug
+                      [$this, 'reconcile_payments_callback'] ); // callback
 
   	return;
   }

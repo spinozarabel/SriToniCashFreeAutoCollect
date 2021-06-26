@@ -25,7 +25,7 @@ $sritoni_va_ec       = new sritoni_va_ec();
 
 if ( is_admin() )
 { // add sub-menu for a new payments page. This function is a method belonging to the class sritoni_va_ec
-  add_action('admin_menu', [$sritoni_va_ec ,'add_VA_payments_submenu']);
+  // add_action('admin_menu', [$sritoni_va_ec ,'add_VA_payments_submenu']);
 
   // add a new submenu for sritoni cashfree plugin settings in Woocommerce. This is to be done only once!!!!
   $sritoniCashfreeSettings = new sritoni_cashfree_settings();
