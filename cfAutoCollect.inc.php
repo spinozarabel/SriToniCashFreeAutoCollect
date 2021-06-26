@@ -8,7 +8,7 @@
 *         all data returned as objects instead of arrays in json_decode
 */
 
-// if directly called die. Use standard WP and Moodle practices
+// if directly called with both unset, die. If any one is set then proceed internally
 if (!defined( "ABSPATH" ) && !defined( "MOODLE_INTERNAL" ) )
     {
     	die( 'No script kiddies please!' );
@@ -22,6 +22,7 @@ class CfAutoCollect
     protected $clientId;
     protected $clientSecret;
 	protected $siteName;
+    protected $config;
 
     //const TEST_PRODUCTION  = "TEST";
     const VERBOSE          = true;
@@ -35,8 +36,14 @@ class CfAutoCollect
 			// we are in wordpress environment, don't care about $site_name since get_option is site dependendent
             // ensure key and sercret set correctly no check is made wether set or not
             // Make sure these work for Virtual Account API
-			$api_key		= $this->getoption("sritoni_settings", "cashfree_key");
-			$api_secret		= $this->getoption("sritoni_settings", "cashfree_secret");
+			//$api_key		= $this->getoption("sritoni_settings", "cashfree_key");
+			//$api_secret		= $this->getoption("sritoni_settings", "cashfree_secret");
+
+            $this->get_config_wp();
+
+            $api_key    = $this->config['api_key'];
+            $api_secret = $this->config['api_secret'];
+
             $stage          = $this->getoption("sritoni_settings", "production") ?? 0;
 		}
 
@@ -69,7 +76,7 @@ class CfAutoCollect
                     error_log(print_r($sitenames_arr, true));
                     throw new Exception("Could not get API credentials since site name passed does not match values in settings");
                 }
-
+                // this get_config is Moodle's function not to be confused with WP method defined below
     			$api_key		= get_config('block_configurable_reports', $key_string);
     			$api_secret		= get_config('block_configurable_reports', $secret_string);
                 $stage          = get_config('block_configurable_reports', 'production'); // production or test
@@ -93,6 +100,12 @@ class CfAutoCollect
 
         $this->token     = $this->authorizeAndGetToken();
     }       // end construct function
+
+    // function to read in the configuration file for WP case
+    private function get_config_wp()
+    {
+      $this->config = include( __DIR__."/sritonicashfree_config.php");
+    }
 
 	/**
 	*  @param optionGroup is the group for the settings
@@ -120,8 +133,8 @@ class CfAutoCollect
          "X-Client-Secret: $clientSecret"
         ];
 
-        $endpoint = $this->baseUrl."/authorize";
-        $curlResponse = $this->postCurl($endpoint, $headers);
+        $endpoint       = $this->baseUrl."/authorize";
+        $curlResponse   = $this->postCurl($endpoint, $headers);
         if ($curlResponse)
         {
            if ($curlResponse->status == "SUCCESS")

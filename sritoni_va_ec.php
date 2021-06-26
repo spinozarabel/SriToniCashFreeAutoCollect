@@ -9,7 +9,7 @@ class sritoni_va_ec
 
   private $moodle_token;
   private $moodle_url;
-   
+  private $config; 
 
   public function __construct()
   {
@@ -55,7 +55,10 @@ class sritoni_va_ec
 
   private function init_function()
   {
+    // read the config file into the config property array
     $this->get_config();
+
+    // extract key and secret and assign as properties to object
     $this->moodle_token 	          = $this->config['moodle_token'];
     $this->moodle_url               = $this->config['moodle_url'];
 
@@ -83,11 +86,7 @@ class sritoni_va_ec
 
   private function get_config()
     {
-      $config       = include( __DIR__."/ldapwpsync_config.php");
-      $this->config = $config;
-
-      return $config;
-
+      $this->config = include( __DIR__."/sritonicashfree_config.php");
     }
 
   /** add_VA_payments_submenu()
