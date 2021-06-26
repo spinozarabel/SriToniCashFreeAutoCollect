@@ -7,6 +7,10 @@ class sritoni_va_ec
 {
   const VERBOSE   = false;
 
+  private $moodle_token;
+  private $moodle_url;
+   
+
   public function __construct()
   {
     $this->verbose  = self::VERBOSE;
@@ -51,13 +55,19 @@ class sritoni_va_ec
 
   private function init_function()
   {
+    $this->get_config();
+    $this->moodle_token 	          = $this->config['moodle_token'];
+    $this->moodle_url               = $this->config['moodle_url'];
+
     $this->blog_id                  = get_current_blog_id();
     $this->site_name                = get_bloginfo('name');
     $this->beneficiary_name         = get_option( 'sritoni_settings')["beneficiary_name"];
     $this->verbose ?  error_log('extracted blog_id: ' . $this->blog_id) : false;
 
-    $this->moodle_token 	          = get_option( 'sritoni_settings')["sritoni_token"];
-    $this->moodle_url               = get_option( 'sritoni_settings')["sritoni_url"] . '/webservice/rest/server.php';
+    
+
+    //$this->moodle_token 	          = get_option( 'sritoni_settings')["sritoni_token"];
+    //$this->moodle_url               = get_option( 'sritoni_settings')["sritoni_url"] . '/webservice/rest/server.php';
 
     $this->get_csv_fees_file        = get_option( 'sritoni_settings')["get_csv_fees_file"] ?? false;
     $this->csv_file                 = get_option( 'sritoni_settings')["csv_fees_file_path"];
@@ -70,6 +80,15 @@ class sritoni_va_ec
         $this->fees_csv             = $this->csv_to_associative_array($this->csv_file);
     }
   }
+
+  private function get_config()
+    {
+      $config       = include( __DIR__."/ldapwpsync_config.php");
+      $this->config = $config;
+
+      return $config;
+
+    }
 
   /** add_VA_payments_submenu()
   *   is the callback function for the add_action admin_menu hook above
