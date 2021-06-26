@@ -1,5 +1,6 @@
 <?php
 /**
+ * removed cashfree api key/secret as well as sritoni url and token settings. These need to come in via config file
  * ver 7 added settings field for reading fees_csv file
  * ver 6 added setting for beneficiary name
  * ver 5 added setting for url hosting moodle
@@ -91,8 +92,8 @@ class sritoni_cashfree_settings {
 		// add_settings_field( $id, $title, $callback, $page, $section, $args );
         add_settings_field( 'production', 'Check box if Production and Not Test', array( $this, 'production_callback' ), 'sritoni_settings', 'cashfree_api_section' );
         add_settings_field( 'reconcile', 'Try Reconciling Payments?', array( $this, 'reconcile_callback' ), 'sritoni_settings', 'cashfree_api_section' );
-        add_settings_field( 'cashfree_secret', 'cashfree API client Secret', array( $this, 'cashfree_secret_callback' ), 'sritoni_settings', 'cashfree_api_section' );
-		add_settings_field( 'cashfree_key', 'cashfree API Client Key or ID', array( $this, 'cashfree_key_callback' ), 'sritoni_settings', 'cashfree_api_section' );
+        //add_settings_field( 'cashfree_secret', 'cashfree API client Secret', array( $this, 'cashfree_secret_callback' ), 'sritoni_settings', 'cashfree_api_section' );
+		//add_settings_field( 'cashfree_key', 'cashfree API Client Key or ID', array( $this, 'cashfree_key_callback' ), 'sritoni_settings', 'cashfree_api_section' );
         add_settings_field( 'beneficiary_name', 'Beneficiary Name of Cashfree Account', array( $this, 'cashfree_beneficiary_callback' ), 'sritoni_settings', 'cashfree_api_section' );
         add_settings_field( 'ip_whitelist', 'comma separated IPs to be whitelisted for webhook', array( $this, 'ip_whitelist_callback' ), 'sritoni_settings', 'cashfree_api_section' );
         add_settings_field( 'domain_whitelist', 'comma separated webhook domains to be whitelisted ', array( $this, 'domain_whitelist_callback' ), 'sritoni_settings', 'cashfree_api_section' );
@@ -100,8 +101,8 @@ class sritoni_cashfree_settings {
         // added verify_webhook_ip setting in ver 1.3
 		add_settings_field( 'verify_webhook_ip', 'Verify if Webhook IP is in whitelist?', array( $this, 'verify_webhook_ip_callback' ), 'sritoni_settings', 'cashfree_api_section' );
 
-        add_settings_field( 'sritoni_url', 'Sritoni host URL', array( $this, 'sritoni_url_callback' ), 'sritoni_settings', 'sritoni_api_section' );
-        add_settings_field( 'sritoni_token', 'Sritoni API Token', array( $this, 'sritoni_token_callback' ), 'sritoni_settings', 'sritoni_api_section' );
+        //add_settings_field( 'sritoni_url', 'Sritoni host URL', array( $this, 'sritoni_url_callback' ), 'sritoni_settings', 'sritoni_api_section' );
+        //add_settings_field( 'sritoni_token', 'Sritoni API Token', array( $this, 'sritoni_token_callback' ), 'sritoni_settings', 'sritoni_api_section' );
 
         add_settings_field( 'studentcat_possible', 'Comma separated list of permissible student categories', array( $this, 'studentcat_possible_callback' ), 'sritoni_settings', 'student_section' );
         add_settings_field( 'group_possible', 'Comma separated list of permissible student groups', array( $this, 'group_possible_callback' ), 'sritoni_settings', 'student_section' );
