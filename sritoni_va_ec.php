@@ -1,14 +1,11 @@
 <?php
 // if directly called die. Use standard WP and Moodle practices
-if (!defined( "ABSPATH" ) && !defined( "MOODLE_INTERNAL" ) )
-    {
-    	die( 'No script kiddies please!' );
-    }
+defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 
 // class definition begins for Virtual Account e-commerce
 class sritoni_va_ec
 {
-  const VERBOSE   = true;
+  const VERBOSE   = false;
 
   public function __construct()
   {
@@ -54,8 +51,10 @@ class sritoni_va_ec
 
   private function init_function()
   {
-    $this->$blog_id                 = get_current_blog_id();
-    ($this->verbose ?  error_log('extracted blog_id: ' . $this->$blog_id) : false);
+    $this->blog_id                  = get_current_blog_id();
+    $this->site_name                = get_bloginfo('name');
+    $this->beneficiary_name         = get_option( 'sritoni_settings')["beneficiary_name"];
+    $this->verbose ?  error_log('extracted blog_id: ' . $this->blog_id) : false;
 
     $this->moodle_token 	          = get_option( 'sritoni_settings')["sritoni_token"];
     $this->moodle_url               = get_option( 'sritoni_settings')["sritoni_url"] . '/webservice/rest/server.php';
@@ -1304,6 +1303,149 @@ class sritoni_va_ec
   	$ret = $MoodleRest->request('core_user_update_users', $users, MoodleRest::METHOD_POST);
 
   	return;
+  }
+
+  /**
+  * @return true if VA needs updating or newly created
+  * This function tries to check for an existing VA using the moodleid
+  * if account exists then the account details are refreshed and written to the user meta and object
+  * if new VA is created then account details are written to object and user meta is updated
+  * Uses Cashfree API
+  */
+  public function update_create_VA()
+  {
+    require_once(__DIR__."/cfAutoCollect.inc.php");	// API to acess CashFree
+
+      // null out error message at beginning
+      $this->error_message = '';
+
+      $site_name        = $this->site_name;
+      $blog_id          = $this->blog_id;
+
+      $current_user     = wp_get_current_user();    // this is a WP user object of logged in user
+
+      // get user info to pass onto CashFree for new VA if needed
+      $employeenumber 	= get_user_meta($current_user->ID, 'sritoni_idnumber', true);	//unique sritoni idnumber
+      // full name in SriToni
+      $fullname 			  = $current_user->data->display_name;
+
+      $email				    = $current_user->data->user_email;
+
+      // phone1 as in SriToni
+      $phone				    = get_user_meta($current_user->ID, 'sritoni_telephonenumber', true);
+
+      // sritoni username
+      $moodleusername 	= get_user_meta($current_user->ID, 'sritoni_username', true);
+
+      // beneficiary name for this site account
+      $beneficiary_name = $this->beneficiary_name;
+
+      // user ID in Moodle user table. This is used as the vaID for traceability
+      $moodleuserid		  = $current_user->data->user_login;
+
+    // setup gateway api instance only if sitename is not blank
+      if (empty($site_name))
+      {
+        // site name is empty and so return with error message
+        $this->error_message = 'Site name is empty! Not able to check or create a virtual account';
+        error_log("Site name is empty in method update_create_VA, $site_name, so no VA created/updated");
+
+        return false;
+      }
+
+      try
+          {
+            // creates a new API instance, autheticates using ID and secret and generates token
+            // token is valid for only 5 minutes so make sure this API is done by then
+            $pg_api = new CfAutoCollect($site_name, $blog_id);    // create a new API instance
+          }
+      catch (Exception $e)
+          {
+            error_log("Error creating cashfree_api instance for: " . $moodleusername
+                                   . " " . $e->getMessage());
+            $this->error_message = "Error creating cashfree_api instance for: "
+                      . $site_name . " " . $e->getMessage();
+            return false;
+          }
+
+    // If we get here, CashFree API instance created successfully
+
+    // ensure valid phone number is present or account will not be created. If needed use a dummy number
+    if (strlen($phone) !=10)
+    {
+      $phone  = "1234567890";     // phone dummy number
+    }
+
+    // pad moodleuserid with 0's to get vAccountId with at least 4 characters as desired.
+    // So 1 becomes 0001, 1234 stays as 1234
+    $vAccountId = str_pad($moodleuserid, 4, "0", STR_PAD_LEFT);
+
+    // does this user's VA already exist?
+    try
+    {
+      $vA =  $pg_api->getvAccountGivenId($vAccountId);
+    }
+    catch (Exception $e)
+    {
+      error_log("Error while checking for exitence of VA, CashFree API" . " " . $e->getMessage());
+      $this->error_message = "Error while checking for VA with CashFree for " . $moodleusername . " " . $e->getMessage();
+
+      return false;
+    }
+    // So we got something back!
+    if ($vA)
+    {
+      // This account exists so lets populate the array to be used to write back to Moodle profile field
+      ($this->verbose ? error_log("VA exists but Moodle user field doesnt contain this: "
+            . $site_name . " for this username: " . $moodleusername) : false);
+
+      $account_number         = $vA->virtualAccountNumber;
+      $ifsc                   = $vA->ifsc;
+
+      $account =    array  (
+                              "beneficiary_name"  => $beneficiary_name ,
+                              "va_id"             => $vA->vAccountId ,
+                              "account_number"    => $vA->virtualAccountNumber ,
+                              "va_ifsc_code"      => $vA->ifsc ,
+                          );
+    }
+    else
+    {
+      // Create new VA since it doesn't exist for sure
+      try
+      {
+        $vA 	= $pg_api->createVirtualAccount($vAccountId, $fullname, $phone, $email);
+      }
+      catch (Exception $e)
+      {
+        error_log( $e->getMessage() );
+        $this->error_message = "Error while Creating VA with CashFree " . $site_name . " " . $e->getMessage();
+
+        return false;
+      }
+
+      // if we get here it means new account creation was successfull.
+      $this->verbose ? error_log("VA Didn't exist, so created for: " . $site_name . " for username: " . $moodleusername) : false;
+
+      // successful in creating VA for this site
+      $account =    array	(
+                            "beneficiary_name"  => $beneficiary_name ,
+                            "va_id"             => $vAccountId ,
+                            "account_number"    => $vA->accountNumber ,
+                            "va_ifsc_code"      => $vA->ifsc ,
+                          );
+    }
+
+    // add the updated or newly created account into the data object for use later on
+    $this->accounts[$site_name] = $account;
+
+    // update the user meta with this account information
+    update_user_meta($current_user->ID, 'va_id',            $vAccountId);
+    update_user_meta($current_user->ID, 'beneficiary_name', $beneficiary_name);
+    update_user_meta($current_user->ID, 'account_number',   $vA->accountNumber);
+    update_user_meta($current_user->ID, 'va_ifsc_code',     $vA->ifsc);
+
+    return true;
   }
 
 }             // end of class definition
