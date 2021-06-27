@@ -517,6 +517,8 @@ function test_cashfree_connection()
 	// this will also take care of getting  your API creedentials automatically.
 	$cashfree_api    = new CfAutoCollect; // new cashfree Autocollect API object
 
+	$va_id = "0073";	// VAID of sritoni1 moodle1 user
+
 	// So first we get a list of last 3 payments made to the VAID contained in this HOLD order
 	$payments        = $cashfree_api->getPaymentsForVirtualAccount($va_id, 3);
 	echo "<pre>" . print_r($payments, true) ."</pre>";
