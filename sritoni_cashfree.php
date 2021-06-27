@@ -506,7 +506,7 @@ function test_moodle_connection()
   		echo nl2br("couldn't communicate to moodle server. \n");
   		return;
   	}
-	echo nl2br("Connection to moodle server was successfull: Here are the details of Moodle user object for id:73 \n");
+	echo "<h3>Connection to moodle server was successfull: Here are the details of Moodle user object for id:73</h3>";
   	$moodle_user   = $moodle_users["users"][0];
 	echo "<pre>" . print_r($moodle_user, true) ."</pre>";
 }
