@@ -55,12 +55,12 @@ function sritoni_tools_render()
 	?>
 		<h1> Click on button to test corresponding Server connection and API</h1>
 		<form action="" method="post" id="form1">
-			
+			<input type="submit" name="button" 	value="test_moodle_connection"/>
+			<input type="submit" name="button" 	value="test_cashfree_connection"/>
+			<input type="submit" name="button" 	value="test_LDAP_connection"/>	
 		</form>
 
-		<input type="submit" name="button" 	value="test_moodle_connection"/>
-		<input type="submit" name="button" 	value="test_cashfree_connection"/>
-		<input type="submit" name="button" 	value="test_LDAP_connection"/>
+		
 	<?php
 	echo nl2br("You pressed the button having value: " . $_POST['button'] . "\n");
 }
