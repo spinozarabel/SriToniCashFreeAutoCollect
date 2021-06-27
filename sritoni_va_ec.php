@@ -124,14 +124,6 @@ class sritoni_va_ec
   }
 
   /**
-  *   Callback function to test application API needed for proper SriToni Cashfree annd LDAP
-  */
-  public function sritoni_tools_callback()
-  {
-    // 
-  }
-
-  /**
   *   Callback function to add_submenu_page( 'woocommerce',	'VA-payments',	'VA-payments',	....
   *   displays Virtual payments. Normal access to this page is by clicking on a VA payment from the Orders menu
   *   By clicking on the payment, the user details are passed into this page, even though admin is viewing this page
@@ -759,8 +751,8 @@ class sritoni_va_ec
 
   /**
   *  This function changes the price displayed in shop and product pages as follows:
-  *  It gets the price according grade of logged in user
-  *  Price changes applied only to products in product category:grade-dependent-price
+  *  It looks to see if the product is of category programmable.
+  *  If so, the price is set to current + areears as read from user meta
   */
   public function spz_change_price($price, $product)
   {
@@ -822,7 +814,8 @@ class sritoni_va_ec
   *  setup by add_filter( 'woocommerce_before_add_to_cart_button', 'spz_product_customfield_display');
   *  This function adds text to product just before add-o-cart button
   *  The text is grabbed from user meta dependent on product category: includes current fee, arrears fee, etc.
-  *
+  *  Numbered items are added below the main product description. First the current item is added .
+  *  Then for each arrears item a numbered item is added to the product. The total is what is shown as price
   */
   public function spz_product_customfield_display()
   {
@@ -890,7 +883,7 @@ class sritoni_va_ec
     // decode json to object
     $current_item             = json_decode($current_fee_description, true);
 
-  	// add as cart item data, otherwise won;t see this when product is in cart
+  	// add as cart item data, otherwise won't see this when product is in cart
   	 $cart_item_data['current_item'] = "Current fees due for "  . $current_item["fees_for"]
   																. " for AY:"
   																. $current_item["ay"]
