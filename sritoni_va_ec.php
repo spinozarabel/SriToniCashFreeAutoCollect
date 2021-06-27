@@ -66,7 +66,7 @@ class sritoni_va_ec
 
     // extract key and secret and assign as properties to object
     $this->moodle_token 	          = $this->config['moodle_token'];
-    $this->moodle_url               = $this->config['moodle_url'];
+    $this->moodle_url               = $this->config['moodle_url'] . '/webservice/rest/server.php';
 
     $this->blog_id                  = get_current_blog_id();
     $this->site_name                = get_bloginfo('name');
