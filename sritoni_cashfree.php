@@ -70,7 +70,7 @@ function sritoni_tools_render()
 			break;
 
 		case 'test_cashfree_connection':
-			test_moodle_connection();
+			test_cashfree_connection();
 			break;
 
 		case 'test_cashfree_connection':
