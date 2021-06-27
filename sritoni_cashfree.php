@@ -58,9 +58,9 @@ function sritoni_tools_render()
 			
 		</form>
 
-		<button type="submit" name="button" 	value="test_moodle_connection">test Moodle Server Connection</button>
-		<button type="submit" name="button" 	value="test_cashfree_connection">test Cashfree Server Connection</button>
-		<button type="submit" name="button" 	value="test_LDAP_connection">test LDAP server Connection</button>
+		<input type="submit" name="button" 	value="test_moodle_connection">test Moodle Server Connection</>
+		<input type="submit" name="button" 	value="test_cashfree_connection">test Cashfree Server Connection</>
+		<input type="submit" name="button" 	value="test_LDAP_connection">test LDAP server Connection</>
 	<?php
 	echo nl2br("You pressed the button having value: " . $_POST['button'] . "\n");
 }
