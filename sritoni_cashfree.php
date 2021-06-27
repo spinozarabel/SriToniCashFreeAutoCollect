@@ -62,7 +62,25 @@ function sritoni_tools_render()
 
 		
 	<?php
-	echo nl2br("You pressed the button having value: " . $_POST['button'] . "\n");
+	$button = sanitize_text_field( $_POST['button'] );
+	switch ($button) 
+	{
+		case 'test_moodle_connection':
+			test_moodle_connection();
+			break;
+
+		case 'test_cashfree_connection':
+			test_moodle_connection();
+			break;
+
+		case 'test_cashfree_connection':
+			test_LDAP_connection();
+			break;
+		
+		default:
+			// do nothing
+			break;
+	}
 }
 
 
@@ -462,4 +480,33 @@ function cf_webhook_init()
     $cfWebhook = new CF_webhook();
 
     $cfWebhook->process();
+}
+
+function test_moodle_connection()
+{
+	// read in the Moodle API config array
+	$config			= include( __DIR__."/sritonicashfree_config.php");
+	$moodle_url 	= $config["moodle_url"];
+	$moodle_token	= $config["moodle_token"];
+
+	// prepare the Moodle Rest API object
+	$MoodleRest = new MoodleRest();
+	$MoodleRest->setServerAddress($moodle_url);
+	$MoodleRest->setToken( $moodle_token ); // get token from ignore_key file
+	$MoodleRest->setReturnFormat(MoodleRest::RETURN_ARRAY); // Array is default. You can use RETURN_JSON or RETURN_XML too.
+	// $MoodleRest->setDebug();
+	// get moodle user details associated with this completed order from SriToni
+	$parameters   = array("criteria" => array(array("key" => "id", "value" => 73)));
+
+	// get moodle user satisfying above criteria
+	$moodle_users = $MoodleRest->request('core_user_get_users', $parameters, MoodleRest::METHOD_GET);
+	if ( !( $moodle_users["users"][0] ) )
+  	{
+  		// failed to communicate effectively to moodle server so exit
+  		echo nl2br("couldn't communicate to moodle server. \n");
+  		return;
+  	}
+
+  	$moodle_user   = $moodle_users["users"][0];
+	print_r($moodle_user);
 }
