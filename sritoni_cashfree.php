@@ -53,11 +53,14 @@ function sritoni_tools_render()
 {
 	// this is for rendering the API test onto the sritoni_tools page
 	?>
+		<h1> Click on button to test corresponding Server connection and API</h1>
 		<form action="sritoni_tools_render.php" method="post" id="form1">
 			
 		</form>
 
-		<button type="submit" form="form1" value="Submit">Click to perform API testing</button>
+		<button type="submit" form="form1" value="test_moodle_connection">test Moodle Server Connection</button>
+		<button type="submit" form="form1" value="test_cashfree_connection">test Cashfree Server Connection</button>
+		<button type="submit" form="form1" value="test_LDAP_connection">test LDAP server Connection</button>
 	<?php
 }
 
