@@ -486,7 +486,7 @@ function test_moodle_connection()
 {
 	// read in the Moodle API config array
 	$config			= include( __DIR__."/sritonicashfree_config.php");
-	$moodle_url 	= $config["moodle_url"];
+	$moodle_url 	= $config["moodle_url"] . '/webservice/rest/server.php';
 	$moodle_token	= $config["moodle_token"];
 	print_r($config);
 
