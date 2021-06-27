@@ -488,6 +488,7 @@ function test_moodle_connection()
 	$config			= include( __DIR__."/sritonicashfree_config.php");
 	$moodle_url 	= $config["moodle_url"];
 	$moodle_token	= $config["moodle_token"];
+	print_r($config);
 
 	// prepare the Moodle Rest API object
 	$MoodleRest = new MoodleRest();
