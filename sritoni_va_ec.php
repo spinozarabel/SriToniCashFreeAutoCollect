@@ -118,13 +118,7 @@ class sritoni_va_ec
                       'reconcile-payments',	                    // menu slug
                       [$this, 'reconcile_payments_callback'] ); // callback
 
-     // add another submenu page for testing various application API needed for SriToni operation
-  	add_submenu_page( 'woocommerce',	                     // parent slug
-                      'SriToni Tools',                     // page title	
-                      'SriToni Tools',	                   // menu title
-                      'manage_options',	                   // capability
-                      'sritoni-tools',	                   // menu slug
-                      [$this, 'sritoni_tools_callback'] ); // callback                 
+                      
 
     return;
   }

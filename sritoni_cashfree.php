@@ -25,7 +25,7 @@ $sritoni_va_ec       = new sritoni_va_ec();
 
 if ( is_admin() )
 { // add sub-menu for a new payments page. This function is a method belonging to the class sritoni_va_ec
-  // add_action('admin_menu', [$sritoni_va_ec ,'add_VA_payments_submenu']);
+  add_action('admin_menu', 'add_submenu_sritoni_tools');
 
   // add a new submenu for sritoni cashfree plugin settings in Woocommerce. This is to be done only once!!!!
   $sritoniCashfreeSettings = new sritoni_cashfree_settings();
@@ -38,8 +38,22 @@ add_action('plugins_loaded', 'init_vabacs_gateway_class');
 // https://sritoni.org/hset-payments/wp-admin/admin-post.php?action=cf_wc_webhook
 add_action('admin_post_nopriv_cf_wc_webhook', 'cf_webhook_init', 10);
 
+function add_submenu_sritoni_tools()
+{
+	// add submenu page for testing various application API needed for SriToni operation
+	add_submenu_page( 	'woocommerce',	                     // parent slug
+						'SriToni Tools',                     // page title	
+						'SriToni Tools',	                 // menu title
+						'manage_options',	                 // capability
+						'sritoni-tools',	                 // menu slug
+						'sritoni_tools_render');             // callback
+}
 
-
+function sritoni_tools_render()
+{
+	// this is for rendering the API test onto the sritoni_tools page
+	// we will have a form that 
+}
 
 function init_vabacs_gateway_class()
 {
