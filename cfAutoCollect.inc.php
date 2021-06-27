@@ -1,5 +1,6 @@
 <?php
-/* Modified by Madhu Avasarala 10/06/2019
+/* Modified by Madhu Avasarala 06/28/2021
+* ver 1.8 cleaned up code a little
 * ver 1.7 added change active status of VPA
 * ver 1.6 added params to getcurl
 * ver 1.5 added prod_cosnt as variable and not a constant
@@ -25,7 +26,7 @@ class CfAutoCollect
     protected $config;
 
     //const TEST_PRODUCTION  = "TEST";
-    const VERBOSE          = true;
+    const VERBOSE          = false;
 
     public function __construct($site_name = null)
     {
@@ -85,7 +86,7 @@ class CfAutoCollect
         // add these as properties of object
         $this->clientId		= $api_key;
 		$this->clientSecret	= $api_secret;
-		$this->siteName		= $site_name;
+		$this->site_name	= $site_name;
 
         if ($stage)     // set base URL or API based on if setting is production or test
             {
@@ -141,7 +142,6 @@ class CfAutoCollect
            {
              $token = $curlResponse->data->token;
              return $token;
-             error_log($token);
            } else
            {
               throw new Exception("Authorization failed. Reason : ". $curlResponse->message);
@@ -182,10 +182,8 @@ class CfAutoCollect
             }
         else
             {
-                if ($this->verbose)
-                {
-                    error_log( "This is the error message while creating a new Virtual Account" . $curlResponse->message );
-                }
+                error_log( "This is the error message while creating a new Virtual Account" . $curlResponse->message );
+
                 return null;
             }
   }           // end of function createVirtualAccount
@@ -208,9 +206,13 @@ class CfAutoCollect
             {
               $vAccounts = $curlResponse->data->vAccounts;
             }
-            else $vAccounts = NULL;
-          }
-          return $vAccounts;
+            else 
+            {
+                error_log( "This is the error message while listing all VAs" . $curlResponse->message );
+                $vAccounts = NULL;
+            }
+        }
+        return $vAccounts;
 
     }       // end of function listAllVirtualAccounts
 
@@ -223,10 +225,10 @@ class CfAutoCollect
     {
         if (sizeof($vAccounts) == 0)
         {
-            // no entries in the socket_create_listen
+            // no entries in the given array
             return false;
         }
-        // we have at least one entry in the list
+        // we have at least one entry in the array
         foreach ($vAccounts as $key => $vA)
         {
             if ( $vA->vAccountId == $vAccountId )
@@ -251,7 +253,7 @@ class CfAutoCollect
             {
                 return null;
             }
-        $vA = null;
+       
         // pad the moodle user id with 0's on left side, if less than 4 digits
         // $vAccountId = str_pad($moodleuserid, 4, "0", STR_PAD_LEFT);
         $endpoint = $this->baseUrl . "/va/" . $vAccountId;
@@ -260,11 +262,16 @@ class CfAutoCollect
                     "Authorization: Bearer $authToken"
                    ];
         $curlResponse = $this->getCurl($endpoint, $headers);
-        //error_log("curl response of accountcreate");
-        //error_log(print_r($curlResponse));
+
         if ($curlResponse->status == "SUCCESS")
         {
           $vA = $curlResponse->data;    // return the account details object
+        }
+        else 
+        {
+            error_log( "This is the error message trying to get Vaccount" . $curlResponse->message );
+            
+            $vA = null;
         }
         return $vA;
     }
@@ -276,7 +283,7 @@ class CfAutoCollect
     */
     public function getPaymentsForVirtualAccount($vAccountId, $maxReturn = null)
     {
-        $payments = NULL;   // return null if not successfull
+        
         $params   = NULL;
 
         $endpoint = $this->baseUrl."/payments/".$vAccountId;
@@ -297,9 +304,15 @@ class CfAutoCollect
         $curlResponse = $this->getCurl($endpoint, $headers, $params);
 
         if ($curlResponse->status == "SUCCESS")
-            {
-              $payments = $curlResponse->data->payments;
-            }
+        {
+            $payments = $curlResponse->data->payments;
+        }
+        else
+        {
+            error_log( "This is the error message trying to get payments of Vaccount" . $curlResponse->message );
+
+            $payments = NULL;   // return null if not successfull
+        }
 
         return $payments;
     }

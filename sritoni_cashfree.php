@@ -506,7 +506,18 @@ function test_moodle_connection()
   		echo nl2br("couldn't communicate to moodle server. \n");
   		return;
   	}
-
+	echo nl2br("Connection to moodle server was successfull: Here are the details of Moodle user object for id:73 \n");
   	$moodle_user   = $moodle_users["users"][0];
-	  echo "<pre>" . print_r($moodle_user, true) ."</pre>";
+	echo "<pre>" . print_r($moodle_user, true) ."</pre>";
+}
+
+function test_cashfree_connection()
+{
+	// since wee need to interact with Cashfree , create a new API instamve.
+	// this will also take care of getting  your API creedentials automatically.
+	$cashfree_api    = new CfAutoCollect; // new cashfree Autocollect API object
+
+	// So first we get a list of last 3 payments made to the VAID contained in this HOLD order
+	$payments        = $cashfree_api->getPaymentsForVirtualAccount($va_id, 3);
+	echo "<pre>" . print_r($payments, true) ."</pre>";
 }
