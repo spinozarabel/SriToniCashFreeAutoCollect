@@ -520,6 +520,11 @@ function test_cashfree_connection()
 	$va_id = "0073";	// VAID of sritoni1 moodle1 user
 
 	// So first we get a list of last 3 payments made to the VAID contained in this HOLD order
-	$payments        = $cashfree_api->getPaymentsForVirtualAccount($va_id, 3);
+	$payments        = $cashfree_api->getPaymentsForVirtualAccount($va_id, 1);
+	echo "<h3> Payments made by userid 0073:</h3>";
 	echo "<pre>" . print_r($payments, true) ."</pre>";
+
+	echo "<h3> PaymentAccount details of userid 0073:</h3>";
+	$vAccount = $cashfree_api->getvAccountGivenId($va_id);
+	echo "<pre>" . print_r($vAccount, true) ."</pre>";
 }
