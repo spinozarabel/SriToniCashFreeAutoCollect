@@ -54,7 +54,7 @@ function sritoni_tools_render()
 	// this is for rendering the API test onto the sritoni_tools page
 	?>
 		<h1> Click on button to test corresponding Server connection and API</h1>
-		<form action="test_connections.php" method="post" id="form1">
+		<form action="" method="post" id="form1">
 			
 		</form>
 
@@ -62,6 +62,7 @@ function sritoni_tools_render()
 		<button type="submit" name="button" 	value="test_cashfree_connection">test Cashfree Server Connection</button>
 		<button type="submit" name="button" 	value="test_LDAP_connection">test LDAP server Connection</button>
 	<?php
+	echo nl2br("You pressed the button having value: " . $_POST['button'] . "\n");
 }
 
 
