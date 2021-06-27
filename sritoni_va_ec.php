@@ -110,9 +110,7 @@ class sritoni_va_ec
                       'woo-VA-payments',                // string $menu_slug		
                       [$this, 'VA_payments_callback'] );// callable $function = ''
 
-  	/*
-  	* add another submenu page for reconciling orders and payments on demand from admin menu
-  	*/
+  	// add another submenu page for reconciling orders and payments on demand from admin menu
   	add_submenu_page( 'woocommerce',	                          // parent slug
                       'reconcile',                              // page title	
                       'reconcile',	                            // menu title
@@ -120,8 +118,25 @@ class sritoni_va_ec
                       'reconcile-payments',	                    // menu slug
                       [$this, 'reconcile_payments_callback'] ); // callback
 
-  	return;
+     // add another submenu page for testing various application API needed for SriToni operation
+  	add_submenu_page( 'woocommerce',	                     // parent slug
+                      'SriToni Tools',                     // page title	
+                      'SriToni Tools',	                   // menu title
+                      'manage_options',	                   // capability
+                      'sritoni-tools',	                   // menu slug
+                      [$this, 'sritoni_tools_callback'] ); // callback                 
+
+    return;
   }
+
+  /**
+  *   Callback function to test application API needed for proper SriToni Cashfree annd LDAP
+  */
+  public function sritoni_tools_callback()
+  {
+    // 
+  }
+
   /**
   *   Callback function to add_submenu_page( 'woocommerce',	'VA-payments',	'VA-payments',	....
   *   displays Virtual payments. Normal access to this page is by clicking on a VA payment from the Orders menu
