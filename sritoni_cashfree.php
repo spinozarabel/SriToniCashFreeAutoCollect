@@ -488,7 +488,6 @@ function test_moodle_connection()
 	$config			= include( __DIR__."/sritonicashfree_config.php");
 	$moodle_url 	= $config["moodle_url"] . '/webservice/rest/server.php';
 	$moodle_token	= $config["moodle_token"];
-	print_r($config);
 
 	// prepare the Moodle Rest API object
 	$MoodleRest = new MoodleRest();
@@ -509,5 +508,5 @@ function test_moodle_connection()
   	}
 
   	$moodle_user   = $moodle_users["users"][0];
-	print_r($moodle_user);
+	  echo "<pre>" . print_r($moodle_user, true) ."</pre>";
 }
