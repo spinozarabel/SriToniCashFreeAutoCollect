@@ -52,7 +52,13 @@ function add_submenu_sritoni_tools()
 function sritoni_tools_render()
 {
 	// this is for rendering the API test onto the sritoni_tools page
-	// we will have a form that 
+	?>
+		<form action="sritoni_tools_render.php" method="post" id="form1">
+			
+		</form>
+
+		<button type="submit" form="form1" value="Submit">Click to perform API testing</button>
+	<?php
 }
 
 function init_vabacs_gateway_class()
