@@ -539,7 +539,7 @@ function test_LDAP_connection()
     $ldapuser   = $config['ldap_admin'];
     $ldappass   = $config['ldap_password'];
     $ldaptree   = $config['ldap_tree'];
-	$ldapfilter = get_option( 'sritoni_ldapwp_settings')['ldap_search_filter'];
+	$ldapfilter = $config['ldapfilter'];
 
 	// echo "<pre>" . print_r($this->config, true) ."</pre>";
 
