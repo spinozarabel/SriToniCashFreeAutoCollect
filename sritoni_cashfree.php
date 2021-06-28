@@ -533,7 +533,7 @@ function test_LDAP_connection()
 {
 	$ldapfilter = get_option( 'sritoni_ldapwp_settings')['ldap_search_filter'];
 
-	$config = include( __DIR__."/ldapwpsync_config.php");
+	$config = include("ldapwpsync_config.php");
 
 	$ldapserver = $config['ldaps_server'];
     $ldapuser   = $config['ldap_admin'];
