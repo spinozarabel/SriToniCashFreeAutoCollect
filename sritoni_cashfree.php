@@ -531,8 +531,6 @@ function test_cashfree_connection()
 
 function test_LDAP_connection()
 {
-	$ldapfilter = get_option( 'sritoni_ldapwp_settings')['ldap_search_filter'];
-
 	$config = include("ldapwpsync_config.php");
 
 	$ldapserver = $config['ldaps_server'];
