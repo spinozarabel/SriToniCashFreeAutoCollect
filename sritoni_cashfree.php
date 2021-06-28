@@ -57,11 +57,11 @@ function sritoni_tools_render()
 		<form action="" method="post" id="form1">
 			<input type="submit" name="button" 	value="test_moodle_connection"/>
 			<input type="submit" name="button" 	value="test_cashfree_connection"/>
-			<input type="submit" name="button" 	value="test_LDAP_connection"/>	
 		</form>
 
 		
 	<?php
+
 	$button = sanitize_text_field( $_POST['button'] );
 	switch ($button) 
 	{
@@ -71,10 +71,6 @@ function sritoni_tools_render()
 
 		case 'test_cashfree_connection':
 			test_cashfree_connection();
-			break;
-
-		case 'test_LDAP_connection':
-			test_LDAP_connection();
 			break;
 		
 		default:
