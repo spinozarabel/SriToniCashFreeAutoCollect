@@ -73,7 +73,7 @@ function sritoni_tools_render()
 			test_cashfree_connection();
 			break;
 
-		case 'test_cashfree_connection':
+		case 'test_LDAP_connection':
 			test_LDAP_connection();
 			break;
 		
@@ -527,4 +527,49 @@ function test_cashfree_connection()
 	echo "<h3> PaymentAccount details of userid 0073:</h3>";
 	$vAccount = $cashfree_api->getvAccountGivenId($va_id);
 	echo "<pre>" . print_r($vAccount, true) ."</pre>";
+}
+
+function test_LDAP_connection()
+{
+	$ldapfilter = get_option( 'sritoni_ldapwp_settings')['ldap_search_filter'];
+
+	$config = include( __DIR__."/ldapwpsync_config.php");
+
+	$ldapserver = $config['ldaps_server'];
+    $ldapuser   = $config['ldap_admin'];
+    $ldappass   = $config['ldap_password'];
+    $ldaptree   = $config['ldap_tree'];
+	$ldapfilter = get_option( 'sritoni_ldapwp_settings')['ldap_search_filter'];
+
+	// echo "<pre>" . print_r($this->config, true) ."</pre>";
+
+      // echo "<pre>" . print_r($this->config['wpusers_email_whitelist'], true) ."</pre>";
+
+      // connect to LDAP server
+      $ldapconn = ldap_connect($ldapserver) or die("Could not connect to LDAP server.");
+
+      // if we are here then we did not die so we must have connected to LDAP server
+      // but first set protocol version
+    	ldap_set_option($ldapconn, LDAP_OPT_PROTOCOL_VERSION, 3);
+
+    	// bind using admin account
+      $ldapbind = ldap_bind($ldapconn, $ldapuser, $ldappass) or die ("Error trying to bind: " . ldap_error($ldapconn));
+
+      // verify binding and if good search and download entries based on filter set below
+      if ($ldapbind)
+      {
+        echo nl2br("LDAP Connection and Authenticated bind successful...\n");
+        // $ldapsearch contains the search, $data contains all the entries
+        //
+        $result = ldap_search($ldapconn,$ldaptree, $ldapfilter) or die ("Error in search query: " . ldap_error($ldapconn));
+        $data   = ldap_get_entries($ldapconn, $result);
+        //
+        // print number of entries found
+    	$ldapcount = ldap_count_entries($ldapconn, $result);
+        echo nl2br("Number of entries found in LDAP directory: " . $ldapcount . "\n");
+      }
+    	else
+      {
+        echo "LDAP bind failed...";
+      }
 }
