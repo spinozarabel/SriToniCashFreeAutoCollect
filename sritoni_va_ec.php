@@ -2,6 +2,14 @@
 // if directly called die. Use standard WP and Moodle practices
 defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 
+// Check if WooCommerce is active
+
+if ( ! class_exists( 'WooCommerce' ) ) 
+{
+  error_log("Woocommerce is not activated. Please activate Woocommerce for this plugin to work!");
+  return;
+}
+
 // class definition begins for Virtual Account e-commerce
 class sritoni_va_ec
 {
