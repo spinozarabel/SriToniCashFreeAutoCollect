@@ -11,13 +11,6 @@
 */
 defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 
-// Check if WooCommerce is active
-if ( ! class_exists( 'WooCommerce' ) ) 
-{
-  error_log("Woocommerce is not activated. Please activate Woocommerce for this plugin to work!");
-  return;
-}
-
 require_once(__DIR__."/MoodleRest.php");   				// Moodle REST API driver for PHP
 require_once(__DIR__."/sritoni_cashfree_settings.php"); // file containing class for settings submenu and page
 // this is tile containing the class definition for virtual accounts e-commerce
