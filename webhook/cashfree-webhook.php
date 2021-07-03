@@ -11,8 +11,8 @@ require_once __DIR__.'/../sritoni_cashfree_settings.php';   // API settings file
 class CF_webhook
 {
     /**
-     * API client instance to communicate with Razorpay API
-     *
+     * API client instance to communicate with Cashfree API
+     * https://dev.cashfree.com/auto-collect/integration/webhooks for documentation
      */
     protected $api;
 
