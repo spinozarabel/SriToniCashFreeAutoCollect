@@ -38,6 +38,23 @@ add_action('plugins_loaded', 'init_vabacs_gateway_class');
 // https://sritoni.org/hset-payments/wp-admin/admin-post.php?action=cf_wc_webhook
 add_action('admin_post_nopriv_cf_wc_webhook', 'cf_webhook_init', 10);
 
+// if current user's email does not have headstart.edu.in, set the user meta as an admission fee payer only
+$current_user = wp_get_current_user();
+
+// if logged in user's email does not have headstart AND user's login is not all numbers user is here for admissions payment
+if (stripos($current_user->data->user_email, 'headstart.edu.in') === false && !preg_match("/^\d+$/", $current_user->data->user_login))
+{
+	// logged in user does not have a headstart email ID AND does not have a numeric login username
+	// set the user meta as an admission fee payer only
+	update_user_meta($current_user->ID, 'admission_fee_payer_only',	'Yes');
+
+}
+else
+{
+	// regular Head Start Intranet user
+	update_user_meta($current_user->ID, 'admission_fee_payer_only',	'No');
+}
+
 function add_submenu_sritoni_tools()
 {
 	// add submenu page for testing various application API needed for SriToni operation
@@ -82,23 +99,6 @@ function sritoni_tools_render()
 
 function init_vabacs_gateway_class()
 {
-	// if current user's email does not have headstart.edu.in, set the user meta as an admission fee payer only
-	$current_user = wp_get_current_user();
-
-	// if logged in user's email does not have headstart AND user's login is not all numbers user is here for admissions payment
-	if (stripos($current_user->data->user_email, 'headstart.edu.in') === false && !preg_match("/^\d+$/", $current_user->data->user_login))
-	{
-		// logged in user does not have a headstart email ID AND does not have a numeric login username
-		// set the user meta as an admission fee payer only
-		update_user_meta($current_user->ID, 'admission_fee_payer_only',	'Yes');
-
-	}
-	else
-	{
-		// regular Head Start Intranet user
-		update_user_meta($current_user->ID, 'admission_fee_payer_only',	'No');
-	}
-
 	class WC_Gateway_VABACS extends WC_Payment_Gateway
   {  // MA
 	/**
