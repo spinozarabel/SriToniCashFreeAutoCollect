@@ -88,7 +88,7 @@ function init_vabacs_gateway_class()
 	$current_user = wp_get_current_user();
 
 	// if logged in user's email does not have headstart AND user's login is not all numbers user is here for admissions payment
-	if (stripos($current_user->data->user_email, 'headstart.edu.in') === false && !preg_match("/^\d+$/", $current_user->data->user_login))
+	if (stripos($current_user->data->user_email, 'headstart.edu.in') === false || !preg_match("/^\d+$/", $current_user->data->user_login))
 	{
 		// logged in user does not have a headstart email ID AND does not have a numeric login username
 		// set the user meta as an admission fee payer only
