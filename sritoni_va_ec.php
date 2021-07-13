@@ -1146,7 +1146,22 @@ class sritoni_va_ec
   */
   public function moodle_on_order_status_completed( $order_id )
   {
-  	   // global $blog_id, $moodle_token, $moodle_url;
+    global $wpscfunction;
+  	   
+    if (int(get_post_meta($order->id, 'va_id', true)) == 73)
+    {
+      // this is an admission payment, sritoni account does not exist yet
+      // change the ticket status fee payment field to completed
+      $ticket_id = get_post_meta($order->id, 'admission_number', true) ??  null;
+
+      if ($ticket_id)
+      {
+        $wpscfunction->change_field( $ticket_id, 'payment_complete', 'yes' );
+      }
+      return;
+    }
+    
+
     $blog_id      = $this->blog_id;
     $moodle_token = $this->moodle_token;
     $moodle_url   = $this->moodle_url;
