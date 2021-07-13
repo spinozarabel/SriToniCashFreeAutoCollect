@@ -345,12 +345,18 @@ class CF_webhook
     {
         foreach ($orders as $key => $order)
 		{
+            $vAccountId     = $data["vAccountId"];
+		    // convert this to an integer to remove any leading 0s that mayhave been used for padding
+            $moodleuserid   = (int)$vAccountId;
+
 			$order_creation_datetime		= new DateTime( '@' . $order->get_date_created()->getTimestamp());
 			$order_creation_datetime->setTimezone($this->timezone);	// this needs adjustment to timezone since derived from unix timestamp
 
+            $order_meta_bank_account_number = get_post_meta($order->id, 'payer_bank_account_number', true);
+
 			if 	(
-					( $data["amount"] == $order->get_total()       )	&&		// payment amount matches order amount in paise
-					( $payment_datetime > $order_creation_datetime )						// payment is after order creation
+					( $data["amount"] == $order->get_total()  &&  $payment_datetime > $order_creation_datetime && $moodleuserid != 73  )
+                ||  ( $order_meta_bank_account_number == $data["remitterAccount"] && $moodleuserid == 73  && $data["amount"] == $order->get_total()  &&  $payment_datetime > $order_creation_datetime)
 				)
 			{
 				// we satisfy all conditions, this order reconciles with the webhook payment
