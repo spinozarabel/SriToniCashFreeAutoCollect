@@ -1148,7 +1148,7 @@ class sritoni_va_ec
   {
     global $wpscfunction;
   	   
-    if (int(get_post_meta($order->id, 'va_id', true)) == 73)
+    if (get_post_meta($order->id, 'va_id', true) == 73)
     {
       // this is an admission payment, sritoni account does not exist yet
       // change the ticket status fee payment field to completed
