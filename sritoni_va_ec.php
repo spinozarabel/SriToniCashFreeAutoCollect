@@ -1145,19 +1145,10 @@ class sritoni_va_ec
   * No API calls are made to any payment gateway, relies only on order data and meta data
   */
   public function moodle_on_order_status_completed( $order_id )
-  {
-    global $wpscfunction;
-  	   
+  {	   
     if (get_post_meta($order->id, 'va_id', true) == 73)
     {
-      // this is an admission payment, sritoni account does not exist yet
-      // change the ticket status fee payment field to completed
-      $ticket_id = get_post_meta($order->id, 'admission_number', true) ??  null;
-
-      if ($ticket_id)
-      {
-        $wpscfunction->change_field( $ticket_id, 'payment_complete', 'yes' );
-      }
+      // this is an admission order completed so no Moodle update
       return;
     }
     
