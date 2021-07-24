@@ -1310,15 +1310,18 @@ class sritoni_va_ec
       // put code here to check and update profile_field fees paid based on payments array
       // we paid for 1st unpaid item where payee is beneficiary_name from this site
       // we will reuse same code to extract payment to pay to mark it paid
-      foreach ($fees_arr as $key => $fees)
+      if (!empty($fees_arr))
       {
+        foreach ($fees_arr as $key => $fees):
           // mark all unpaid payments to this beneficiary as paid
           // since older unpaid items would have been included as arrears
           if ($fees["status"] == "not paid" && $fees["payee"] == $beneficiary_name)
           {
               $fees_arr[$key]["status"]   = "paid";
           }
+        endforeach;
       }
+   
       // now we need to update the fees and payments custom fields in Moodle
       $fees_json_write = json_encode($fees_arr);
 
