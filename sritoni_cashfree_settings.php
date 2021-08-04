@@ -90,8 +90,10 @@ class sritoni_cashfree_settings {
 
 
 		// add_settings_field( $id, $title, $callback, $page, $section, $args );
-        add_settings_field( 'production', 'Check box if Production and Not Test', array( $this, 'production_callback' ), 'sritoni_settings', 'cashfree_api_section' );
-        add_settings_field( 'reconcile', 'Try Reconciling Payments?', array( $this, 'reconcile_callback' ), 'sritoni_settings', 'cashfree_api_section' );
+        add_settings_field( 'production',               'Check box if Production and Not Test',     array( $this, 'production_callback' ),               'sritoni_settings', 'cashfree_api_section' );
+        add_settings_field( 'reconcile',                'Try Reconciling Payments?',                array( $this, 'reconcile_callback' ),                'sritoni_settings', 'cashfree_api_section' );
+        add_settings_field( 'is_sritonicashfree_debug', 'Check box to log to error.log',            array( $this, 'is_sritonicashfree_debug_callback' ), 'sritoni_settings', 'cashfree_api_section' );
+        add_settings_field( 'is_cfwebhook_debug',       'Check box to log CF webhook to error.log', array( $this, 'is_cfwebhook_debug_callback' ),       'sritoni_settings', 'cashfree_api_section' );
         //add_settings_field( 'cashfree_secret', 'cashfree API client Secret', array( $this, 'cashfree_secret_callback' ), 'sritoni_settings', 'cashfree_api_section' );
 		//add_settings_field( 'cashfree_key', 'cashfree API Client Key or ID', array( $this, 'cashfree_key_callback' ), 'sritoni_settings', 'cashfree_api_section' );
         add_settings_field( 'beneficiary_name', 'Beneficiary Name of Cashfree Account', array( $this, 'cashfree_beneficiary_callback' ), 'sritoni_settings', 'cashfree_api_section' );
@@ -121,6 +123,37 @@ class sritoni_cashfree_settings {
         print 'Enter your settings below:';
     }
 
+
+    /**
+     * Get the settings option array and print get_csv_fees_file value
+     */
+    public function is_cfwebhook_debug_callback()
+    {
+        $settings = (array) get_option( 'sritoni_settings' );
+        $field = "is_cfwebhook_debug";
+        $checked = $settings[$field] ?? 0;
+
+        ?>
+            <input name="sritoni_settings[is_cfwebhook_debug]" id="sritoni_settings[is_cfwebhook_debug]" type="checkbox"
+                value="1" class="code"<?php checked( $checked, 1, true ); ?>/>
+        <?php
+    }
+
+
+    /**
+     * Get the settings option array and print get_csv_fees_file value
+     */
+    public function is_sritonicashfree_debug_callback()
+    {
+        $settings = (array) get_option( 'sritoni_settings' );
+        $field = "is_sritonicashfree_debug";
+        $checked = $settings[$field] ?? 0;
+
+        ?>
+            <input name="sritoni_settings[is_sritonicashfree_debug]" id="sritoni_settings[is_sritonicashfree_debug]" type="checkbox"
+                value="1" class="code"<?php checked( $checked, 1, true ); ?>/>
+        <?php
+    }
 
     /**
      * Get the settings option array and print the full path of theCSV fees file
@@ -391,6 +424,12 @@ class sritoni_cashfree_settings {
 		// added in ver 1.3
         if( !empty($input['verify_webhook_ip']) )
             $new_input['verify_webhook_ip'] = 0;
+
+        if( !empty($input['is_sritonicashfree_debug']) )
+        $new_input['is_sritonicashfree_debug'] = 0;
+
+        if( !empty($input['is_cfwebhook_debug']) )
+        $new_input['is_cfwebhook_debug'] = 0;
 
         // added in ver 6
         if( isset( $input['beneficiary_name'] ) )

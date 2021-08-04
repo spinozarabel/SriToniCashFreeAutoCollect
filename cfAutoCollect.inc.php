@@ -28,9 +28,9 @@ class CfAutoCollect
     //const TEST_PRODUCTION  = "TEST";
     const VERBOSE          = false;
 
-    public function __construct($site_name = null)
+    public function __construct($site_name = null, $verbose = null)
     {
-        $this->verbose      = self::VERBOSE;
+        $this->verbose      = $verbose;
 
         if ( defined("ABSPATH") )
 		{

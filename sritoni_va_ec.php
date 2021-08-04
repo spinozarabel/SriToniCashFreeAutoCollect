@@ -11,9 +11,9 @@ class sritoni_va_ec
   private $moodle_url;
   private $config; 
 
-  public function __construct()
+  public function __construct($verbose = false)
   {
-    $this->verbose  = self::VERBOSE;
+    $this->verbose  = $verbose;
     $this->timezone = new DateTimeZone('Asia/Kolkata');
 
     if ( is_admin() )
@@ -1437,8 +1437,8 @@ class sritoni_va_ec
     if ($vA)
     {
       // This account exists so lets populate the array to be used to write back to Moodle profile field
-      ($this->verbose ? error_log("VA exists but Moodle user field doesnt contain this: "
-            . $site_name . " for this username: " . $moodleusername) : false);
+      error_log("VA exists but Moodle user field doesnt contain this: "
+            . $site_name . " for this username: " . $moodleusername);
 
       $account_number         = $vA->virtualAccountNumber;
       $ifsc                   = $vA->ifsc;
@@ -1466,7 +1466,7 @@ class sritoni_va_ec
       }
 
       // if we get here it means new account creation was successfull.
-      $this->verbose ? error_log("VA Didn't exist, so created for: " . $site_name . " for username: " . $moodleusername) : false;
+      error_log("VA Didn't exist, so created for: " . $site_name . " for username: " . $moodleusername);
 
       // successful in creating VA for this site
       $account =    array	(

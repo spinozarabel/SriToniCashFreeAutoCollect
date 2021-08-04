@@ -24,12 +24,12 @@ class CF_webhook
 	const VERBOSE			 		= true;							// MA
 	const TIMEZONE					= 'Asia/Kolkata';				// MA
 
-    function __construct()
+    function __construct($verbose = true)
     {
         // no need for site name argument to be passed in since this is WP environment
         $this->api 		= new CfAutoCollect;
         // sets verbose mode based on constant defined above
-		$this->verbose	= self::VERBOSE;
+		$this->verbose	= $verbose;
         // sets timezone object to IST
 		$this->timezone =  new DateTimeZone(self::TIMEZONE);
         // setup property clientSecret using api data, needed for webhook signature verification
