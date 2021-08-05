@@ -352,12 +352,19 @@ class CF_webhook
 			$order_creation_datetime		= new DateTime( '@' . $order->get_date_created()->getTimestamp());
 			$order_creation_datetime->setTimezone($this->timezone);	// this needs adjustment to timezone since derived from unix timestamp
 
-            $order_meta_bank_account_number = get_post_meta($order->id, 'payer_bank_account_number', true);
+            $order_meta_bank_account_number = get_post_meta($order->id, 'payer_bank_account_number' , true);
+
+            // we join the firstname and lastname 
+            $order_billing_first_name       = $order->get_billing_first_name();
+            $order_billing_last_name        = $order->get_billing_last_name();
 
 			if 	(
 					( $data["amount"] == $order->get_total()  &&  $payment_datetime > $order_creation_datetime && $moodleuserid != 73  )
                 ||  ( $order_meta_bank_account_number == $data["remitterAccount"] && $moodleuserid == 73  && $data["amount"] == $order->get_total()  &&  $payment_datetime > $order_creation_datetime)
-				)
+				||  (stripos($order_meta_bank_account_number, $data["remitterAccount"]) !== false   && $moodleuserid == 73  &&  $data["amount"] == $order->get_total() &&  $payment_datetime > $order_creation_datetime )
+                ||  (stripos($data["remitterAccount"], $order_meta_bank_account_number) !== false   && $moodleuserid == 73  &&  $data["amount"] == $order->get_total() &&  $payment_datetime > $order_creation_datetime )   
+                ||  (stripos($data["remitterName"], $order_billing_first_name) !== false && stripos($data["remitterName"], $order_billing_last_name) !== false && $moodleuserid == 73 && $data["amount"] == $order->get_total() &&  $payment_datetime > $order_creation_datetime)
+                )
 			{
 				// we satisfy all conditions, this order reconciles with the webhook payment
                 if ($this->verbose)

@@ -62,12 +62,14 @@ function sritoni_tools_render()
 		<form action="" method="post" id="form1">
 			<input type="submit" name="button" 	value="test_moodle_connection"/>
 			<input type="submit" name="button" 	value="test_cashfree_connection"/>
+			<input type="submit" name="button" 	value="test_custom_code"/>
 		</form>
 
 		
 	<?php
 
 	$button = sanitize_text_field( $_POST['button'] );
+
 	switch ($button) 
 	{
 		case 'test_moodle_connection':
@@ -77,6 +79,10 @@ function sritoni_tools_render()
 		case 'test_cashfree_connection':
 			test_cashfree_connection();
 			break;
+
+		case 'test_custom_code':
+			test_custom_code();
+			break;	
 		
 		default:
 			// do nothing
@@ -590,4 +596,19 @@ function test_LDAP_connection()
       {
         echo "LDAP bind failed...";
       }
+}
+
+function test_custom_code()
+{
+	// we get to tet whatever we want here. Typically display contents of varoables and objects for debugging
+	$oder_id = 590;
+
+	$order = wc_get_order( $order_id );
+
+	//print out the order details using Woo Commerce functions
+	echo "<h3> Woocommerce Order details:</h3>";
+	echo nl2br("Order Billing name is got using get_billing_first_name method: " . $order->get_billing_first_name());
+	echo nl2br("Order Billing name is got using get_billing_last_name method: " . $order->get_billing_last_name());
+	echo nl2br("Order Payment Title is got using get_payment_method_title method: " . $order->get_payment_method_title());
+	
 }
