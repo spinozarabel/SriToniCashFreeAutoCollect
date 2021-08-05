@@ -601,7 +601,7 @@ function test_LDAP_connection()
 function test_custom_code()
 {
 	// we get to tet whatever we want here. Typically display contents of varoables and objects for debugging
-	$oder_id = 590;
+	$order_id = 590;
 
 	$order = wc_get_order( $order_id );
 
