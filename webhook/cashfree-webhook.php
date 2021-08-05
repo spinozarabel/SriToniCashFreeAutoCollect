@@ -340,6 +340,10 @@ class CF_webhook
 	 * 4. Order is on-hold: (This was already in the query for wc_get_orders)
 	 * 5. Payment method is VABACS: (This was already in the query for wc_get_orders)
 	 * return null or reconciled order object
+     * In case of payments by non-account holders, payments will be made using Sritoni1's VA which is 0073
+     * In this case, reconcilitaion is done if payments and dates match as well as either Bank account number or payer names
+     * The bank account number from the payment is checked against that provided by the customer (which was put in the order)
+     * When we create a remote order we use the order 1st name only so thats the reason we check only for that here
      */
     protected function reconcileOrder($orders, $data, $payment_datetime, $wp_userid)
     {
