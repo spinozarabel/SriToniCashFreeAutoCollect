@@ -608,7 +608,7 @@ function test_custom_code()
 	//print out the order details using Woo Commerce functions
 	echo "<h3> Woocommerce Order details:</h3>";
 	echo nl2br("Order Billing name is got using get_billing_first_name method: " . $order->get_billing_first_name() . "\n");
-	echo nl2br("Order Billing name is got using get_billing_last_name method: " . $order->get_billing_last_name()) . "\n";
+	echo nl2br("Order Billing name is got using get_billing_last_name method: " . $order->get_billing_last_name() . "\n");
 	echo nl2br("Order Payment Title is got using get_payment_method_title method: " . $order->get_payment_method_title() . "\n");
 
 	echo "<h4> Woocommerce Order Item details using a loop:</h4>";
@@ -618,5 +618,6 @@ function test_custom_code()
 		$product_name = $item->get_name();
 		echo nl2br("Order item product name using item->get_name merhod: " . $product_name . "\n");
 	 }
-	
+
+	echo nl2br("Order items number: " . count($order->get_items()) . "\n");
 }
