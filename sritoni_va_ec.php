@@ -627,7 +627,7 @@ class sritoni_va_ec
 
   	if ( 'Student' === $colname )
   	{
-  		echo $order_user->display_name;
+  		echo $user_display_name;
   	}
   } // end of function set_orders_newcolumn_values
 
