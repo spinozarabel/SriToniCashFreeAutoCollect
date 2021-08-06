@@ -28,7 +28,7 @@ class CF_webhook
     {
         // no need for site name argument to be passed in since this is WP environment
         $this->api 		= new CfAutoCollect;
-        // sets verbose mode based on constant defined above
+        // sets verbose mode based on passed in variable
 		$this->verbose	= $verbose;
         // sets timezone object to IST
 		$this->timezone =  new DateTimeZone(self::TIMEZONE);
@@ -204,7 +204,7 @@ class CF_webhook
 		// convert this to an integer to remove any leading 0s that mayhave been used for padding
         $moodleuserid   = (int)$vAccountId;
 		// use this as login to get WP user ID
-		$wp_user 	= get_user_by('login', $moodleuserid);       // get user by login (same as Moodle userid in User tables)
+		$wp_user 	= get_user_by('login', $moodleuserid);              // get user by login (same as Moodle userid in User tables)
 		$wp_userid 	= $wp_user->ID ?? "web_hook_wpuser_not_found";      // get WP user ID
         // get payment ID of webhook
         $payment_id = $data["referenceId"];
@@ -347,9 +347,10 @@ class CF_webhook
      */
     protected function reconcileOrder($orders, $data, $payment_datetime, $wp_userid)
     {
-        foreach ($orders as $key => $order)
-		{
+        foreach ($orders as $key => $order):
+		
             $vAccountId     = $data["vAccountId"];
+
 		    // convert this to an integer to remove any leading 0s that mayhave been used for padding
             $moodleuserid   = (int)$vAccountId;
 
@@ -358,38 +359,69 @@ class CF_webhook
 
             $order_meta_bank_account_number = get_post_meta($order->id, 'payer_bank_account_number' , true);
 
-            // we join the firstname and lastname 
+            // Order's 1st name contains payer's full name as given in Application form of admission
             $order_billing_first_name                           = $order->get_billing_first_name();
             $order_billing_first_name_without_spaces            = preg_replace('/\s+/', '', $order_billing_first_name);
-            //$order_billing_last_name        = $order->get_billing_last_name();
+            
+            // Not an Admission Payment (Not from va_id = 0073), amounts and dates match. This is normal Head Start payment
+            $isNotAdmission_amount_date_match          = ( $moodleuserid !== 73                            &&
+                                                           $data["amount"] == $order->get_total()          &&  
+                                                           $payment_datetime > $order_creation_datetime );
 
-			if 	(
-					( $data["amount"] == $order->get_total()  &&  $payment_datetime > $order_creation_datetime && $moodleuserid != 73  )
-                ||  ( $order_meta_bank_account_number == $data["remitterAccount"] && $moodleuserid == 73  && $data["amount"] == $order->get_total()  &&  $payment_datetime > $order_creation_datetime)
-				||  (stripos($order_meta_bank_account_number, $data["remitterAccount"]) !== false   && $moodleuserid == 73  &&  $data["amount"] == $order->get_total() &&  $payment_datetime > $order_creation_datetime )
-                ||  (stripos($data["remitterAccount"], $order_meta_bank_account_number) !== false   && $moodleuserid == 73  &&  $data["amount"] == $order->get_total() &&  $payment_datetime > $order_creation_datetime )   
-                ||  (stripos($data["remitterName"], $order_billing_first_name_without_spaces) !== false  && $moodleuserid == 73 && $data["amount"] == $order->get_total() &&  $payment_datetime > $order_creation_datetime)
-                )
-			{
-				// we satisfy all conditions, this order reconciles with the webhook payment
-                if ($this->verbose)
-                {
-                    error_log('Order No: ' . $order->get_id() . ' is reconcilable with webhook payment');
-                }
-				return $order;
-			}
-			else
-			{
-				// This order does not reconcile with our webhook payment so check for next order in loop`
-				continue;
-			}
+            // Admission Payment, amounts and dates match, bank accounts match
+            $isAdmission_amount_date_bankaccount_match = ( $moodleuserid === 73                                         &&
+                                                           $order_meta_bank_account_number == $data["remitterAccount"]  && 
+                                                           $data["amount"] == $order->get_total()                       &&
+                                                           $payment_datetime > $order_creation_datetime)
+                                                    ||   ( $moodleuserid === 73                                                             &&
+                                                           stripos($order_meta_bank_account_number, $data["remitterAccount"]) !== false     && 
+                                                           $data["amount"] == $order->get_total()                                           &&  
+                                                           $payment_datetime > $order_creation_datetime )
+                                                    ||   ( $moodleuserid === 73                                                             &&
+                                                           stripos($data["remitterAccount"], $order_meta_bank_account_number) !== false     &&    
+                                                           $data["amount"] == $order->get_total()                                           &&
+                                                           $payment_datetime > $order_creation_datetime );
 
-		}
+            // Admission payment, amount and dates match, Names match
+            $isAdmission_amount_date_payername_match =   ( $moodleuserid === 73                           && 
+                                                           stripos($data["remitterName"], $order_billing_first_name_without_spaces) !== false  && 
+                                                           $data["amount"] == $order->get_total()         &&  
+                                                           $payment_datetime > $order_creation_datetime);
+            
+
+            switch (true):
+            
+                case $isNotAdmission_amount_date_match:
+                    $this->verbose ? error_log("VA ID:" . $vAccountId . ". VAID, amounts, and Dates match for Webhook reconciliation"): false;
+                    break;
+
+                case $isAdmission_amount_date_bankaccount_match:
+                    $this->verbose ? error_log("VA ID:" . $vAccountId . ". VAID, amounts, Dates and Bank Account Numbers match for Webhook reconciliation"): false;  
+                    break;
+
+                case $isAdmission_amount_date_payername_match:
+                    $this->verbose ? error_log("VA ID:" . $vAccountId . ". VAID, amounts, Dates and Payer Names match for Webhook reconciliation"): false;
+                    break;
+                    
+                default:
+                    // This order does not reconcile with our webhook payment so check for next order in loop`
+                    // since we have this switch inside a loop to continue with outer loop we use continue 2
+				    continue 2;
+                    break;
+
+            endswitch;
+
+            // we get here only if we pass successfully through the SWITCH so we can reconcile with current order
+
+            $this->verbose ? error_log('Order No: ' . $order->get_id() . ' is reconcilable with webhook paymentID:' . $data["referenceId"]): false;
+
+            return $order;
+
+		endforeach;
+
 		// we have checked all orders and none can be reconciled with our webhook payment
-        if ($this->verbose)
-                {
-                    error_log('All on-hold vabacs orders for this user checked, none can be reconciled with this payment');
-                }
+        $this->verbose ? error_log('All on-hold vabacs orders for this user checked, none can be reconciled with this payment'): false;
+        
         return null;
     }
 
