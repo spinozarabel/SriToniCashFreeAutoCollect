@@ -479,7 +479,7 @@ class sritoni_va_ec
   	$va_id 					   = get_post_meta($order->id, 'va_id', true) ?? ""; 	// this is the VA _ID contained in order meta
   	$user_id 				   = $order->get_user_id();
   	$order_user 			 = get_user_by('id', $user_id);
-  	$user_display_name = $order_user->display_name;
+  	$user_display_name = get_post_meta($order->id, 'name_on_remote_order', true) ?? $order_user->display_name;
 
   	$reconcilable = false;	// preset flag to start with that order is not reconcilable
 
@@ -503,7 +503,7 @@ class sritoni_va_ec
   		break;     // out of switch structure
 
   		// Reconcile on-hold orders only if reconcile flag in settings is set, otherwise miss
-  		case ( ( 'on-hold' == $order_status ) && ( $reconcile == 1 ) ):
+  		case ( ( 'on-hold' == $order_status ) && ( $reconcile == 1 ) && ("0073" == $va_id)):
 
         // since wee need to interact with Cashfree , create a new API instamve
         $cashfree_api    = new CfAutoCollect; // new cashfree Autocollect API object
