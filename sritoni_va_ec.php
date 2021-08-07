@@ -5,23 +5,47 @@ defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 // class definition begins for Virtual Account e-commerce
 class sritoni_va_ec
 {
-  const VERBOSE   = false;
-
   private $moodle_token;
   private $moodle_url;
-  private $config; 
+  private $config;
+  private $csv_file;
+  private $fees_csv;
+  
+  public $timezone;
+  public $blog_id;
+  public $site_name;
+  public $beneficiary_name;
 
   public function __construct($verbose = false)
   {
     $this->verbose  = $verbose;
     $this->timezone = new DateTimeZone('Asia/Kolkata');
 
-    if ( is_admin() )
+    // load actions for admin
+		if (is_admin()) $this->define_admin_hooks();
 
-    { // add sub-menu for a new payments page. This function is a method belonging to the class sritoni_va_ec
-      add_action('admin_menu', [$this, 'add_VA_payments_submenu']);
-    }
+    // load public facing actions
+    $this->define_public_hooks();
 
+    // execute an initialization routime conveniently placed in a function called init_function
+    $this->init_function();
+
+    // add_filter( 'woocommerce_grouped_price_html', 'max_grouped_price', 10, 3 );
+
+  } // End Of Constructor
+
+
+  private function define_admin_hooks()
+  {
+    // add sub-menu for a new payments page. This function is a method belonging to the class sritoni_va_ec
+    add_action('admin_menu', [$this, 'add_VA_payments_submenu']);
+  }
+
+/**
+ * 
+ */
+  private function define_public_hooks()
+  {
     // hook for adding custom columns on woocommerce orders page
     add_filter( 'manage_edit-shop_order_columns',               [$this, 'orders_add_mycolumns'] );
 
@@ -52,12 +76,13 @@ class sritoni_va_ec
     // line item data to checkout
     add_action( 'woocommerce_checkout_create_order_line_item',  [$this, 'spz_checkout_create_order_line_item'], 10, 4 );
 
-    // execute an initialization routime conveniently placed in a function called init_function
-    $this->init_function();
+    // add action to register and enque the javascripts that do the form and table processing for order/payment reconciliation
+    add_action( 'wp_enqueue_scripts', 'add_my_scripts' );
 
-    // add_filter( 'woocommerce_grouped_price_html', 'max_grouped_price', 10, 3 );
-
-  } // End Of Constructor
+    // add action for the ajax form handler on server side.
+    // Once submit button is clicked form is serialized and sent
+    add_action('wp_ajax_spzrbl_reconcile', 'ajax_spzrbl_reconcile_handler');
+  }
 
   private function init_function()
   {
@@ -90,10 +115,66 @@ class sritoni_va_ec
     }
   }
 
+
+  /**
+   * read in the config.php file conatining sensitive details, into the $config property of class
+   */
   private function get_config()
     {
+      // read in the config PHP file conatining sensitive details, into the $config property of class
       $this->config = include( __DIR__."/sritonicashfree_config.php");
     }
+
+
+  /**
+  *   register and enque jquery scripts with nonce for ajax calls. Load only for desired page
+  *   called by add_action( 'wp_enqueue_scripts', 'add_my_scripts' );
+  */
+  function add_my_scripts()
+  // register and enque jquery scripts wit nonce for ajax calls
+  {
+      // load script only on desired page-otherwise script looks for non-existent entities and creates errors
+    if (is_page('reconcile'))
+    {
+      // https://developer.wordpress.org/plugins/javascript/enqueuing/
+        //wp_register_script($handle            , $src                                 , $deps         , $ver, $in_footer)
+      wp_register_script('my_reconcile_script', plugins_url('my_reconcile_form.js', __FILE__), array('jquery'),'1.0', true);
+
+      wp_enqueue_script('my_reconcile_script');
+
+      $my_reconcile_script_nonce = wp_create_nonce('my_reconcile_script');
+      // note the key here is the global my_ajax_obj that will be referenced by our Jquery in city.js
+      //  wp_localize_script( string $handle,       string $object_name, associative array )
+      wp_localize_script('my_reconcile_script', 'my_reconcile_script_ajax_obj', array(
+                                                                                      'ajax_url' => admin_url( 'admin-ajax.php' ),
+                                                                                      'nonce'    => $my_reconcile_script_nonce,
+                                                                                      ));
+
+      wp_register_script('datatables', 'https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js', array('jquery'),'1.0', true);
+
+      wp_enqueue_script('datatables');
+
+      wp_enqueue_style('datatables', 'https://cdn.datatables.net/1.10.25/css/jquery.dataTables.css' );
+
+      $datatables_nonce = wp_create_nonce('datatables');
+
+      wp_localize_script('datatables', 'datatables_ajax_obj', array(
+                                                                      'ajax_url' => admin_url( 'admin-ajax.php' ),
+                                                                      'nonce'    => $datatables_nonce,
+                                                                      ));
+    }
+  }
+
+
+  /**
+   * Ajax handler for handling reonciliation of paymentIDs and order IDs sent in form
+   */
+  public function ajax_spzrbl_reconcile_handler()
+  {
+    //
+  }
+
+
 
   /** add_VA_payments_submenu()
   *   is the callback function for the add_action admin_menu hook above
