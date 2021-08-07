@@ -242,14 +242,14 @@ class sritoni_va_ec
       'payment_method' 	=> 'vabacs',
     );
 
+    $orders = wc_get_orders( $args );
+
     // if no orders on-hold then nothing to reconcile so exit
     if (empty($orders))
     {
       echo 'No orders on-hold, nothing to reconcile';
       return;
     }
-
-    $orders = wc_get_orders( $args );
 
     foreach ($orders as $index => $order):
       
