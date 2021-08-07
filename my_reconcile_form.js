@@ -1,6 +1,6 @@
 jQuery(document).ready(function($) {
  
-  var jobtable = $('#table').DataTable({
+  var jobtable = $('#table-order-reconcile').DataTable({
     ajax: {
       url: datatablesajax.url + '?action=getpostsfordatatables'
     },

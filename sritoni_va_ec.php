@@ -220,7 +220,7 @@ class sritoni_va_ec
     $timezone          = $this->timezone;   // new DateTimeZone('Asia/Kolkata');
     ?>
       <button type="submit">Submit form</button>
-      <table id="order-reconcile" class="display" style="width:100%">
+      <table id="table-order-reconcile" class="display" style="width:100%">
           <thead>
               <tr>
                   <th>Order</th>
