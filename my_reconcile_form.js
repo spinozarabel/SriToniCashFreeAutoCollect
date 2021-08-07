@@ -1,6 +1,3 @@
-jQuery(document).ready(function($) {
- 
-  var jobtable = $('#table-order-reconcile').DataTable({
-    
-  });
-});
+$(document).ready( function () {
+  $('#table-order-reconcile').DataTable();
+} );
