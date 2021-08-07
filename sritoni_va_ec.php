@@ -134,8 +134,8 @@ class sritoni_va_ec
   // register and enque jquery scripts wit nonce for ajax calls
   {
       // load script only on desired page-otherwise script looks for non-existent entities and creates errors
-    if (is_page('reconcile-womanually'))
-    {
+    //if (is_page('reconcile-womanually'))
+    //{
       // https://developer.wordpress.org/plugins/javascript/enqueuing/
         //wp_register_script($handle            , $src                                 , $deps         , $ver, $in_footer)
       wp_register_script('my_reconcile_script', plugins_url('my_reconcile_form.js', __FILE__), array('jquery'),'1.0', true);
@@ -149,7 +149,7 @@ class sritoni_va_ec
                                                                                       'ajax_url' => admin_url( 'admin-ajax.php' ),
                                                                                       'nonce'    => $my_reconcile_script_nonce,
                                                                                       ));
-    }
+    //}
   }
 
 
