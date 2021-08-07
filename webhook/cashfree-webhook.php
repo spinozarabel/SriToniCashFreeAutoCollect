@@ -425,7 +425,7 @@ class CF_webhook
 		endforeach;
 
 		// we have checked all orders and none can be reconciled with our webhook payment
-        $this->verbose ? error_log('All on-hold vabacs orders for this user checked, none can be reconciled with this payment'): false;
+        $this->verbose ? error_log('No open orders can be reconciled with this payment: No matches'): false;
         
         return null;
     }

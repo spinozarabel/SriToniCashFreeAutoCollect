@@ -134,7 +134,7 @@ class sritoni_va_ec
   // register and enque jquery scripts wit nonce for ajax calls
   {
       // load script only on desired page-otherwise script looks for non-existent entities and creates errors
-    if (is_page('reconcile'))
+    if (is_page('reconcile-womanually'))
     {
       // https://developer.wordpress.org/plugins/javascript/enqueuing/
         //wp_register_script($handle            , $src                                 , $deps         , $ver, $in_footer)
@@ -168,10 +168,14 @@ class sritoni_va_ec
 
   /**
    * Ajax handler for handling reonciliation of paymentIDs and order IDs sent in form
+   * We get a grid that is serialized.
+   * Look for rows that have valid paymentID inputs. Reconcile the order with the paymentId.
+   * Remove the reconciled row from the list of open orders. Send the array of open orders as an array of JSON strings
    */
   public function ajax_spzrbl_reconcile_handler()
   {
-    //
+    // get a list of open orders that are on-hold
+
   }
 
 
@@ -192,17 +196,128 @@ class sritoni_va_ec
                       [$this, 'VA_payments_callback'] );// callable $function = ''
 
   	// add another submenu page for reconciling orders and payments on demand from admin menu
-  	add_submenu_page( 'woocommerce',	                          // parent slug
-                      'reconcile',                              // page title	
-                      'reconcile',	                            // menu title
-                      'manage_options',	                        // capability
-                      'reconcile-payments',	                    // menu slug
-                      [$this, 'reconcile_payments_callback'] ); // callback
+  	add_submenu_page( 'woocommerce',	                            // parent slug
+                      'reconcile womanually',                     // page title	
+                      'reconcile womanually',	                    // menu title
+                      'manage_options',	                          // capability
+                      'reconcile-womanually',	                    // menu slug
+                      [$this, 'reconcile_womanually_pagerender'] ); // callback
 
                       
 
     return;
   }
+
+
+  /**
+   * This page displays a grid of orders on-hold with an input field for PaymentId for each row containing an order.
+   * The store manager inputs the correponing paymentId into the input field for any given row
+   * After finishing (not all rows need be done) click on submit.
+   * The grid updates with reconciled rows removed and only shows open orders.
+   */
+  public function reconcile_womanually_pagerender()
+  {
+    $timezone          = $this->timezone;   // new DateTimeZone('Asia/Kolkata');
+    ?>
+      <button type="submit">Submit form</button>
+      <table id="order-reconcile" class="display" style="width:100%">
+          <thead>
+              <tr>
+                  <th>Order</th>
+                  <th>Adm</th>
+                  <th>Date</th>
+                  <th>Amount</th>
+                  <th>Payer</th>
+                  <th>Student</th>
+                  <th>BankAcctNo</th>
+                  <th>PaymentId</th>
+              </tr>
+          </thead>
+          <tbody>
+    <?php
+     
+    // get all orders on hold 
+    $args = array(
+      'status' 			    => 'on-hold',
+      'payment_method' 	=> 'vabacs',
+    );
+
+    // if no orders on-hold then nothing to reconcile so exit
+    if (empty($orders))
+    {
+      echo 'No orders on-hold, nothing to reconcile';
+      return;
+    }
+
+    $orders = wc_get_orders( $args );
+
+    foreach ($orders as $index => $order):
+      
+      // get all required information for the row from the order object
+      $order_id = $order->get_id();
+
+      // get the admission number if any from order meta
+      $admission_number = $order->get_meta( 'admission_number' );
+
+      // get the datetime that order was created
+      $order_datetime		= new DateTime( '@' . $order->get_date_created()->getTimestamp());
+  		$order_datetime->setTimezone($timezone);
+
+      // get the order amount
+      $order_amount 		= $order->get_total();
+
+      // get the payer's name derived form admission form and passed into remote order as Billing Name
+      $payername = $order->get_billing_first_name();
+
+      // get student's name passed in as order meta for remote order
+      $student_name = $order->get_meta( 'name_on_remote_order' );
+
+      // get payer's bank account number extracted from admission form and passed in as remote order meta
+      $payer_bank_account_number = $order->get_meta( 'payer_bank_account_number' );
+
+      // the shop manager is supposed to enter a number in this input field
+      $payment_id = "";
+
+      // display the table row
+      ?>
+            <tr>
+                <td><?php echo htmlspecialchars($order_id); ?></td>
+                <td><?php echo htmlspecialchars($admission_number); ?></td>
+                <td><?php echo htmlspecialchars($order_datetime); ?></td>
+                <td><?php echo htmlspecialchars($order_amount); ?></td>
+                <td><?php echo htmlspecialchars($payername); ?></td>
+                <td><?php echo htmlspecialchars($student_name); ?></td>
+                <td><?php echo htmlspecialchars($payer_bank_account_number); ?></td>
+                <td><input type="text" id="<?php echo htmlspecialchars('paymentid'. $index); ?>" name="<?php echo htmlspecialchars('paymentid'. $index); ?>" value=""></td>
+            </tr>
+
+      <?php
+    
+    endforeach;
+
+    // All rows printed, close the body and add any footer and close the table now
+      ?>
+          </tbody>
+          <tfoot>
+              <tr>
+                  <th>Order</th>
+                  <th>Adm</th>
+                  <th>Date</th>
+                  <th>Amount</th>
+                  <th>Payer</th>
+                  <th>Student</th>
+                  <th>BankAcctNo</th>
+                  <th>PaymentId</th>
+              </tr>
+          </tfoot>
+        </table>
+
+      <?php
+
+    
+  }
+
+
 
   /**
   *   Callback function to add_submenu_page( 'woocommerce',	'VA-payments',	'VA-payments',	....
