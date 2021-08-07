@@ -149,19 +149,6 @@ class sritoni_va_ec
                                                                                       'ajax_url' => admin_url( 'admin-ajax.php' ),
                                                                                       'nonce'    => $my_reconcile_script_nonce,
                                                                                       ));
-
-      wp_register_script('datatables', 'https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js', array('jquery'),'1.0', true);
-
-      wp_enqueue_script('datatables');
-
-      wp_enqueue_style('datatables', 'https://cdn.datatables.net/1.10.25/css/jquery.dataTables.css' );
-
-      $datatables_nonce = wp_create_nonce('datatables');
-
-      wp_localize_script('datatables', 'datatables_ajax_obj', array(
-                                                                      'ajax_url' => admin_url( 'admin-ajax.php' ),
-                                                                      'nonce'    => $datatables_nonce,
-                                                                      ));
     }
   }
 
