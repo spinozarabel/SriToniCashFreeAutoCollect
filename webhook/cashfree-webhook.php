@@ -358,6 +358,7 @@ class CF_webhook
 			$order_creation_datetime->setTimezone($this->timezone);	// this needs adjustment to timezone since derived from unix timestamp
 
             $order_meta_bank_account_number = get_post_meta($order->id, 'payer_bank_account_number' , true);
+            $remitter_name_without_spaces = preg_replace('/\s+/', '', $data["remitterName"]);
 
             // Order's 1st name contains payer's full name as given in Application form of admission
             $order_billing_first_name                           = $order->get_billing_first_name();
@@ -382,9 +383,13 @@ class CF_webhook
                                                            $data["amount"] == $order->get_total()                                           &&
                                                            $payment_datetime > $order_creation_datetime );
 
-            // Admission payment, amount and dates match, Names match
+            // Admission payment, amount and dates match, Names match. Spaces have been removed for convenience
             $isAdmission_amount_date_payername_match =   ( $moodleuserid === 73                           && 
-                                                           stripos($data["remitterName"], $order_billing_first_name_without_spaces) !== false  && 
+                                                           stripos($remitter_name_without_spaces, $order_billing_first_name_without_spaces) !== false  && 
+                                                           $data["amount"] == $order->get_total()         &&  
+                                                           $payment_datetime > $order_creation_datetime)
+                                                    ||   ( $moodleuserid === 73                           && 
+                                                           stripos($order_billing_first_name_without_spaces, $remitter_name_without_spaces) !== false  && 
                                                            $data["amount"] == $order->get_total()         &&  
                                                            $payment_datetime > $order_creation_datetime);
             
