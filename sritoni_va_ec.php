@@ -283,7 +283,7 @@ class sritoni_va_ec
             <tr>
                 <td><?php echo htmlspecialchars($order_id); ?></td>
                 <td><?php echo htmlspecialchars($admission_number); ?></td>
-                <td><?php echo htmlspecialchars($order_datetime); ?></td>
+                <td><?php echo htmlspecialchars($order_datetime->format('M-d-Y H:i:s')); ?></td>
                 <td><?php echo htmlspecialchars($order_amount); ?></td>
                 <td><?php echo htmlspecialchars($payername); ?></td>
                 <td><?php echo htmlspecialchars($student_name); ?></td>
