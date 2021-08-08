@@ -208,6 +208,9 @@ class sritoni_va_ec
    */
   public function reconcile_womanually_pagerender()
   {
+    $screen = get_current_screen(); 
+    print_r($screen);
+    
     $timezone          = $this->timezone;   // new DateTimeZone('Asia/Kolkata');
     ?>
       <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.css">
