@@ -4,7 +4,7 @@ jQuery(document).ready(function($)
 
   $('button').click( function() 
   {
-    var table_data = table.$('input').toArray();
+    var table_data = table.$('input').serialize().toArray();
     
     $.post(
       my_reconcile_script_ajax_obj.ajax_url,              // url given in localize script in wordpress php
