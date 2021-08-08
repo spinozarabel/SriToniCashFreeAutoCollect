@@ -142,7 +142,7 @@ class sritoni_va_ec
     
     // https://developer.wordpress.org/plugins/javascript/enqueuing/
       //wp_register_script($handle            , $src                                 , $deps         , $ver, $in_footer)
-    wp_register_script('my_reconcile_script', plugins_url('my_reconcile_form.js', __FILE__), array('jquery'),'1.0', true);
+    wp_register_script('my_reconcile_script', plugins_url('my_reconcile_form.js', __FILE__), array('jquery'),'', true);
 
     wp_enqueue_script('my_reconcile_script');
 
