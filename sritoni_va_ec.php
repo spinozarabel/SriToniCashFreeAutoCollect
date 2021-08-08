@@ -217,7 +217,7 @@ class sritoni_va_ec
   
       <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
   
-      <button type="submit">Submit form</button>
+      <button type="submit">Submit for Reconciliation</button>
       <table id="table-order-reconcile" class="display" style="width:100%">
           <thead>
               <tr>
