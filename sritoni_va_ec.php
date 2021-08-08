@@ -166,6 +166,9 @@ class sritoni_va_ec
   public function ajax_spzrbl_reconcile_handler()
   {
     // get a list of open orders that are on-hold
+    $ajax_call_data = $_POST['table_data_serialized'];
+
+    error_log(print_r($ajax_call_data, true));
 
   }
 
