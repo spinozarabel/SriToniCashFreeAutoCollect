@@ -137,7 +137,7 @@ class sritoni_va_ec
       // load script only on desired page-otherwise script looks for non-existent entities and creates errors
     if ("reconcile-womanually" != $hook)
     {
-      // return;
+      return;
     }
     
     // https://developer.wordpress.org/plugins/javascript/enqueuing/
