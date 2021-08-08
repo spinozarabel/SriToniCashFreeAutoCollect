@@ -131,11 +131,11 @@ class sritoni_va_ec
   *   register and enque jquery scripts with nonce for ajax calls. Load only for desired page
   *   called by add_action( 'wp_enqueue_scripts', 'add_my_scripts' );
   */
-  public function add_my_scripts($hook)
+  public function add_my_scripts()
   // register and enque jquery scripts wit nonce for ajax calls
   {
       // load script only on desired page-otherwise script looks for non-existent entities and creates errors
-    if ("reconcile-womanually" != $hook)
+    if ( !is_page('reconcile-womanually') ) 
     {
       return;
     }
