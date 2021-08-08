@@ -135,7 +135,7 @@ class sritoni_va_ec
   // register and enque jquery scripts wit nonce for ajax calls
   {
       // load script only on desired page-otherwise script looks for non-existent entities and creates errors
-    if ( !is_page('reconcile-womanually') ) 
+    if ( !is_page('woocommerce_page_reconcile-womanually') ) 
     {
       return;
     }
@@ -208,9 +208,9 @@ class sritoni_va_ec
    */
   public function reconcile_womanually_pagerender()
   {
-    $screen = get_current_screen(); 
-    print_r($screen);
-    
+    // $screen = get_current_screen(); 
+    // print_r($screen);
+
     $timezone          = $this->timezone;   // new DateTimeZone('Asia/Kolkata');
     ?>
       <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.css">
