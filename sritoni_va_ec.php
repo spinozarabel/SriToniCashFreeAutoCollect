@@ -82,7 +82,7 @@ class sritoni_va_ec
 
     // add action for the ajax form handler on server side.
     // Once submit button is clicked form is serialized and sent
-    add_action('wp_ajax_spzrbl_reconcile', 'ajax_spzrbl_reconcile_handler');
+    add_action('wp_ajax_spzrbl_reconcile',                      [$this, 'ajax_spzrbl_reconcile_handler'] );
   }
 
   private function init_function()
