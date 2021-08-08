@@ -1,3 +1,3 @@
-$(document).ready( function () {
+jQuery(document).ready(function($) {
   $('#table-order-reconcile').DataTable();
 } );
