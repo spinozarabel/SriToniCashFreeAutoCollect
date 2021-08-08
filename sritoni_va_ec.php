@@ -77,7 +77,7 @@ class sritoni_va_ec
     add_action( 'woocommerce_checkout_create_order_line_item',  [$this, 'spz_checkout_create_order_line_item'], 10, 4 );
 
     // add action to register and enque the javascripts. Since we need this on the admin menu use the admin enque scripts
-    add_action( 'admin_enqueue_scripts',                        [$this, 'add_my_scripts'], 10, 1 );
+    add_action( 'admin_enqueue_scripts',                        [$this, 'add_my_scripts']);
     //add_action( 'wp_enqueue_scripts', 'add_my_scripts' );
 
     // add action for the ajax form handler on server side.
