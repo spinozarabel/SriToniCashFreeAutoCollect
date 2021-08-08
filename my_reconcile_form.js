@@ -5,7 +5,7 @@ jQuery(document).ready(function($)
   $('button').click( function() 
   {
     // var table_data = table.$('input').serialize();
-    var table_data = table.rows().data();
+    var table_data = table.rows().data().text();
     $.post(
       my_reconcile_script_ajax_obj.ajax_url,              // url given in localize script in wordpress php
 			{                                                   // POST request
