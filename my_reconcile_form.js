@@ -4,7 +4,7 @@ jQuery(document).ready(function($)
 
   $('button').click( function() 
   {
-    var data =  table.column(':contains(Order)').data();
+    var data =  table.column(':contains(Order)').data().serialize;
     console.log(data);
     
     $.post(
