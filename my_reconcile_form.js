@@ -4,7 +4,7 @@ jQuery(document).ready(function($)
 
   $('button').click( function() 
   {
-    var data =  table.columns().data();
+    var data =  table.columns().data()[0];
     console.log(data);
     
     $.post(
