@@ -176,22 +176,57 @@ class sritoni_va_ec
 
     // force reconciliation between orders and the corresponding payment IDs
     // loop through the open orders and fetch the corresponding payment
-    foreach ($order_ids_open as $index => $order_id)
-    {
+    foreach ($order_ids_open as $index => $order_id):
+
+      $payment_id = $payment_ids_input[$index];
+
       $order = wc_get_order( $order_id );
 
       // ensure that its status is still on-hold
-      if ( $order->get_status() != 'on-hold'  )
+      if ( $order->get_status() != 'on-hold' || empty($payment_id) )
       {
+        // this order is not on-hold aAND OR the payment ID has not been input so skip
         continue;
       }
 
-      // so we have a genuine on-hold order. Get it's corresponding payment id
-      $payment_id = $payment_ids_input[$index];
-
+      // so now we have a genuine on-hold order with a non-empty corresponding payment id
       // get the payment object from Cashfree
-      
-    }
+      $cashfree_api 	= new CfAutoCollect; // new cashfree API object
+
+  	  // get the payment object by its ID
+  	  $payment	= $cashfree_api->getPaymentById($payment_id);
+
+      // insert payment data into order and mark it as processing. No check is made, responsibility of Shop manager
+      $payment_date     = $payment->paymentTime;     // example 2007-06-28 15:29:26
+
+      $payment_datetime	=  DateTime::createFromFormat('Y-m-d H:i:s', $payment_date); // this is already IST
+
+      $order_note = 'Payment received by cashfree Virtual Account ID: ' . get_post_meta($order->id, 'va_id', true) .
+                    ' Payment ID: ' . $payment->referenceId . '  on: ' . $payment_datetime->format('Y-m-d H:i:s') .
+                    ' UTR reference: ' . $payment->utr;
+      $order->add_order_note($order_note);
+
+      $order->update_meta_data('va_payment_id', 				     $payment->referenceId);
+      $order->update_meta_data('amount_paid_by_va_payment',  $payment->amount);        // in Rs
+      $order->update_meta_data('bank_reference', 			 	     $payment->utr);
+      // $order->update_meta_data('payment_notes_by_customer', 	$payment_obj->description);
+
+      $order->save;
+      // create an array of all information to be packed into a JSON string as transaction ID
+      $transaction_arr	= array(
+                                'payment_id'	 => $payment->referenceId,
+                                'payment_date' => $payment_datetime->format('Y-m-d H:i:s'),
+                                'va_id'				 => get_post_meta($order->id, 'va_id', true),
+                                'utr'	         => $payment->utr,
+                              );
+
+      $transaction_id = json_encode($transaction_arr);
+
+      $order->payment_complete($transaction_id);
+
+    endforeach;   // iterate for all orders and correposnding payment IDs
+
+    // TODO  implement scheme to return on-hold orders back to Ajax-call to redraw the table with new data sent
 
   }
 
