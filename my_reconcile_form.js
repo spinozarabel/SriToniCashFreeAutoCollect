@@ -6,7 +6,7 @@ jQuery(document).ready(function($)
   {
     // 
     var order_column_array =  table.columns().data()[0];
-    var paymentidinputs = table.$('input').serialize;
+    var paymentidinputs = table.$('input').serialize();
     console.log(order_column_array);
     console.log(paymentidinputs);
     
