@@ -97,7 +97,7 @@ class sritoni_va_ec
     $this->blog_id                  = get_current_blog_id();
     $this->site_name                = get_bloginfo('name');
     $this->beneficiary_name         = get_option( 'sritoni_settings')["beneficiary_name"];
-    $this->verbose ?  error_log('extracted blog_id: ' . $this->blog_id) : false;
+    // $this->verbose ?  error_log('extracted blog_id: ' . $this->blog_id) : false;
 
     
 
