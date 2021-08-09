@@ -5,7 +5,7 @@ jQuery(document).ready(function($)
   $('button').click( function() 
   {
     var table_data =  { payment_ids:  table.$('input'),
-                        orders:       table.column(0).data()
+                        orders:       table.column('#column-1').data()
                       };
     
     $.post(
