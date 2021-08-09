@@ -4,7 +4,7 @@ jQuery(document).ready(function($)
 
   $('button').click( function() 
   {
-    var table_data =  table.column(':contains(Salary)').data();
+    var table_data =  table.column(':contains(Order)').data();
     console.log(table_data);
     
     $.post(
