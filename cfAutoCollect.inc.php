@@ -276,6 +276,37 @@ class CfAutoCollect
         return $vA;
     }
 
+
+    /**
+     * 
+     */
+    public function getPaymentById($payment_id)
+    {
+        $params   = NULL;
+
+        $endpoint = $this->baseUrl."/fetchPaymentById/".$payment_id;
+        $authToken = $this->token;
+        $headers = [
+                    "Authorization: Bearer $authToken"
+                    ];
+        $curlResponse = $this->getCurl($endpoint, $headers, $params);
+
+        if ($curlResponse->status == "SUCCESS")
+        {
+            $payment = $curlResponse->data->payment;
+        }
+        else
+        {
+            error_log( "This is the error message trying to get payment by ID" . $curlResponse->message );
+
+            $payment = NULL;   // return null if not successfull
+        }
+
+        return $payment;
+    }
+
+
+
     /**
     *  @param vAccountId is self explanatory, is SriToni ID number limited to 8 chars
     *  @param maxReturn is the maximum number of payments to be reurned

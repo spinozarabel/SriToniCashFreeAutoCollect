@@ -553,6 +553,12 @@ function test_cashfree_connection()
 	echo "<h3> PaymentAccount details of userid 0073:</h3>";
 	$vAccount = $cashfree_api->getvAccountGivenId($va_id);
 	echo "<pre>" . print_r($vAccount, true) ."</pre>";
+
+	$payment_id = "42726818";
+	$payment = $cashfree_api->getPaymentById($payment_id);
+
+	echo "<h3> Payment details of paymentID: 42726818</h3>";
+	echo "<pre>" . print_r($payment, true) ."</pre>";
 }
 
 function test_LDAP_connection()
