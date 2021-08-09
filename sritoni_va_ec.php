@@ -168,6 +168,8 @@ class sritoni_va_ec
     // get a list of open orders that are on-hold
     $ajax_call_data = $_POST['table_data'];
 
+    $paymentidinputs = $_POST['paymentidinputs'];
+
     error_log(print_r($ajax_call_data, true));
 
   }
