@@ -6,7 +6,7 @@ jQuery(document).ready(function($)
   {
     var table_data =  { payment_ids:  table.$('input'),
                         orders:       table.column('Order').data()
-  }
+  };
     
     $.post(
       my_reconcile_script_ajax_obj.ajax_url,              // url given in localize script in wordpress php
