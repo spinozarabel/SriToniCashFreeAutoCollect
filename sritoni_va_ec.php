@@ -165,14 +165,33 @@ class sritoni_va_ec
    */
   public function ajax_spzrbl_reconcile_handler()
   {
-    // get a list of open orders that are on-hold
+    // get a list of open orders that are on-hold and any corrsponding payment IDs input by user
     $ajax_call_data = $_POST['table_data'];
 
-    $orders_open = $ajax_call_data[0];
-    $payment_ids_input = $ajax_call_data[1];
+    $order_ids_open     = $ajax_call_data[0];
+    $payment_ids_input  = $ajax_call_data[1];
 
-    error_log(print_r($orders_open, true));
+    error_log(print_r($order_ids_open, true));
     error_log(print_r($payment_ids_input, true));
+
+    // force reconciliation between orders and the corresponding payment IDs
+    // loop through the open orders and fetch the corresponding payment
+    foreach ($order_ids_open as $index => $order_id)
+    {
+      $order = wc_get_order( $order_id );
+
+      // ensure that its status is still on-hold
+      if ( $order->get_status() != 'on-hold'  )
+      {
+        continue;
+      }
+
+      // so we have a genuine on-hold order. Get it's corresponding payment id
+      $payment_id = $payment_ids_input[$index];
+
+      // get the payment object from Cashfree
+      
+    }
 
   }
 
