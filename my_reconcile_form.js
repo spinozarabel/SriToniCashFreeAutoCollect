@@ -4,7 +4,7 @@ jQuery(document).ready(function($)
 
   $('button').click( function() 
   {
-    var table_data =  { payment_ids:  table.$('input')
+    var table_data =  { payment_ids:  table.$('input').serialize
                         //orders:       table.column('#column-1').data()
                       };
     
