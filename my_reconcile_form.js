@@ -8,6 +8,7 @@ jQuery(document).ready(function($)
     var order_column_array =  table.columns().data()[0];
     var paymentidinputs = table.$('input').serialize();
     var payments_array = paymentidinputs.split('&');
+    payments_array = payments_array.map(x => x.substring(x.indexOf('=') + 1));
     console.log(order_column_array);
     console.log(payments_array);
     
