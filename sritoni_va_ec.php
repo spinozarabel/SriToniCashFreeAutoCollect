@@ -196,37 +196,14 @@ class sritoni_va_ec
   	  // get the payment object by its ID
   	  $payment	= $cashfree_api->getPaymentById($payment_id);
 
-      // insert payment data into order and mark it as processing. No check is made, responsibility of Shop manager
-      $payment_date     = $payment->paymentTime;     // example 2007-06-28 15:29:26
-
-      $payment_datetime	=  DateTime::createFromFormat('Y-m-d H:i:s', $payment_date); // this is already IST
-
-      $order_note = 'Payment received by cashfree Virtual Account ID: ' . get_post_meta($order->id, 'va_id', true) .
-                    ' Payment ID: ' . $payment->referenceId . '  on: ' . $payment_datetime->format('Y-m-d H:i:s') .
-                    ' UTR reference: ' . $payment->utr;
-      $order->add_order_note($order_note);
-
-      $order->update_meta_data('va_payment_id', 				     $payment->referenceId);
-      $order->update_meta_data('amount_paid_by_va_payment',  $payment->amount);        // in Rs
-      $order->update_meta_data('bank_reference', 			 	     $payment->utr);
-      // $order->update_meta_data('payment_notes_by_customer', 	$payment_obj->description);
-
-      $order->save;
-      // create an array of all information to be packed into a JSON string as transaction ID
-      $transaction_arr	= array(
-                                'payment_id'	 => $payment->referenceId,
-                                'payment_date' => $payment_datetime->format('Y-m-d H:i:s'),
-                                'va_id'				 => get_post_meta($order->id, 'va_id', true),
-                                'utr'	         => $payment->utr,
-                              );
-
-      $transaction_id = json_encode($transaction_arr);
-
-      $order->payment_complete($transaction_id);
+      // insert payment details into order and update order meta and save.
+      $this->reconcile1_ma ( $order, $payment );
 
     endforeach;   // iterate for all orders and correposnding payment IDs
 
     // TODO  implement scheme to return on-hold orders back to Ajax-call to redraw the table with new data sent
+
+
 
   }
 
@@ -549,7 +526,7 @@ class sritoni_va_ec
         $this->order    = $order;
         $this->payment  = $payment;
 
-  			if ( !$this->reconcilable1_ma() )
+  			if ( !$this->reconcilable1_ma ( $order, $payment) )
   				{
     				// this payment is not reconcilable either due to mismatch in payment or dates or both
     				continue;	// continue next payment
@@ -557,7 +534,7 @@ class sritoni_va_ec
   			else
   				{
             // this order is reconcilable. So go reconcile the order against the payment
-    				$this->reconcile1_ma();
+    				$this->reconcile1_ma($order, $payment);
 
             echo 'Order No: ' . $order->id . ' Reconciled with Payment ID: ' . $payment->referenceId;
 
@@ -584,11 +561,11 @@ class sritoni_va_ec
   *  1. Payments must be equal
   *  2. Order creation Date must be before Payment Date
   */
-  public function reconcilable1_ma()
+  public function reconcilable1_ma ( $order, $payment )
   {
     $timezone = $this->timezone;
-    $order    = $this->order;
-    $payment  = $this->payment;
+    //$order    = $this->order;
+    //$payment  = $this->payment;
 
     // since order datetime is from time stamp whereas payment datetime is from actual date and time
     // we will only use settimezone for order datetime and not payment datetime.
@@ -612,20 +589,17 @@ class sritoni_va_ec
   /**
   *  @param order is the order object
   *  @param payment is the payment object
-  *  @param reconcile is a settings boolean option for non-webhook reconciliation
-  *  @param reconcilable is a boolean variable indicating wether order and payment are reconcilable or not
-  *  @param timezone is passed in to calculate time of order creation using timestamp
   *  return a boolean value if the payment and order have been reconciled successfully
   *  Conditions for reconciliation are: (We assume payment method is VABACS and this payment is not reconciled in any order before
   *  1. Payments must be equal
   *  2. Order creation Date must be before Payment Date
   *  Reconciliation means that payment is marked complete and order meta updated suitably
   */
-  public function reconcile1_ma()
+  public function reconcile1_ma($order, $payment)
   {
     $timezone = $this->timezone;
-    $order    = $this->order;
-    $payment  = $this->payment;
+    //$order    = $this->order;
+    //$payment  = $this->payment;
 
   	$order_created_datetime	= new DateTime( '@' . $order->get_date_created()->getTimestamp());
   	$order_created_datetime->setTimezone($timezone);
