@@ -1374,10 +1374,14 @@ class sritoni_va_ec
   * No API calls are made to any payment gateway, relies only on order data and meta data
   */
   public function moodle_on_order_status_completed( $order_id )
-  {	   
-    if (get_post_meta($order->id, 'va_id', true) == 73)
+  {	 
+    $debug						= $this->verbose;  // controls debug messages to error log
+
+    if (get_post_meta($order_id, 'va_id', true) == 73)
     {
       // this is an admission order completed so no Moodle update
+      $debug ? error_log("On Order Status Completed, No Moodle User Payments update done since Not a SriToni Account Holder"): false;
+      $debug ? error_log("order ID:". $order_id): false;
       return;
     }
     
@@ -1386,16 +1390,16 @@ class sritoni_va_ec
     $moodle_token = $this->moodle_token;
     $moodle_url   = $this->moodle_url;
 
-  	$debug						= $this->verbose;  // controls debug messages to error log
+  	
 
-      // get all details from order and nothing but order using just order_id
-  	$order 		= wc_get_order( $order_id );
+    // get all details from order and nothing but order using just order_id
+    $order 		= wc_get_order( $order_id );
   	$user_id 	= $order->get_user_id();  // this is WP user id
   	$user			= $order->get_user();     // get wpuser information associated with order
   	$username	= $user->user_login;      // username in WP which is moodle system userid
       // extract needed user meta
   	$grade_or_class		= get_user_meta( $user_id, 'grade_or_class', true );
-    $va_id_hset 			= get_user_meta( $user_id, 'va_id_hset', true );
+    $va_id_hset 			= get_user_meta( $user_id, 'va_id', true );
     $beneficiary_name = get_user_meta( $user_id, 'beneficiary_name', true );
 
   	$moodle_user_id		= strval($username);      // in case a strict string is expected by Moodle API
