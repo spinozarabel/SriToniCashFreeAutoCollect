@@ -358,7 +358,7 @@ function init_vabacs_gateway_class()
 			foreach ( $bacs_accounts as $bacs_account ) {
 				$bacs_account = (object) $bacs_account;
 				if ( $bacs_account->account_name ) {
-					$account_html .= '<h3 class="wc-bacs-bank-details-account-name">' . wp_kses_post( wp_unslash( $va_account_name ) ) . '</h3>' . PHP_EOL;
+					$account_html .= 'Beneficiary Name: <h3 class="wc-bacs-bank-details-account-name">' . wp_kses_post( wp_unslash( $va_account_name ) ) . '</h3>' . PHP_EOL;
 				}
 				$account_html .= '<ul class="wc-bacs-bank-details order_details bacs_details">' . PHP_EOL;
 				// BACS account fields shown on the thanks page and in emails.
@@ -405,7 +405,7 @@ function init_vabacs_gateway_class()
 				$account_html .= '</ul>';
 			}
 			if ( $has_details ) {
-				echo '<section class="woocommerce-bacs-bank-details"><h2 class="wc-bacs-bank-details-heading">' . esc_html__( 'Our bank details', 'woocommerce' ) . '</h2>' . wp_kses_post( PHP_EOL . $account_html ) . '</section>';
+				echo '<section class="woocommerce-bacs-bank-details"><h2 class="wc-bacs-bank-details-heading">' . esc_html__( 'Bank details', 'woocommerce' ) . '</h2>' . wp_kses_post( PHP_EOL . $account_html ) . '</section>';
 			}
 		}
 	}
