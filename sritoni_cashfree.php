@@ -358,7 +358,7 @@ function init_vabacs_gateway_class()
 			foreach ( $bacs_accounts as $bacs_account ) {
 				$bacs_account = (object) $bacs_account;
 				if ( $bacs_account->account_name ) {
-					$account_html .= 'Beneficiary Name: <h3 class="wc-bacs-bank-details-account-name">' . wp_kses_post( wp_unslash( $va_account_name ) ) . '</h3>' . PHP_EOL;
+					$account_html .= '<h3 class="wc-bacs-bank-details-account-name">' . 'Beneficiary Name - ' . wp_kses_post( wp_unslash( $va_account_name ) ) . '</h3>' . PHP_EOL;
 				}
 				$account_html .= '<ul class="wc-bacs-bank-details order_details bacs_details">' . PHP_EOL;
 				// BACS account fields shown on the thanks page and in emails.
@@ -368,10 +368,6 @@ function init_vabacs_gateway_class()
 						'bank_name'      => array(
 							'label' => __( 'Bank', 'woocommerce' ),
 							'value' => $bacs_account->bank_name,
-						),
-						'account_name' => array(
-							'label' => 'Account Name',
-							'value' => $va_account_name,
 						),
 						'account_number' => array(
 							'label' => __( 'Account number', 'woocommerce' ),
@@ -383,7 +379,7 @@ function init_vabacs_gateway_class()
 						),
 						'sort_code'      => array(
 							'label' => 'Account Type',
-							'value' => 'Select Savings or Current, not important',
+							'value' => 'Any is ok',
 						),
 						'iban'           => array(
 							'label' => __( 'IBAN', 'woocommerce' ),
