@@ -369,6 +369,10 @@ function init_vabacs_gateway_class()
 							'label' => __( 'Bank', 'woocommerce' ),
 							'value' => $bacs_account->bank_name,
 						),
+						'account_name' => array(
+							'label' => 'Account Name',
+							'value' => $va_account_name,
+						),
 						'account_number' => array(
 							'label' => __( 'Account number', 'woocommerce' ),
 							'value' => $va_account_number,
@@ -376,6 +380,10 @@ function init_vabacs_gateway_class()
 						'sort_code'      => array(
 							'label' => $sortcode,
 							'value' => $va_ifsc_code,
+						),
+						'sort_code'      => array(
+							'label' => 'Account Type',
+							'value' => 'Select Savings or Current, not important',
 						),
 						'iban'           => array(
 							'label' => __( 'IBAN', 'woocommerce' ),
