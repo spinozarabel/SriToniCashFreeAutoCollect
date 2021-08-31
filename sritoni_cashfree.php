@@ -377,7 +377,7 @@ function init_vabacs_gateway_class()
 							'label' => $sortcode,
 							'value' => $va_ifsc_code,
 						),
-						'sort_code'      => array(
+						'account_type'   => array(
 							'label' => 'Account Type',
 							'value' => 'Any is ok',
 						),
