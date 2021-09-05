@@ -178,16 +178,16 @@ class sritoni_payment_schedules
 
                                 switch (true)
                                 {
-                                    case (stripos('general', $studentcat) === true):
+                                    case (stripos('general', $studentcat) !== false):
                                         $installments = 1;
                                         break;
-                                    case (stripos('installment2', $studentcat) === true):
+                                    case (stripos('installment2', $studentcat) !== false):
                                         $installments = 2;
                                         break;
-                                    case (stripos('installment3', $studentcat) === true):
+                                    case (stripos('installment3', $studentcat) !== false):
                                         $installments = 3;
                                         break;
-                                    case (stripos('installment4', $studentcat) === true):
+                                    case (stripos('installment4', $studentcat) !== false):
                                         $installments = 4;
                                         break;
                                 }
