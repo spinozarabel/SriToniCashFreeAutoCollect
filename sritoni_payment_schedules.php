@@ -101,11 +101,12 @@ class sritoni_payment_schedules
     {
         $timezone          = $this->timezone;   // new DateTimeZone('Asia/Kolkata');
         ?>
+            <h3>Filter Users, optionally select and Submit to Setup Payent schedules for selected Users</h3>
             <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.css">
         
             <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
         
-            <button type="submit">Filter and click here</button>
+            <button type="submit">Filter, select, and submit</button>
             <table id="table-payment-schedules-setup" class="display" style="width:100%">
                 <thead>
                     <tr>
