@@ -112,6 +112,7 @@ class sritoni_payment_schedules
 
 
         $studentcat_array   = $this->studentcat_array;
+        $institution_array  = ['HSEA', 'HSMHC', 'WHSMHC', 'EYM'];
         $class_array        = [1,2,3,4,5,6,7,8,9,10,11,12];      
 
         ?>
