@@ -8,6 +8,12 @@ class sritoni_payment_schedules
     public $hook_suffix_menu_page_payment_schedules;            // hook suffix of main menu page
     public $hook_suffix_submenu_page_payment_schedules_setup;   // hook suffix of sub-menu page
 
+    public $blog_id;
+
+    public $timezone;
+
+
+
     public function __construct($verbose = false)
     {
         $this->verbose  = $verbose;
@@ -46,6 +52,9 @@ class sritoni_payment_schedules
     private function init_function()
     {
         //
+        $this->blog_id = get_current_blog_id();
+        $this->studentcat_array = explode( ",", get_option("sritoni_settings")["studentcat_possible"] );
+
     }
 
     public function add_payment_schedules_menu()
@@ -100,6 +109,11 @@ class sritoni_payment_schedules
     public function payment_schedules_setup_page_render()
     {
         $timezone          = $this->timezone;   // new DateTimeZone('Asia/Kolkata');
+
+
+        $studentcat_array   = $this->studentcat_array;
+        $class_array        = [1,2,3,4,5,6,7,8,9,10,11,12];      
+
         ?>
             <h3>Filter Users, optionally select and Submit to Setup Payent schedules for selected Users</h3>
             <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.css">
@@ -107,9 +121,30 @@ class sritoni_payment_schedules
             <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
         
             <button type="submit">Filter, select, and submit</button>
+            <select name="student-category" id="student-category">
+                <?php
+                    foreach($studentcat_array as $index => $studentcat) 
+                    {
+                        echo '<option value="' . $studentcat . '">' . $studentcat . '</option>';
+                    }
+                    unset ($studentcat);
+                ?>
+            </select>
+
+            <select name="student-class" id="student-class">
+                <?php
+                    foreach($class_array as $index => $class) 
+                    {
+                        echo '<option value="' . $class . '">' . $class . '</option>';
+                    }
+                    unset ($class);
+                ?>
+            </select>
+
             <table id="table-payment-schedules-setup" class="display" style="width:100%">
                 <thead>
                     <tr>
+                        <th>Name</th>
                         <th>MoodleId</th>
                         <th>WPuserId</th>
                         <th>Institution</th>
@@ -121,6 +156,53 @@ class sritoni_payment_schedules
                     </tr>
                 </thead>
                     <tbody>
+                        <?php
+                            // display the list of users and their meta in this loop
+                            $args = array( 'blog_id' => $this->blog_id );
+
+                            // using WP built-in method, get filtered users
+                            $wp_users = get_users($args);
+
+                            foreach ($wp_users as $wp_user):
+                                $wp_user_id = $wp_user->ID;
+                                $institution    = get_user_meta( $wp_user_id,  'institution',   true );
+                                $class          = get_user_meta( $wp_user_id,  'class',         true );
+                                $studentcat     = get_user_meta( $wp_user_id,  'studentcat',    true );
+
+                                $is_payment_scheduled   = get_user_meta( $wp_user_id,  'is_payment_scheduled',    true );
+
+                                switch (true)
+                                {
+                                    case (stripos('general', $studentcat) === true):
+                                        $installments = 1;
+                                        break;
+                                    case (stripos('installment2', $studentcat) === true):
+                                        $installments = 2;
+                                        break;
+                                    case (stripos('installment3', $studentcat) === true):
+                                        $installments = 3;
+                                        break;
+                                    case (stripos('installment4', $studentcat) === true):
+                                        $installments = 4;
+                                        break;
+                                }
+
+                                ?>
+                                    <tr>
+                                        <th><?php echo htmlspecialchars($wp_user->data->display_name); ?></th>
+                                        <th><?php echo htmlspecialchars($wp_user->data->user_login); ?></th>
+                                        <th><?php echo htmlspecialchars($wp_user_id); ?></th>
+                                        <th><?php echo htmlspecialchars($institution); ?></th>
+                                        <th><?php echo htmlspecialchars($class); ?></th>
+                                        <th><?php echo htmlspecialchars($studentcat); ?></th>
+                                        <th><?php echo htmlspecialchars($total); ?></th>
+                                        <th><?php echo htmlspecialchars($installments); ?></th>
+                                        <th><?php echo htmlspecialchars($is_payment_scheduled); ?></th>
+                                    </tr>
+                                <?php
+                            endforeach;
+                            
+                        ?>
                     </tbody>
             </table>
         <?php
