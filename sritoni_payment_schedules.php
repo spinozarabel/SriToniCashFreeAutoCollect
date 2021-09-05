@@ -121,6 +121,8 @@ class sritoni_payment_schedules
             <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
         
             <button type="submit">Filter, select, and submit</button>
+
+            <label for="student-category">Choose a Category:</label>
             <select name="student-category" id="student-category">
                 <?php
                     foreach($studentcat_array as $index => $studentcat) 
@@ -130,7 +132,8 @@ class sritoni_payment_schedules
                     unset ($studentcat);
                 ?>
             </select>
-
+            
+            <label for="student-class">Choose Class or Grade:</label>
             <select name="student-class" id="student-class">
                 <?php
                     foreach($class_array as $index => $class) 
