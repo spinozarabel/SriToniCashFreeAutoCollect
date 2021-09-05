@@ -124,31 +124,45 @@ class sritoni_payment_schedules
 
  
 
-            <div style="display: inline-block" name="categoryselect" id="categoryselect">
-					Category: <select  id="category" name="category">
+            <div style="display: inline-block" name="institution-select" id="institution-select">
+                Institution: <select  id="institution" name="institution">
 
-							    <option value="" disabled selected>Select category</option>
+                                <option value="" disabled selected>Select institution</option>
 
-                    <?php
-                        foreach($studentcat_array as $index => $studentcat) 
-                        {
-                            echo '<option value="' . $studentcat . '">' . $studentcat . '</option>';
-                        }
-                        unset ($studentcat);
-                    ?>
-                                </select>
+                                <?php
+                                    foreach($institution_array as $index => $institution) 
+                                    {
+                                        echo '<option value="' . $institution . '">' . $institution . '</option>';
+                                    }
+                                    unset ($institution);
+                                ?>
+                            </select>
             </div>
+
+            <div style="display: inline-block" name="student-class-select" id="student-class-select">
             
-            <label for="student-class">Choose Class or Grade:</label>
-            <select name="student-class" id="student-class">
-                <?php
-                    foreach($class_array as $index => $class) 
-                    {
-                        echo '<option value="' . $class . '">' . $class . '</option>';
-                    }
-                    unset ($class);
-                ?>
-            </select>
+                                        
+                Class:  <select name="student-class" id="student-class">
+                            <option value="">Select city first</option>
+                        </select>
+            </div>
+
+            <div style="display: inline-block" name="category-select" id="category-select">
+            
+                                        
+                Category:   <select name="category" id="category">
+                                <option value="" disabled selected>Select Category</option>
+                                <?php
+                                    foreach($studentcat_array as $index => $studentcat) 
+                                    {
+                                        echo '<option value="' . $studentcat . '">' . $studentcat . '</option>';
+                                    }
+                                    unset ($studentcat);
+                                ?>
+                            </select>
+            </div>
+
+                
 
             <table id="table-payment-schedules-setup" class="display" style="width:100%">
                 <thead>
