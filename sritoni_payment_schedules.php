@@ -52,16 +52,16 @@ class sritoni_payment_schedules
     {
         $this->hook_suffix_menu_page_payment_schedules =
             add_menu_page(  
-                        'payment schedules',                    // $page_title, 
-                        'payment schedules',                    // $menu_title,
+                        'sritoni payments',                    // $page_title, 
+                        'sritoni payments',                    // $menu_title,
                         'manage_options',                       // $capability,
-                        'payment-schedules',                    // $menu_slug
+                        'sritoni-payments',                    // $menu_slug
                         [$this, 'payment_schedules_setup_page_render'] );      // callable function
 
         
         $this->hook_suffix_submenu_page_payment_schedules_setup = 
             add_submenu_page( 
-                        'payment-schedules',	                            // string $parent_slug
+                        'sritoni-payments',	                            // string $parent_slug
                         'payment schedules setup',	                        // string $page_title
                         'setup',                                            // string $menu_title	
                         'manage_options',                                   // string $capability	
