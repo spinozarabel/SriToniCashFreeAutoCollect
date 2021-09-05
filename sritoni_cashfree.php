@@ -15,11 +15,15 @@ require_once(__DIR__."/MoodleRest.php");   				// Moodle REST API driver for PHP
 require_once(__DIR__."/sritoni_cashfree_settings.php"); // file containing class for settings submenu and page
 // this is tile containing the class definition for virtual accounts e-commerce
 require_once(__DIR__."/sritoni_va_ec.php");
+require_once(__DIR__."/sritoni_payment_schedules.php");	// contains class sritoni_payments_schedules
 
 require_once(__DIR__."/MoodleRest.php");
 require_once(__DIR__."/cfAutoCollect.inc.php");         // contains cashfree api class
 require_once(__DIR__."/webhook/cashfree-webhook.php");  // contains webhook class
 
+
+// instantiate the class for sritoni virtual account e-commerce
+$verbose = get_option("sritoni_settings")["is_sritonicashfree_debug"] ?? false;
 
 if ( is_admin() )
 { // add sub-menu for a new payments page. This function is a method belonging to the class sritoni_va_ec
@@ -27,10 +31,10 @@ if ( is_admin() )
 
   // add a new submenu for sritoni cashfree plugin settings in Woocommerce. This is to be done only once!!!!
   $sritoniCashfreeSettings = new sritoni_cashfree_settings();
+
+  $sritoni_payment_schedules = new sritoni_payment_schedules($verbose);
 }
 
-// instantiate the class for sritoni virtual account e-commerce
-$verbose = get_option("sritoni_settings")["is_sritonicashfree_debug"] ?? false;
 $sritoni_va_ec       = new sritoni_va_ec($verbose);
 
 // wait for all plugins to be loaded before initializing the new VABACS gateway
