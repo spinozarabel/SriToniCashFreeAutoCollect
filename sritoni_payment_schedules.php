@@ -122,16 +122,22 @@ class sritoni_payment_schedules
         
             <button type="submit">Filter, select, and submit</button>
 
-            <label for="student-category">Choose a Category:</label>
-            <select name="student-category" id="student-category">
-                <?php
-                    foreach($studentcat_array as $index => $studentcat) 
-                    {
-                        echo '<option value="' . $studentcat . '">' . $studentcat . '</option>';
-                    }
-                    unset ($studentcat);
-                ?>
-            </select>
+ 
+
+            <div style="display: inline-block" name="categoryselect" id="categoryselect">
+					Category: <select  id="category" name="category">
+
+							    <option value="" disabled selected>Select category</option>
+
+                    <?php
+                        foreach($studentcat_array as $index => $studentcat) 
+                        {
+                            echo '<option value="' . $studentcat . '">' . $studentcat . '</option>';
+                        }
+                        unset ($studentcat);
+                    ?>
+                                </select>
+            </div>
             
             <label for="student-class">Choose Class or Grade:</label>
             <select name="student-class" id="student-class">

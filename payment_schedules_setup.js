@@ -5,10 +5,11 @@ jQuery(document).ready(function($)
 
   $('button').click( function() 
   {
-    // when the button on top of table is clicked
+    // when the button on top of table is clicked 
     // 
-    // the 1st column in the table contains the open orders
-    var order_column_array =  table.columns().data()[0];
+    // the 3rd column contains wpuserid
+    var wp_user_id_array  = table.columns().data()[2];
+    var total_array       = table.columns().data()[6];
 
     // serach for all inputs (which occur in column PaymentId). This data is serialized with idnames=paymentid&etc.
     var paymentidinputs = table.$('input').serialize();
