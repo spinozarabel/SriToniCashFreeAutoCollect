@@ -144,7 +144,7 @@ class sritoni_payment_schedules
             
                                         
                 Class:  <select name="student-class" id="student-class">
-                            <option value="">Select city first</option>
+                            <option value="">Select Institution first</option>
                         </select>
             </div>
 
