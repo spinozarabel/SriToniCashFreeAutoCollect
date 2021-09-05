@@ -164,10 +164,12 @@ class sritoni_payment_schedules
                             $wp_users = get_users($args);
 
                             foreach ($wp_users as $wp_user):
+
                                 $wp_user_id = $wp_user->ID;
-                                $institution    = get_user_meta( $wp_user_id,  'institution',   true );
-                                $class          = get_user_meta( $wp_user_id,  'class',         true );
-                                $studentcat     = get_user_meta( $wp_user_id,  'studentcat',    true );
+
+                                $institution    = get_user_meta( $wp_user_id,  'sritoni_institution',   true );
+                                $class          = get_user_meta( $wp_user_id,  'grade_or_class',         true );
+                                $studentcat     = get_user_meta( $wp_user_id,  'sritoni_student_category',    true );
 
                                 $is_payment_scheduled   = get_user_meta( $wp_user_id,  'is_payment_scheduled',    true );
 
