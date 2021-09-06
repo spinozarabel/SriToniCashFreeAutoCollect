@@ -53,7 +53,7 @@ jQuery(document).ready(function($)
           function(student_classes) 					// JSON data sent by server, wp_send_json($server_institution_response)
           {
             // remove existing student_class select options and add new ones from returned AJAX student_classes
-            var student_class = $('#student_class');	// select form element with id="student_class"
+            var student_class = $('#student-class');	// select form element with id="student_class"
 
             if(student_class.prop)                    // some artificat of .prop vs .attr
             {
