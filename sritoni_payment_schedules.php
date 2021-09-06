@@ -326,8 +326,12 @@ class sritoni_payment_schedules
                                             )
                     );
 
+        error_log(print_r($dropdown_selects, true));
+
         // using WP built-in method, get filtered users
         $wp_users = get_users($args);
+
+        error_log('number of users extracted:' . count($wp_users));
 
         $data = [];
 
