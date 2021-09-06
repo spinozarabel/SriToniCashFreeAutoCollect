@@ -156,18 +156,19 @@ class sritoni_payment_schedules
             
             
                                         
-                Category:   <select name="category" id="category">
-                                <option value="" disabled selected>Select Category</option>
-                                <?php
-                                    foreach($studentcat_array as $index => $studentcat) 
-                                    {
-                                        echo '<option value="' . $studentcat . '">' . $studentcat . '</option>';
-                                    }
-                                    unset ($studentcat);
-                                ?>
-                            </select>
+                Category:<select name="category" id="category">
+                            <option value="" disabled selected>Select Category</option>
+                            <?php
+                                foreach($studentcat_array as $index => $studentcat) 
+                                {
+                                    echo '<option value="' . $studentcat . '">' . $studentcat . '</option>';
+                                }
+                                unset ($studentcat);
+                            ?>
+                        </select>
+                <input type="number" id="set-total" name="set-total">Total Payment
             </div>
-            <input type="number" id="set-total" name="set-total">
+            
 
                 
 
@@ -307,6 +308,8 @@ class sritoni_payment_schedules
         foreach ($dropdown_selects as $key => $item):
             $dropdown_selects[$key] = sanitize_text_field($item);
         endforeach;
+
+        $total = $dropdown_selects['total'];
 
         $args = array(  'blog_id' => $this->blog_id);
         $args_meta_query = [];

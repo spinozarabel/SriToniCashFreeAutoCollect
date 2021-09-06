@@ -88,6 +88,7 @@ jQuery(document).ready(function($)
       var dropdown_selects = {institution:$('#institution').val(),
                               student_class:$('#student-class').val(),
                               category:$('#category').val()
+                              total:$('#set-total').val()
                               };
           $.post(payment_schedules_setup_ajax_obj.ajax_url,
           {                                                      //POST request
