@@ -361,15 +361,15 @@ class sritoni_payment_schedules
                     break;
             }
             $data[] = array(
-                                'Name'          =>  $wp_user->data->display_name,
-                                'MoodleId'      =>  $wp_user->data->user_login,
-                                'WPuserId'      =>  $wp_user_id,
-                                'Institution'   =>  $institution,
-                                'Class'         =>  $class,
-                                'Category'      =>  $studentcat,
-                                'Total'         =>  $total,
-                                'Installments'  =>  $installments,
-                                'Triggered'     =>  $triggered,
+                                $wp_user->data->display_name,
+                                $wp_user->data->user_login,
+                                $wp_user_id,
+                                $institution,
+                                $class,
+                                $studentcat,
+                                $total,
+                                $installments,
+                                $triggered,
             );
 
         endforeach;
