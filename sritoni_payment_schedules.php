@@ -303,7 +303,7 @@ class sritoni_payment_schedules
 
         // sanitize array
         foreach ($dropdown_selects as $key => $item):
-            $dropdown_selects[$key] = wp_sanitize_text($item);
+            $dropdown_selects[$key] = sanitize_text_field($item);
         endforeach;
 
         $args = array(  'blog_id' => $this->blog_id,
