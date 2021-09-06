@@ -99,8 +99,9 @@ jQuery(document).ready(function($)
           function(data) 					// JSON data sent by server, wp_send_json($server_institution_response)
           {
             // the data is expected to be formatted to be directly used by datatables
-            table.setData(data);
-            table.draw;
+            table.clear();
+            table.rows.add(data);
+            table.draw();
           } );
     } );
 
