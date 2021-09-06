@@ -255,6 +255,7 @@ class sritoni_payment_schedules
         {
             case ('HSEA' === $institution):
                 $student_classes = [
+                                        'all',
                                         'grade1',
                                         'grade2',
                                         'grade3',
@@ -306,25 +307,32 @@ class sritoni_payment_schedules
             $dropdown_selects[$key] = sanitize_text_field($item);
         endforeach;
 
-        $args = array(  'blog_id' => $this->blog_id,
-                        'meta_query' => array(
-                                                array(
-                                                    'key' => 'sritoni_institution',
-                                                    'value' => $dropdown_selects['institution'],
-                                                    'compare' => '=='
-                                                ),
-                                                array(
-                                                    'key' => 'grade_or_class',
-                                                    'value' => $dropdown_selects['student_class'],
-                                                    'compare' => '=='
-                                                ),
-                                                array(
-                                                    'key' => 'sritoni_student_category',
-                                                    'value' => $dropdown_selects['category'],
-                                                    'compare' => 'LIKE'
-                                                ), 
-                                            )
-                    );
+        $args = array(  'blog_id' => $this->blog_id);
+        $args_meta_query = [];
+
+        $args_meta_query[] = array(
+                                    'key' => 'sritoni_institution',
+                                    'value' => $dropdown_selects['institution'],
+                                    'compare' => '=='
+                                );
+        if ($dropdown_selects['student_class'] != "all")
+        {
+            $args_meta_query[] = array(
+                                        'key' => 'grade_or_class',
+                                        'value' => $dropdown_selects['student_class'],
+                                        'compare' => '=='
+                                    );
+        }
+        if ($dropdown_selects['category'] != "all")
+        {
+            $args_meta_query[] = array(
+                                        'key' => 'sritoni_student_category',
+                                        'value' => $dropdown_selects['category'],
+                                        'compare' => 'LIKE'
+                                    );
+        }
+
+        $args['meta_query'] = $args_meta_query;
 
         error_log(print_r($dropdown_selects, true));
 
