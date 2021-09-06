@@ -243,7 +243,7 @@ class sritoni_payment_schedules
     public function spzrbl_ajax_institution_handler()
     {
         
-        $institution = sanitize_text_field(POST['institution']);
+        $institution = sanitize_text_field($_POST['institution']);
 
         error_log('Ajax handler triggered');
         error_log('institution value sent:' . $institution);
