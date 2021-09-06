@@ -49,6 +49,9 @@ class sritoni_payment_schedules
         // Once institution is selected by JQ the selected institution is sent to handler by Ajax
         // the action in the Ajax call  must be spzrbl_institution to match this action call.
         add_action('wp_ajax_spzrbl_institution', [$this, 'spzrbl_ajax_institution_handler'] );
+
+        // when the category changes it triggers this send data.
+        add_action('wp_ajax_spzrbl_send_data', [$this, 'spzrbl_ajax_send_data_handler'] );
     }
 
     private function init_function()
@@ -289,6 +292,88 @@ class sritoni_payment_schedules
 	    // finished now die
         wp_die(); // all ajax handlers should die when finished
 
+    }
+
+    /**
+     * 
+     */
+    public function spzrbl_ajax_send_data_handler()
+    {
+        $dropdown_selects = $_POST['dropdown_selects'];
+
+        // sanitize array
+        foreach ($dropdown_selects as $key => $item):
+            $dropdown_selects[$key] = wp_sanitize_text($item);
+        endforeach;
+
+        $args = array(  'blog_id' => $this->blog_id,
+                        'meta_query' => array(
+                                                array(
+                                                    'key' => 'sritoni_institution',
+                                                    'value' => $dropdown_selects['institution'],
+                                                    'compare' => '=='
+                                                ),
+                                                array(
+                                                    'key' => 'grade_or_class',
+                                                    'value' => $dropdown_selects['student_class'],
+                                                    'compare' => '=='
+                                                ),
+                                                array(
+                                                    'key' => 'sritoni_student_category',
+                                                    'value' => $dropdown_selects['category'],
+                                                    'compare' => '=='
+                                                ),
+                                            )
+                    );
+
+        // using WP built-in method, get filtered users
+        $wp_users = get_users($args);
+
+        $data = [];
+
+        foreach ($wp_users as $wp_user):
+
+            $wp_user_id = $wp_user->ID;
+
+            $institution    = get_user_meta( $wp_user_id,  'sritoni_institution',   true );
+            $class          = get_user_meta( $wp_user_id,  'grade_or_class',         true );
+            $studentcat     = get_user_meta( $wp_user_id,  'sritoni_student_category',    true );
+
+            $is_payment_scheduled   = get_user_meta( $wp_user_id,  'is_payment_scheduled',    true );
+
+            switch (true)
+            {
+                case (stripos('general', $studentcat) !== false):
+                    $installments = 1;
+                    break;
+                case (stripos('installment2', $studentcat) !== false):
+                    $installments = 2;
+                    break;
+                case (stripos('installment3', $studentcat) !== false):
+                    $installments = 3;
+                    break;
+                case (stripos('installment4', $studentcat) !== false):
+                    $installments = 4;
+                    break;
+            }
+            $data[] = array(
+                                'Name'          =>  $wp_user->data->display_name,
+                                'MoodleId'      =>  $wp_user->data->user_login,
+                                'WPuserId'      =>  $wp_user_id,
+                                'Institution'   =>  $institution,
+                                'Class'         =>  $class,
+                                'Category'      =>  $studentcat,
+                                'Total'         =>  $total,
+                                'Installments'  =>  $installments,
+                                'Triggered'     =>  $triggered,
+            );
+
+        endforeach;
+
+        wp_send_json($data);	// This will be used by Javascript to show table of selected schools only
+
+	    // finished now die
+        wp_die(); // all ajax handlers should die when finished
     }
 
 }   // end of class definition

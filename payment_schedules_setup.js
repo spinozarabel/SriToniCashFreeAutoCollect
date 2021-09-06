@@ -78,4 +78,29 @@ jQuery(document).ready(function($)
     
 
     } );
+
+    // change the category to refresh the table with new data from server 
+    $('#category').on('change', function()
+    {
+      var this2 = this;                  	//save for possible later use
+
+      // compose data for sending to server by Ajax call
+      var dropdown_selects = {institution:$('#institution').val(),
+                              student_class:$('#student-class').val(),
+                              category:$('#category').val()
+                              };
+          $.post(payment_schedules_setup_ajax_obj.ajax_url,
+          {                                                      //POST request
+            _ajax_nonce: payment_schedules_setup_ajax_obj.nonce, //nonce extracted and sent
+            action: "spzrbl_send_data",         	               // hook added for action wp_ajax_spzrbl_city in php file
+            dropdown_selects: dropdown_selects               	   // dropdown value. This is accesed by server $_POST['institution']
+          },
+
+          function(data) 					// JSON data sent by server, wp_send_json($server_institution_response)
+          {
+            // the data is expected to be formatted to be directly used by datatables
+            table.setData(data);
+          } );
+    } );
+
 } );
