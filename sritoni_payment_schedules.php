@@ -46,7 +46,9 @@ class sritoni_payment_schedules
 
     private function define_public_hooks()
     {
-        //
+        // Once institution is selected by JQ the selected institution is sent to handler by Ajax
+        // the action in the Ajax call  must be spzrbl_institution to match this action call.
+        add_action('wp_ajax_spzrbl_institution', [$this, 'spzrbl_ajax_institution_handler'] );
     }
 
     private function init_function()
@@ -181,6 +183,7 @@ class sritoni_payment_schedules
                 </thead>
                     <tbody>
                         <?php
+                        /*
                             // display the list of users and their meta in this loop
                             $args = array( 'blog_id' => $this->blog_id );
 
@@ -227,11 +230,61 @@ class sritoni_payment_schedules
                                     </tr>
                                 <?php
                             endforeach;
-                            
+                        */    
                         ?>
                     </tbody>
             </table>
         <?php
+    }
+
+    /**
+     *  When the admin user changes the institution value from dropdown menu that value is sent back by Ajax
+     */
+    public function spzrbl_ajax_institution_handler()
+    {
+        $institution = sanitize_text_field(POST['institution']);
+
+        switch (true)
+        {
+            case ('HSEA' === $institution):
+                $student_classes = [
+                                        'grade1',
+                                        'grade2',
+                                        'grade3',
+                                        'grade4',
+                                        'grade5',
+                                        'grade6',
+                                        'grade7',
+                                        'grade8',
+                                        'grade9',
+                                        'grade10',
+                                        'grade11',
+                                        'grade12',
+                ];
+                break;
+            
+            case ('WHSMHC' === $institution):
+                $student_classes = [
+                                        'WHSprimary1',
+                                        'WHSprimary2',
+                                        'WHSprimary3',
+                ];
+                break;
+
+            case ('HSMHC' === $institution):
+                $student_classes = [
+                                        'hsmhc1',
+                                        'hsmhc2',
+                                        'hsmhc3',
+                ];
+                break;
+        }
+
+        wp_send_json($student_classes);	// This will be used by Javascript to show table of selected schools only
+
+	    // finished now die
+        wp_die(); // all ajax handlers should die when finished
+
     }
 
 }   // end of class definition
