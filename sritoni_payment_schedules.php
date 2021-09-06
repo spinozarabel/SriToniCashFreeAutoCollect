@@ -318,11 +318,11 @@ class sritoni_payment_schedules
                                                     'value' => $dropdown_selects['student_class'],
                                                     'compare' => '=='
                                                 ),
-                                                array(
+                                             /*   array(
                                                     'key' => 'sritoni_student_category',
                                                     'value' => $dropdown_selects['category'],
                                                     'compare' => '=='
-                                                ),
+                                                ), */
                                             )
                     );
 
