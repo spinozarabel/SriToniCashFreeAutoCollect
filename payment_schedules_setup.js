@@ -100,6 +100,7 @@ jQuery(document).ready(function($)
           {
             // the data is expected to be formatted to be directly used by datatables
             table.setData(data);
+            table.draw;
           } );
     } );
 
