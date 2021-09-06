@@ -80,7 +80,7 @@ jQuery(document).ready(function($)
     } );
 
     // change the category to refresh the table with new data from server 
-    $('#category').on('change', function()
+    $('#institution-select').on('change', function()
     {
       var this2 = this;                  	//save for possible later use
 

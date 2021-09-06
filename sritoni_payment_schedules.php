@@ -143,17 +143,17 @@ class sritoni_payment_schedules
                                     unset ($institution);
                                 ?>
                             </select>
-            </div>
+            
 
-            <div style="display: inline-block" name="student-class-select" id="student-class-select">
+            
             
                                         
                 Class:  <select name="student-class" id="student-class">
                             <option value="">Select Institution first</option>
                         </select>
-            </div>
+            
 
-            <div style="display: inline-block" name="category-select" id="category-select">
+            
             
                                         
                 Category:   <select name="category" id="category">
