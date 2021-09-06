@@ -87,7 +87,7 @@ jQuery(document).ready(function($)
       // compose data for sending to server by Ajax call
       var dropdown_selects = {institution:$('#institution').val(),
                               student_class:$('#student-class').val(),
-                              category:$('#category').val()
+                              category:$('#category').val(),
                               total:$('#set-total').val()
                               };
           $.post(payment_schedules_setup_ajax_obj.ajax_url,
