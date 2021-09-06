@@ -121,7 +121,7 @@ class sritoni_payment_schedules
         $class_array        = [1,2,3,4,5,6,7,8,9,10,11,12];      
 
         ?>
-            <h3>Filter Users, optionally select and Submit to Setup Payent schedules for selected Users</h3>
+            <h3>Filter Users, set amounts and due dates, and click submit button to Setup Payent schedules</h3>
             <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.css">
         
             <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
@@ -167,6 +167,7 @@ class sritoni_payment_schedules
                                 ?>
                             </select>
             </div>
+            <input type="number" id="set-total" name="set-total">
 
                 
 
