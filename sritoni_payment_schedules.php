@@ -52,6 +52,10 @@ class sritoni_payment_schedules
 
         // when the category changes it triggers this send data.
         add_action('wp_ajax_spzrbl_send_data', [$this, 'spzrbl_ajax_send_data_handler'] );
+
+
+        // when the setup button is pressed all relevant data is sent for setting up payment schedules
+        add_action('wp_ajax_spzrbl_setup_payment_schedules', [$this, 'spzrbl_ajax_setup_payment_schedules'] );
     }
 
     private function init_function()
@@ -390,6 +394,18 @@ class sritoni_payment_schedules
 
 	    // finished now die
         wp_die(); // all ajax handlers should die when finished
+    }
+
+    /**
+     * 
+     */
+    public function spzrbl_ajax_setup_payment_schedules()
+    {
+        $datatoserver = $_POST['datatoserver'];
+
+        error_log(print_r($datatoserver, true));
+
+        wp_die();
     }
 
 }   // end of class definition
