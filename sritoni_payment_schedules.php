@@ -403,7 +403,25 @@ class sritoni_payment_schedules
     {
         $datatoserver = $_POST['datatoserver'];
 
-        error_log(print_r($datatoserver, true));
+        $institution        = sanitize_text_field( $datatoserver['institution'] );
+        $student_class      = sanitize_text_field( $datatoserver['student_class'] );
+        $category           = sanitize_text_field( $datatoserver['category'] );
+        $total              = sanitize_text_field( $datatoserver['total'] );
+        $wp_user_id_array   = $datatoserver['wp_user_id_array'];
+        $num_installments   = $datatoserver['num_installments'];
+        $due_dates          = $datatoserver['due_dates'];
+
+        // sanitize the arrays now simultaneously since they have teh same indexes
+        foreach ($wp_user_id_array as $index => $wp_user_id)
+        {
+            $wp_user_id_array[$index]   = sanitize_text_field( $wp_user_id );
+
+            $num_installments[$index]   = sanitize_text_field( $num_installments[$index] );
+        }
+
+
+
+        
 
         wp_die();
     }
