@@ -83,7 +83,7 @@ class sritoni_payment_schedules
                         'sritoni payments',	                        // string $page_title
                         'setup',                                            // string $menu_title	
                         'manage_options',                                   // string $capability	
-                        'payment-schedules-setup',                          // string $menu_slug		
+                        'sritoni-payments',                          // string $menu_slug		
                         [$this, 'payment_schedules_setup_page_render'] );   // callable $function = ''
     }
 
@@ -96,7 +96,8 @@ class sritoni_payment_schedules
     // register and enque jquery scripts wit nonce for ajax calls
     {
         // load script only on desired page-otherwise script looks for non-existent entities and creates errors
-        if ($this->hook_suffix_submenu_page_payment_schedules_setup == $hook_suffix) 
+        if ($this->hook_suffix_submenu_page_payment_schedules_setup == $hook_suffix ||  
+            $this->hook_suffix_menu_page_payment_schedules          == $hook_suffix     ) 
         {
         
             // https://developer.wordpress.org/plugins/javascript/enqueuing/
