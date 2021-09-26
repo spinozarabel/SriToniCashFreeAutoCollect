@@ -76,7 +76,8 @@ class sritoni_payment_schedules
                         'sritoni-payments',                    // $menu_slug
                         [$this, 'payment_schedules_setup_page_render'] );      // callable function
 
-        
+        // by keeping the parent slug and the menu slug the same, we avoid the duplicate submenu
+        // clicking on the main menu or this submenu gives same results
         $this->hook_suffix_submenu_page_payment_schedules_setup = 
             add_submenu_page( 
                         'sritoni-payments',	                            // string $parent_slug

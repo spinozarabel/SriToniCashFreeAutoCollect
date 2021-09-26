@@ -154,13 +154,19 @@ class sritoni_va_ec
                                                                                       'nonce'    => $my_reconcile_script_nonce,
                                                                                       ));
     }  
+    elseif ($this->hook_suffix_submenu_page_transfers_rejected == $hook_suffix)
+    {
+      wp_register_script('my_transfer_rejected_script', plugins_url('my_transfer_rejected.js', __FILE__), array('jquery'),'', true);
+
+      wp_enqueue_script('my_transfer_rejected_script');
+    }
   }
 
 
   /**
    * Ajax handler for handling reonciliation of paymentIDs and order IDs sent in form
    * We get a grid that is serialized.
-   * Look for rows that have valid paymentID inputs. Reconcile the order with the paymentId.
+   * Look for rows that have valid paymentID inputs. Set the order as paid by the associated paymentId. No other checks done
    * Remove the reconciled row from the list of open orders. Send the array of open orders as an array of JSON strings
    */
   public function ajax_spzrbl_reconcile_handler()
@@ -233,10 +239,75 @@ class sritoni_va_ec
                       'reconcile-womanually',	                    // menu slug
                       [$this, 'reconcile_womanually_pagerender'] ); // callback
 
-                      
+    // add another submenu page for reconciling orders and payments on demand from admin menu
+    $this->hook_suffix_submenu_page_transfers_rejected = 
+  	add_submenu_page( 'sritoni-payments',	                        // parent slug
+                      'Transfers Rejected',                       // page title	
+                      'Transfers Rejected',	                      // menu title
+                      'manage_options',	                          // capability
+                      'transfers-rejected',	                      // menu slug
+                      [$this, 'transfers_rejected_pagerender'] ); // callback                  
 
     return;
   }
+
+  /**
+   *  Lists details of all payments that resulted in TRANSFER_REJECTED webhook issued.
+   *  The resulting details will be in the user meta 'transfer_rejected'
+   *  We search for all such users with non-empty values and display the details ina page with datatables.
+   */
+  public function transfers_rejected_pagerender()
+  {
+    // get all users who have data for meta 'transfer_rejected'
+    $args = array(  'blog_id' => $this->blog_id);
+
+    $args_meta_query = [];
+
+    $args_meta_query[] = array(
+                                'key' => 'transfer_rejected',
+                                'value' => ["", "[]", null],
+                                'compare' => 'NOT IN'
+                            );
+
+    $args['meta_query'] = $args_meta_query;
+
+    // using WP built-in method, get filtered users who have non-empty transfer_rejected meta
+    $wp_users = get_users($args);
+
+    // if no orders on-hold then nothing to reconcile so exit
+    if (empty($wp_users))
+    {
+      echo 'No users with Transfers Rejected';
+      return;
+    }
+
+    // write out the HTML for the table definition and header
+    ?>
+      <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.css">
+  
+      <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
+  
+
+      <table id="table-transfers-rejected" class="display" style="width:100%">
+          <thead>
+              <tr>
+                  <th>User</th>
+                  <th>Open Order ID</th>
+                  <th>Order Date</th>
+                  <th>Order Amount</th>
+                  <th>Rejected Amount</th>
+                  <th>Rejected Transaction ID</th>
+                  <th>Payer Bank Acct Num</th>
+                  <th>UTR</th>
+                  <th>Transfer Date</th>
+                  <th>Reason</th>
+              </tr>
+          </thead>
+          <tbody>
+    <?php
+
+  }
+
 
 
   /**
