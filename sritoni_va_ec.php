@@ -134,26 +134,26 @@ class sritoni_va_ec
   public function add_my_scripts($hook_suffix)
   // register and enque jquery scripts wit nonce for ajax calls
   {
-      // load script only on desired page-otherwise script looks for non-existent entities and creates errors
-    if ('woocommerce_page_reconcile-womanually' != $hook_suffix) 
+    // load script only on desired page-otherwise script looks for non-existent entities and creates errors
+    if ($this->hook_suffix_submenu_page_reconcile_womanually == $hook_suffix) 
     {
-      return;
-    }
+      
     
-    // https://developer.wordpress.org/plugins/javascript/enqueuing/
-      //wp_register_script($handle            , $src                                 , $deps         , $ver, $in_footer)
-    wp_register_script('my_reconcile_script', plugins_url('my_reconcile_form.js', __FILE__), array('jquery'),'', true);
-
-    wp_enqueue_script('my_reconcile_script');
-
-    $my_reconcile_script_nonce = wp_create_nonce('my_reconcile_script');
-    // note the key here is the global my_ajax_obj that will be referenced by our Jquery in city.js
-    //  wp_localize_script( string $handle,       string $object_name, associative array )
-    wp_localize_script('my_reconcile_script', 'my_reconcile_script_ajax_obj', array(
-                                                                                    'ajax_url' => admin_url( 'admin-ajax.php' ),
-                                                                                    'nonce'    => $my_reconcile_script_nonce,
-                                                                                    ));
     
+      // https://developer.wordpress.org/plugins/javascript/enqueuing/
+        //wp_register_script($handle            , $src                                 , $deps         , $ver, $in_footer)
+      wp_register_script('my_reconcile_script', plugins_url('my_reconcile_form.js', __FILE__), array('jquery'),'', true);
+
+      wp_enqueue_script('my_reconcile_script');
+
+      $my_reconcile_script_nonce = wp_create_nonce('my_reconcile_script');
+      // note the key here is the global my_ajax_obj that will be referenced by our Jquery in city.js
+      //  wp_localize_script( string $handle,       string $object_name, associative array )
+      wp_localize_script('my_reconcile_script', 'my_reconcile_script_ajax_obj', array(
+                                                                                      'ajax_url' => admin_url( 'admin-ajax.php' ),
+                                                                                      'nonce'    => $my_reconcile_script_nonce,
+                                                                                      ));
+    }  
   }
 
 
@@ -225,6 +225,7 @@ class sritoni_va_ec
                       [$this, 'VA_payments_callback'] );// callable $function = ''
 
   	// add another submenu page for reconciling orders and payments on demand from admin menu
+    $this->hook_suffix_submenu_page_reconcile_womanually = 
   	add_submenu_page( 'sritoni-payments',	                        // parent slug
                       'reconcile womanually',                     // page title	
                       'reconcile womanually',	                    // menu title
