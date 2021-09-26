@@ -26,13 +26,15 @@ require_once(__DIR__."/webhook/cashfree-webhook.php");  // contains webhook clas
 $verbose = get_option("sritoni_settings")["is_sritonicashfree_debug"] ?? false;
 
 if ( is_admin() )
-{ // add sub-menu for a new payments page. This function is a method belonging to the class sritoni_va_ec
-  add_action('admin_menu', 'add_submenu_sritoni_tools');
+{ 
+	// instantiate this 1st so that the main menu item is created and available for rest of items below
+	$sritoni_payment_schedules 	= new sritoni_payment_schedules($verbose);
 
-  // add a new submenu for sritoni cashfree plugin settings in Woocommerce. This is to be done only once!!!!
-  $sritoniCashfreeSettings 		= new sritoni_cashfree_settings();
-
-  $sritoni_payment_schedules 	= new sritoni_payment_schedules($verbose);
+	// add a new submenu for sritoni cashfree plugin settings in sritoni-payments. This is to be done only once!!!!
+	$sritoniCashfreeSettings 	= new sritoni_cashfree_settings();
+	
+	// add sub-menu for a new payments page. This function is a method belonging to the class sritoni_va_ec
+  	add_action('admin_menu', 'add_submenu_sritoni_tools');  
 }
 
 $sritoni_va_ec       = new sritoni_va_ec($verbose);
@@ -50,7 +52,7 @@ add_action('admin_post_nopriv_cf_wc_webhook', 'cf_webhook_init', 10);
 function add_submenu_sritoni_tools()
 {
 	// add submenu page for testing various application API needed for SriToni operation
-	add_submenu_page( 	'woocommerce',	                 // parent slug
+	add_submenu_page( 	'sritoni-payments',	                 // parent slug
 						'SriToni Tools',                     // page title	
 						'SriToni Tools',	                 // menu title
 						'manage_options',	                 // capability
