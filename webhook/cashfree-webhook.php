@@ -19,10 +19,14 @@ class CF_webhook
     /**
      * Event constants
      */
-    const AMOUNT_COLLECTED          = 'AMOUNT_COLLECTED';
+    const AMOUNT_COLLECTED      = 'AMOUNT_COLLECTED';
 
-	const VERBOSE			 		= true;							// MA
-	const TIMEZONE					= 'Asia/Kolkata';				// MA
+    const TRANSFER_REJECTED     = 'TRANSFER_REJECTED';
+
+    const AMOUNT_SETTLED        = 'AMOUNT_SETTLED';
+
+	const VERBOSE               = true;							// MA
+	const TIMEZONE				= 'Asia/Kolkata';				// MA
 
     function __construct($verbose = true)
     {
@@ -139,6 +143,20 @@ class CF_webhook
     					error_log('webhook event type: ' . $data['event'] );
     				}
 				return $this->amountCollected($data);
+
+            case self::TRANSFER_REJECTED:
+                if ($this->verbose)
+                    {
+    					error_log('webhook event type: ' . $data['event'] );
+    				}
+                return $this->transfer_rejected($data);
+
+            case self::AMOUNT_SETTLED:
+                if ($this->verbose)
+                    {
+                        error_log('webhook event type: ' . $data['event'] );
+                    }
+                return $this->amount_settled($data);
 
             default:
                 return ;
@@ -513,5 +531,58 @@ class CF_webhook
 		return null;
 
 	}
+
+    /**
+     *  The TRANSFER_REJECTED webhook notifies that the transfer request was received,
+     *  but has been rejected due to some reason (mentioned in the field reason).
+     *  Identifies the concerned user using the field vAccountId which is the Moodle ID. THis is also the WP user_login
+     *  From this the user meta can be written into as history for retrieval and processing elsewhere
+     *  @param array:$data Webook Data
+     */
+    protected function transfer_rejected($data)
+    {
+        $new_data   = [];     // initialize to empty array
+        $json_meta  = "";
+
+        // get the vAccountId from webhook
+        $vAccountId     = $data["vAccountId"];
+
+		// convert this to an integer to remove any leading 0s that mayhave been used for padding
+        $moodleuserid   = (int)$vAccountId;
+
+		// use this as login to get WP user ID
+		$wp_user 	= get_user_by('login', $moodleuserid);              // get user by login (same as Moodle userid in User tables)
+
+        // get existing user meta for transfer_rejected if any. This is an array of JSON strings
+        $json_meta = get_user_meta($wp_user->ID, 'transfer_rejected', true);
+
+        if ( !empty( $json_meta ) )
+        {
+            // the user meta does contain some existing data, decode to associative array
+            $new_data = json_decode($json_meta, true);
+
+            // add the new data to the top or beginning of the existing data
+            array_unshift($new_data, $data);
+        }
+        else
+        {
+            // there is no existing data so we write new data as 1st element of an array
+            $new_data[0] = $data;
+        }
+        
+        // update the user meta with updated history
+        update_user_meta( $wp_user->ID, 'transfer_rejected', json_encode($new_data) );
+
+        return;
+    }
+
+    /**
+     *  
+     *  @param array:$data Webook Data
+     */
+    protected function amount_settled($data)
+    {
+        return;
+    }
 
 } // end of webhook class definition
