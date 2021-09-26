@@ -80,7 +80,7 @@ class sritoni_payment_schedules
         $this->hook_suffix_submenu_page_payment_schedules_setup = 
             add_submenu_page( 
                         'sritoni-payments',	                            // string $parent_slug
-                        'payment schedules setup',	                        // string $page_title
+                        'sritoni payments',	                        // string $page_title
                         'setup',                                            // string $menu_title	
                         'manage_options',                                   // string $capability	
                         'payment-schedules-setup',                          // string $menu_slug		
