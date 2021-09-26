@@ -30,9 +30,9 @@ if ( is_admin() )
   add_action('admin_menu', 'add_submenu_sritoni_tools');
 
   // add a new submenu for sritoni cashfree plugin settings in Woocommerce. This is to be done only once!!!!
-  $sritoniCashfreeSettings = new sritoni_cashfree_settings();
+  $sritoniCashfreeSettings 		= new sritoni_cashfree_settings();
 
-  $sritoni_payment_schedules = new sritoni_payment_schedules($verbose);
+  $sritoni_payment_schedules 	= new sritoni_payment_schedules($verbose);
 }
 
 $sritoni_va_ec       = new sritoni_va_ec($verbose);
@@ -50,7 +50,7 @@ add_action('admin_post_nopriv_cf_wc_webhook', 'cf_webhook_init', 10);
 function add_submenu_sritoni_tools()
 {
 	// add submenu page for testing various application API needed for SriToni operation
-	add_submenu_page( 	'woocommerce',	                     // parent slug
+	add_submenu_page( 	'sritoni-payments',	                 // parent slug
 						'SriToni Tools',                     // page title	
 						'SriToni Tools',	                 // menu title
 						'manage_options',	                 // capability
