@@ -50,7 +50,7 @@ add_action('admin_post_nopriv_cf_wc_webhook', 'cf_webhook_init', 10);
 function add_submenu_sritoni_tools()
 {
 	// add submenu page for testing various application API needed for SriToni operation
-	add_submenu_page( 	'sritoni-payments',	                 // parent slug
+	add_submenu_page( 	'woocommerce',	                 // parent slug
 						'SriToni Tools',                     // page title	
 						'SriToni Tools',	                 // menu title
 						'manage_options',	                 // capability

@@ -225,7 +225,7 @@ class sritoni_va_ec
                       [$this, 'VA_payments_callback'] );// callable $function = ''
 
   	// add another submenu page for reconciling orders and payments on demand from admin menu
-  	add_submenu_page( 'sritoni-payments',	                        // parent slug
+  	add_submenu_page( 'woocommerce',	                        // parent slug
                       'reconcile womanually',                     // page title	
                       'reconcile womanually',	                    // menu title
                       'manage_options',	                          // capability

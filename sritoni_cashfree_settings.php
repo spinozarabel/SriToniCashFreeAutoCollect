@@ -39,7 +39,7 @@ class sritoni_cashfree_settings {
 	{
         // add_submenu_page( string $parent_slug, string $page_title, string $menu_title, string $capability, string $menu_slug, callable $function = '' )
 		add_submenu_page(
-            'sritoni-payments', 'SriToni Settings', 'SriToni Settings', 'manage_options', 'sritoni_settings', array($this, 'sritoni_cashfree_settings_page')
+            'woocommerce', 'SriToni Settings', 'SriToni Settings', 'manage_options', 'sritoni_settings', array($this, 'sritoni_cashfree_settings_page')
         );
     }
 
