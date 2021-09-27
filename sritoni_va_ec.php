@@ -258,29 +258,6 @@ class sritoni_va_ec
    */
   public function transfers_rejected_pagerender()
   {
-    // get all users who have data for meta 'transfer_rejected'
-    $args = array(  'blog_id' => $this->blog_id);
-
-    $args_meta_query = [];
-
-    $args_meta_query[] = array(
-                                'key' => 'transfer_rejected',
-                                'value' => ["", "[]", null],
-                                'compare' => 'NOT IN'
-                            );
-
-    $args['meta_query'] = $args_meta_query;
-
-    // using WP built-in method, get filtered users who have non-empty transfer_rejected meta
-    $wp_users = get_users($args);
-
-    // if no orders on-hold then nothing to reconcile so exit
-    if (empty($wp_users))
-    {
-      echo 'No users with Transfers Rejected';
-      return;
-    }
-
     // write out the HTML for the table definition and header
     ?>
       <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.css">
@@ -306,6 +283,28 @@ class sritoni_va_ec
           <tbody>
     <?php
 
+    // get all users who have data for meta 'transfer_rejected'
+    $args = array(  'blog_id' => $this->blog_id);
+
+    $args_meta_query = [];
+
+    $args_meta_query[] = array(
+                                'key' => 'transfer_rejected',
+                                'value' => ["", "[]", null],
+                                'compare' => 'NOT IN'
+                            );
+
+    $args['meta_query'] = $args_meta_query;
+
+    // using WP built-in method, get filtered users who have non-empty transfer_rejected meta
+    $wp_users = get_users($args);
+
+    // if no orders on-hold then nothing to reconcile so exit
+    if (empty($wp_users))
+    {
+      echo 'No users with Transfers Rejected';
+      return;
+    }
   }
 
 
