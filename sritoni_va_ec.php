@@ -96,13 +96,14 @@ class sritoni_va_ec
 
     $this->blog_id                  = get_current_blog_id();
     $this->site_name                = get_bloginfo('name');
+
     $this->beneficiary_name         = get_option( 'sritoni_settings')["beneficiary_name"];
-    // $this->verbose ?  error_log('extracted blog_id: ' . $this->blog_id) : false;
+    $this->ifsc_code                = get_option( 'sritoni_settings')["ifsc_code"];
+    $this->accounts_prefix          = get_option( 'sritoni_settings')["accounts_prefix"];
 
-    
-
-    //$this->moodle_token 	          = get_option( 'sritoni_settings')["sritoni_token"];
-    //$this->moodle_url               = get_option( 'sritoni_settings')["sritoni_url"] . '/webservice/rest/server.php';
+    error_log("hset-payments site Beneficiary Name: " . $this->beneficiary_name);
+    error_log("hset-payments site Accounts Prefix: "  . $this->accounts_prefix);
+    error_log("hset-payments site IFSC Code: "        . $this->ifsc_code);
 
     $this->get_csv_fees_file        = get_option( 'sritoni_settings')["get_csv_fees_file"] ?? false;
     $this->csv_file                 = get_option( 'sritoni_settings')["csv_fees_file_path"];

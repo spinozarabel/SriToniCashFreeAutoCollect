@@ -348,9 +348,15 @@ function init_vabacs_gateway_class()
 		// the user meta names are same for the different sites
 		// they need to be populated appropriately in the doConnector.php based on target site
 		// get user meta bank details for associated cashfree VA
-		$va_account_name = get_user_meta( $user_id, 'beneficiary_name', true );
-		$va_account_number = get_user_meta( $user_id, 'account_number', true );
-		$va_ifsc_code = get_user_meta( $user_id, 'va_ifsc_code', true );
+		$va_account_name 	= get_option( 'sritoni_settings')["beneficiary_name"];
+		$va_ifsc_code		= get_option( 'sritoni_settings')["ifsc_code"];
+
+		$va_account_number	= get_user_meta( $user_id, 'account_number', true );
+		
+		if ( stripos( $va_account_number, get_option( 'sritoni_settings')["accounts_prefix"] ) === false )
+		{
+			$va_account_number = "Error obtaining Payee Information, please report to School";
+		}
 
 		// Get the order country and country $locale.
 		$country = $order->get_billing_country();
