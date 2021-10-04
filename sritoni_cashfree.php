@@ -353,12 +353,10 @@ function init_vabacs_gateway_class()
 
 		$va_account_number	= get_user_meta( $user_id, 'account_number', true );
 		
-		/*
 		if ( stripos( $va_account_number, get_option( 'sritoni_settings')["accounts_prefix"] ) === false )
 		{
 			$va_account_number = "Error obtaining Payee Information, please report to School";
 		}
-		*/
 
 		// Get the order country and country $locale.
 		$country = $order->get_billing_country();
