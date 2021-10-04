@@ -96,7 +96,10 @@ class sritoni_cashfree_settings {
         add_settings_field( 'is_cfwebhook_debug',       'Check box to log CF webhook to error.log', array( $this, 'is_cfwebhook_debug_callback' ),       'sritoni_settings', 'cashfree_api_section' );
         //add_settings_field( 'cashfree_secret', 'cashfree API client Secret', array( $this, 'cashfree_secret_callback' ), 'sritoni_settings', 'cashfree_api_section' );
 		//add_settings_field( 'cashfree_key', 'cashfree API Client Key or ID', array( $this, 'cashfree_key_callback' ), 'sritoni_settings', 'cashfree_api_section' );
+        
         add_settings_field( 'beneficiary_name', 'Beneficiary Name of Cashfree Account', array( $this, 'cashfree_beneficiary_callback' ), 'sritoni_settings', 'cashfree_api_section' );
+        add_settings_field( 'ifsc_code', 'IFSC Code',                                   array( $this, 'ifsc_code_callback' ),            'sritoni_settings', 'cashfree_api_section' );
+        add_settings_field( 'accounts_prefix', 'Prefix of Accounts',                    array( $this, 'accounts_prefix_callback' ),      'sritoni_settings', 'cashfree_api_section' );
         add_settings_field( 'ip_whitelist', 'comma separated IPs to be whitelisted for webhook', array( $this, 'ip_whitelist_callback' ), 'sritoni_settings', 'cashfree_api_section' );
         add_settings_field( 'domain_whitelist', 'comma separated webhook domains to be whitelisted ', array( $this, 'domain_whitelist_callback' ), 'sritoni_settings', 'cashfree_api_section' );
 
@@ -318,6 +321,33 @@ class sritoni_cashfree_settings {
                 value='$value'  size='50' class='code' />Cashfree Account Beneficiary Name, ex: Head Start Educational Trust";
     }
 
+    /**
+     * Get the settings option array and print cashfree account IFSC code
+     */
+    public function ifsc_code_callback()
+    {
+        $settings = (array) get_option( 'sritoni_settings' );
+		$field = "ifsc_code";
+		$value = esc_attr( $settings[$field] );
+
+        echo "<input type='text' name='sritoni_settings[$field]' id='sritoni_settings[$field]'
+                value='$value'  size='50' class='code' />Cashfree Account IFSC Code, ex: YESB0CMSNOC";
+    }
+
+
+    /**
+     * Get the settings option array and print cashfree account prefix
+     */
+    public function accounts_prefix_callback()
+    {
+        $settings = (array) get_option( 'sritoni_settings' );
+		$field = "accounts_prefix";
+		$value = esc_attr( $settings[$field] );
+
+        echo "<input type='text' name='sritoni_settings[$field]' id='sritoni_settings[$field]'
+                value='$value'  size='50' class='code' />Cashfree Accounts prefix, ex: 808081HS";
+    }
+
 	/**
      * Get the settings option array and print moodle_token value
      */
@@ -434,6 +464,12 @@ class sritoni_cashfree_settings {
         // added in ver 6
         if( isset( $input['beneficiary_name'] ) )
             $new_input['beneficiary_name'] = sanitize_text_field( $input['beneficiary_name'] );
+
+        if( isset( $input['ifsc_code'] ) )
+        $new_input['ifsc_code'] = sanitize_text_field( $input['ifsc_code'] );
+
+        if( isset( $input['accounts_prefix'] ) )
+        $new_input['accounts_prefix'] = sanitize_text_field( $input['accounts_prefix'] );
 
         if( !empty($input['get_csv_fees_file']) )
             $new_input['get_csv_fees_file'] = 0;
