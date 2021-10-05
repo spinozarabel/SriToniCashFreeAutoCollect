@@ -339,7 +339,7 @@ class sritoni_va_ec
     // print_r($screen);
 
     // get all orders on hold 
-    $args = array('status' => 'on-hold', 'payment_method' 	=> 'vabacs');
+    $args = array('status' => 'on-hold', 'payment_method' 	=> 'vabacs', 'limit' => -1);
 
     $orders = wc_get_orders( $args );
 
