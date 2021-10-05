@@ -1,7 +1,9 @@
 jQuery(document).ready(function($) 
 {
   // initialize datatables with pre-drawn table done by HTML and PHP on page
-  var table = $('#table-order-reconcile').DataTable();
+  var table = $('#table-order-reconcile').DataTable( {
+                                                      "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]
+                                                    } );
 
   $('button').click( function() 
   {

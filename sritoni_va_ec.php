@@ -223,7 +223,7 @@ class sritoni_va_ec
                       'woocommerce',	                  // string $parent_slug
                       'VA-payments',	                  // string $page_title
                       'VA-payments',                    // string $menu_title	
-                      'manage_options',                 // string $capability	
+                      'manage_woocommerce',                 // string $capability	
                       'woo-VA-payments',                // string $menu_slug		
                       [$this, 'VA_payments_callback'] );// callable $function = ''
 
@@ -232,7 +232,7 @@ class sritoni_va_ec
   	add_submenu_page( 'sritoni-payments',	                        // parent slug
                       'reconcile womanually',                     // page title	
                       'reconcile womanually',	                    // menu title
-                      'manage_options',	                          // capability
+                      'manage_woocommerce',	                          // capability
                       'reconcile-womanually',	                    // menu slug
                       [$this, 'reconcile_womanually_pagerender'] ); // callback
 
@@ -241,12 +241,33 @@ class sritoni_va_ec
   	add_submenu_page( 'sritoni-payments',	                        // parent slug
                       'Transfers Rejected',                       // page title	
                       'Transfers Rejected',	                      // menu title
-                      'manage_options',	                          // capability
+                      'manage_woocommerce',	                          // capability
                       'transfers-rejected',	                      // menu slug
-                      [$this, 'transfers_rejected_pagerender'] ); // callback                  
+                      [$this, 'transfers_rejected_pagerender'] ); // callback  
+                      
+    // add another submenu page for report of orders and payments with searcheable filters and for CSV export
+    $this->hook_suffix_submenu_page_report_suma = 
+  	add_submenu_page( 'sritoni-payments',	                        // parent slug
+                      'Report Suma',                       // page title	
+                      'Report Suma',	                      // menu title
+                      'manage_woocommerce',	                          // capability
+                      'report-suma',	                      // menu slug
+                      [$this, 'report_suma_pagerender'] ); // callback 
 
     return;
   }
+
+
+  /**
+   *  DIsplay a table of orders with specific details as required by Accounts Department for Tally Software
+   *  Filter order by Status, Date Range, 
+   */
+  public function report_suma_pagerender()
+  {
+    //
+  }
+
+
 
   /**
    *  Lists details of all payments that resulted in TRANSFER_REJECTED webhook issued.
