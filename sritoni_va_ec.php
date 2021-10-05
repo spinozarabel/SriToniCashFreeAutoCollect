@@ -101,10 +101,6 @@ class sritoni_va_ec
     $this->ifsc_code                = get_option( 'sritoni_settings')["ifsc_code"];
     $this->accounts_prefix          = get_option( 'sritoni_settings')["accounts_prefix"];
 
-    error_log("hset-payments site Beneficiary Name: " . $this->beneficiary_name);
-    error_log("hset-payments site Accounts Prefix: "  . $this->accounts_prefix);
-    error_log("hset-payments site IFSC Code: "        . $this->ifsc_code);
-
     $this->get_csv_fees_file        = get_option( 'sritoni_settings')["get_csv_fees_file"] ?? false;
     $this->csv_file                 = get_option( 'sritoni_settings')["csv_fees_file_path"];
     // get the reconcile or not flag from settings. If true then we try to reconcile whatever was missed by webhook
@@ -321,13 +317,27 @@ class sritoni_va_ec
     // $screen = get_current_screen(); 
     // print_r($screen);
 
+    // get all orders on hold 
+    $args = array('status' => 'on-hold', 'payment_method' 	=> 'vabacs');
+
+    $orders = wc_get_orders( $args );
+
+    // if no orders on-hold then nothing to reconcile so exit
+    if (empty($orders))
+    {
+      echo 'No orders on-hold, nothing to reconcile';
+      return;
+    }
+
     $timezone          = $this->timezone;   // new DateTimeZone('Asia/Kolkata');
     ?>
       <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.css">
   
       <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
   
-      <button type="submit">Input Payment IDs and click here to reconcile</button>
+      <button type="submit">Input Payment IDs and click here to reconcile - Number of Open Orders:
+      <?php echo htmlspecialchars(count($orders)); ?>
+      </button>
       <table id="table-order-reconcile" class="display" style="width:100%">
           <thead>
               <tr>
@@ -344,20 +354,7 @@ class sritoni_va_ec
           <tbody>
     <?php
      
-    // get all orders on hold 
-    $args = array(
-      'status' 			    => 'on-hold',
-      'payment_method' 	=> 'vabacs',
-    );
-
-    $orders = wc_get_orders( $args );
-
-    // if no orders on-hold then nothing to reconcile so exit
-    if (empty($orders))
-    {
-      echo 'No orders on-hold, nothing to reconcile';
-      return;
-    }
+    
 
     foreach ($orders as $index => $order):
       
