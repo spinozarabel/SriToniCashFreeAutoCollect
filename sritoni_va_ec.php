@@ -172,8 +172,8 @@ class sritoni_va_ec
     $ajax_call_data = $_POST['table_data'];
 
     $order_ids_open     = $ajax_call_data[0];
-    $payment_ids_input  = $ajax_call_data[1][0];
-    $payment_ids_input  = str_replace("%2C", ",", $payment_ids_input);
+    $payment_ids_input  = $ajax_call_data[1];
+
 
     error_log(print_r($order_ids_open, true));
     error_log($payment_ids_input);
@@ -184,7 +184,14 @@ class sritoni_va_ec
     // loop through the open orders and fetch the corresponding payment
     foreach ($order_ids_open as $index => $order_id):
 
-      $payment_id = $payment_ids_input[$index];
+      // replace %2C as comma in case of comma separated multiple payments for a given prder
+      if (stripos($payment_ids_input[$index], "%2C") !== false)
+      {
+        // make an array of comma 
+        $multiple_payments_arr = explode("," , str_replace("%2C", ",", $payment_ids_input[$index]));
+        error_log(print_r($multiple_payments_arr, true));
+      }
+      
 
       $order = wc_get_order( $order_id );
 
