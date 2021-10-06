@@ -178,6 +178,13 @@ class sritoni_va_ec
     error_log(print_r($order_ids_open, true));
     error_log(print_r($payment_ids_input, true));
 
+    if (stripos($payment_ids_input[0], "%2C") !== false)
+      {
+        // make an array of comma 
+        $multiple_payments_arr = explode("," , str_replace("%2C", ",", $payment_ids_input[0]));
+        error_log(print_r($multiple_payments_arr, true));
+      }
+
     return;
 
     // force reconciliation between orders and the corresponding payment IDs
