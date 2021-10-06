@@ -176,7 +176,7 @@ class sritoni_va_ec
     $payment_ids_input  = str_replace("%2C", ",", $payment_ids_input);
 
     error_log(print_r($order_ids_open, true));
-    error_log(utf8_decode($payment_ids_input));
+    error_log($payment_ids_input);
 
     return;
 
