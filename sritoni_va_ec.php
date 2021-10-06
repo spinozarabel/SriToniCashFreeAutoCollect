@@ -174,8 +174,10 @@ class sritoni_va_ec
     $order_ids_open     = $ajax_call_data[0];
     $payment_ids_input  = $ajax_call_data[1];
 
-    //error_log(print_r($order_ids_open, true));
-    //error_log(print_r($payment_ids_input, true));
+    error_log(print_r($order_ids_open, true));
+    error_log(print_r($payment_ids_input, true));
+
+    return;
 
     // force reconciliation between orders and the corresponding payment IDs
     // loop through the open orders and fetch the corresponding payment
@@ -200,14 +202,12 @@ class sritoni_va_ec
   	  $payment	= $cashfree_api->getPaymentById($payment_id);
 
       // insert payment details into order and update order meta and save.
-      $this->reconcile1_ma ( $order, $payment );
+      //$this->reconcile1_ma ( $order, $payment );
+
 
     endforeach;   // iterate for all orders and correposnding payment IDs
 
     // TODO  implement scheme to return on-hold orders back to Ajax-call to redraw the table with new data sent
-
-
-
   }
 
 
