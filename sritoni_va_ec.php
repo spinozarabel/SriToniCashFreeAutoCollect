@@ -173,6 +173,7 @@ class sritoni_va_ec
 
     $order_ids_open     = $ajax_call_data[0];
     $payment_ids_input  = $ajax_call_data[1][0];
+    $payment_ids_input  = str_replace("%2C", ",", $payment_ids_input);
 
     error_log(print_r($order_ids_open, true));
     error_log(utf8_decode($payment_ids_input));
