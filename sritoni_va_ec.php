@@ -176,7 +176,7 @@ class sritoni_va_ec
 
 
     error_log(print_r($order_ids_open, true));
-    error_log($payment_ids_input);
+    error_log(print_r($payment_ids_input, true));
 
     return;
 
