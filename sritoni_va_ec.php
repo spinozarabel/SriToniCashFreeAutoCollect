@@ -172,10 +172,10 @@ class sritoni_va_ec
     $ajax_call_data = $_POST['table_data'];
 
     $order_ids_open     = $ajax_call_data[0];
-    $payment_ids_input  = $ajax_call_data[1];
+    $payment_ids_input  = $ajax_call_data[1][0];
 
     error_log(print_r($order_ids_open, true));
-    error_log(print_r($payment_ids_input, true));
+    error_log(utf8_decode($payment_ids_input));
 
     return;
 
