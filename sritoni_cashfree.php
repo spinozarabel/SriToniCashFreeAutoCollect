@@ -131,8 +131,8 @@ function init_vabacs_gateway_class()
 		$this->id                 = 'vabacs';  // MA
 		$this->icon               = apply_filters( 'woocommerce_bacs_icon', '' );
 		$this->has_fields         = false;
-		$this->method_title       = __( 'Offline Bank Transfer to Cashfree Virtual Account', 'woocommerce' );
-		$this->method_description = __( 'BACS to Individual Cashfree Virtual Account-offline direct bank transfer', 'woocommerce' );
+		$this->method_title       = __( 'Offline Bank Transfer', 'woocommerce' );
+		$this->method_description = __( 'BACS Offline direct bank transfer', 'woocommerce' );
 		// Load the settings.
 		$this->init_form_fields();
 		$this->init_settings();
@@ -350,14 +350,8 @@ function init_vabacs_gateway_class()
 		// get user meta bank details for associated cashfree VA
 		$va_account_name 	= get_option( 'sritoni_settings')["beneficiary_name"];
 		$va_ifsc_code		= get_option( 'sritoni_settings')["ifsc_code"];
-
-		$va_account_number	= get_user_meta( $user_id, 'account_number', true );
+		$va_account_number	= get_option( 'sritoni_settings')["account_number"];
 		
-		if ( stripos( $va_account_number, get_option( 'sritoni_settings')["accounts_prefix"] ) === false )
-		{
-			$va_account_number = "Error obtaining Payee Information, please report to School";
-		}
-
 		// Get the order country and country $locale.
 		$country = $order->get_billing_country();
 		$locale  = $this->get_country_locale();
@@ -391,7 +385,7 @@ function init_vabacs_gateway_class()
 						),
 						'account_type'   => array(
 							'label' => 'Account Type',
-							'value' => 'Any is ok',
+							'value' => 'Current Account',
 						),
 						'iban'           => array(
 							'label' => __( 'IBAN', 'woocommerce' ),

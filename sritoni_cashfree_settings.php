@@ -99,7 +99,7 @@ class sritoni_cashfree_settings {
         
         add_settings_field( 'beneficiary_name', 'Beneficiary Name of Cashfree Account', array( $this, 'cashfree_beneficiary_callback' ), 'sritoni_settings', 'cashfree_api_section' );
         add_settings_field( 'ifsc_code', 'IFSC Code',                                   array( $this, 'ifsc_code_callback' ),            'sritoni_settings', 'cashfree_api_section' );
-        add_settings_field( 'accounts_prefix', 'Prefix of Accounts',                    array( $this, 'accounts_prefix_callback' ),      'sritoni_settings', 'cashfree_api_section' );
+        add_settings_field( 'account_number', 'Bank Account Number',                    array( $this, 'account_number_callback' ),      'sritoni_settings', 'cashfree_api_section' );
         add_settings_field( 'ip_whitelist', 'comma separated IPs to be whitelisted for webhook', array( $this, 'ip_whitelist_callback' ), 'sritoni_settings', 'cashfree_api_section' );
         add_settings_field( 'domain_whitelist', 'comma separated webhook domains to be whitelisted ', array( $this, 'domain_whitelist_callback' ), 'sritoni_settings', 'cashfree_api_section' );
 
@@ -116,6 +116,9 @@ class sritoni_cashfree_settings {
 
         add_settings_field( 'get_csv_fees_file', 'Check box to get CSV fees file and process', array( $this, 'get_csv_fees_file_callback' ), 'sritoni_settings', 'student_section' );
         add_settings_field( 'csv_fees_file_path', 'Full path of CSV fees file, can be published Google CSV file', array( $this, 'csv_fees_file_path_callback' ), 'sritoni_settings', 'student_section' );
+    
+        add_settings_field( 'get_csv_bank_statement_file', 'Check box to get CSV Bank statement for reconciling', array( $this, 'get_csv_bank_statement_file_callback' ), 'sritoni_settings', 'student_section' );
+        add_settings_field( 'csv_bank_statement_file_path', 'Full path of CSV Bank Statement file, can be published Google CSV file', array( $this, 'csv_bank_statement_file_path_callback' ), 'sritoni_settings', 'student_section' );
     }
 
 	/**
@@ -156,6 +159,36 @@ class sritoni_cashfree_settings {
             <input name="sritoni_settings[is_sritonicashfree_debug]" id="sritoni_settings[is_sritonicashfree_debug]" type="checkbox"
                 value="1" class="code"<?php checked( $checked, 1, true ); ?>/>
         <?php
+    }
+
+    /**
+     * Get the settings option array and print get_csv_fees_file value
+     */
+    public function get_csv_bank_statement_file_callback()
+    {
+        $settings = (array) get_option( 'sritoni_settings' );
+        $field = "get_csv_bank_statement_file";
+        $checked = $settings[$field] ?? 0;
+
+        ?>
+            <input name="sritoni_settings[get_csv_bank_statement_file]" id="sritoni_settings[get_csv_bank_statement_file]" type="checkbox"
+                value="1" class="code"<?php checked( $checked, 1, true ); ?>/>
+        <?php
+    }
+
+    /**
+     * Get the settings option array and print the full path of theCSV fees file
+     */
+    public function csv_bank_statement_file_path_callback()
+    {
+
+    $settings = (array) get_option( 'sritoni_settings' );
+    $field = "csv_bank_statement_file_path";
+    $value = esc_attr( $settings[$field] );
+
+    echo "<input type='text' name='sritoni_settings[$field]' id='sritoni_settings[$field]'
+            value='$value'  size='80' class='code' />";
+
     }
 
     /**
@@ -318,7 +351,7 @@ class sritoni_cashfree_settings {
 		$value = esc_attr( $settings[$field] );
 
         echo "<input type='text' name='sritoni_settings[$field]' id='sritoni_settings[$field]'
-                value='$value'  size='50' class='code' />Cashfree Account Beneficiary Name, ex: Head Start Educational Trust";
+                value='$value'  size='50' class='code' />Account Beneficiary Name, ex: Head Start Educational Trust";
     }
 
     /**
@@ -331,21 +364,21 @@ class sritoni_cashfree_settings {
 		$value = esc_attr( $settings[$field] );
 
         echo "<input type='text' name='sritoni_settings[$field]' id='sritoni_settings[$field]'
-                value='$value'  size='50' class='code' />Cashfree Account IFSC Code, ex: YESB0CMSNOC";
+                value='$value'  size='50' class='code' />Bank IFSC Code, ex: UBIN0551546";
     }
 
 
     /**
      * Get the settings option array and print cashfree account prefix
      */
-    public function accounts_prefix_callback()
+    public function account_number_callback()
     {
         $settings = (array) get_option( 'sritoni_settings' );
-		$field = "accounts_prefix";
+		$field = "account_number";
 		$value = esc_attr( $settings[$field] );
 
         echo "<input type='text' name='sritoni_settings[$field]' id='sritoni_settings[$field]'
-                value='$value'  size='50' class='code' />Cashfree Accounts prefix, ex: 808081HS";
+                value='$value'  size='50' class='code' />Bank Account Number, ex: 515401010018020";
     }
 
 	/**
