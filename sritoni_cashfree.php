@@ -131,7 +131,7 @@ function init_vabacs_gateway_class()
 		$this->id                 = 'vabacs';  // MA
 		$this->icon               = apply_filters( 'woocommerce_bacs_icon', '' );
 		$this->has_fields         = false;
-		$this->method_title       = __( 'Offline Bank Transfer', 'woocommerce' );
+		$this->method_title       = __( 'VABACS - Offline Bank Transfer', 'woocommerce' );
 		$this->method_description = __( 'BACS Offline direct bank transfer', 'woocommerce' );
 		// Load the settings.
 		$this->init_form_fields();
