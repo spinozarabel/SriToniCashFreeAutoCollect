@@ -171,22 +171,22 @@ class sritoni_va_ec
     // get a list of open orders that are on-hold and any corrsponding payment IDs input by user
     $ajax_call_data = $_POST['table_data'];
 
-    $order_ids_open     = $ajax_call_data[0];
-    $payment_ids_input  = $ajax_call_data[1];
+    $order_ids_open = $ajax_call_data[0];
+    $utr_ids_input  = $ajax_call_data[1];
 
     // error_log(print_r($order_ids_open, true));
-    // error_log(print_r($payment_ids_input, true));
+    // error_log(print_r($utr_ids_input, true));
 
     // force reconciliation between orders and the corresponding payment IDs
     // loop through the open orders and fetch the corresponding payment
     foreach ($order_ids_open as $index => $order_id):
 
-      $payment_id = $payment_ids_input[$index];
+      $utr_id = $utr_ids_input[$index];
       
       $order = wc_get_order( $order_id );
 
       // ensure that its status is still on-hold
-      if ( $order->get_status() != 'on-hold' || empty( $payment_id ) )
+      if ( $order->get_status() != 'on-hold' || empty( $utr_id ) )
       {
         // this order is not on-hold  OR the payment ID has not been input so skip
         continue;
@@ -194,13 +194,13 @@ class sritoni_va_ec
 
       // so now we have a genuine on-hold order with a non-empty corresponding payment id
       // get the payment object from Cashfree
-      $cashfree_api 	= new CfAutoCollect; // new cashfree API object
+      // $cashfree_api 	= new CfAutoCollect; // new cashfree API object
 
   	  // get the payment object by its ID
-  	  $payment	= $cashfree_api->getPaymentById($payment_id);
+  	  // $payment	= $cashfree_api->getPaymentById($payment_id);
 
       // insert payment details into order and update order meta and save.
-      $this->reconcile1_ma ( $order, $payment );
+      $this->reconcile1_ma ( $order, $utr_id );
 
 
     endforeach;   // iterate for all orders and correposnding payment IDs
@@ -683,36 +683,32 @@ class sritoni_va_ec
   *  2. Order creation Date must be before Payment Date
   *  Reconciliation means that payment is marked complete and order meta updated suitably
   */
-  public function reconcile1_ma($order, $payment)
+  public function reconcile1_ma($order, $utr_id)
   {
     $timezone = $this->timezone;
     //$order    = $this->order;
     //$payment  = $this->payment;
 
-  	$order_created_datetime	= new DateTime( '@' . $order->get_date_created()->getTimestamp());
-  	$order_created_datetime->setTimezone($timezone);
+  	// $order_created_datetime	= new DateTime( '@' . $order->get_date_created()->getTimestamp());
+  	// $order_created_datetime->setTimezone($timezone);
 
-    $payment_date     = $payment->paymentTime;     // example 2007-06-28 15:29:26
+    // $payment_date     = $payment->paymentTime;     // example 2007-06-28 15:29:26
 
-    $payment_datetime	=  DateTime::createFromFormat('Y-m-d H:i:s', $payment_date); // this is already IST
+    // $payment_datetime	=  DateTime::createFromFormat('Y-m-d H:i:s', $payment_date); // this is already IST
 
-  	$order_note = 'Payment received by cashfree Virtual Account ID: ' . get_post_meta($order->id, 'va_id', true) .
-  					      ' Payment ID: ' . $payment->referenceId . '  on: ' . $payment_datetime->format('Y-m-d H:i:s') .
-  					      ' UTR reference: ' . $payment->utr;
+  	$order_note = 'Payment received from Moodle ID: ' . get_post_meta($order->id, 'va_id', true) .
+  					      ' UTR reference: ' . $utr_id;
   	$order->add_order_note($order_note);
 
-  	$order->update_meta_data('va_payment_id', 				     $payment->referenceId);
-  	$order->update_meta_data('amount_paid_by_va_payment',  $payment->amount);        // in Rs
-  	$order->update_meta_data('bank_reference', 			 	     $payment->utr);
+  	$order->update_meta_data('va_payment_id', 				     $utr_id);
+  	// $order->update_meta_data('amount_paid_by_va_payment',  $payment->amount);        // in Rs
+  	$order->update_meta_data('bank_reference', 			 	     $utr_id);
   	// $order->update_meta_data('payment_notes_by_customer', 	$payment_obj->description);
 
   	$order->save;
     // create an array of all information to be packed into a JSON string as transaction ID
   	$transaction_arr	= array(
-            									'payment_id'	 => $payment->referenceId,
-            									'payment_date' => $payment_datetime->format('Y-m-d H:i:s'),
-            									'va_id'				 => get_post_meta($order->id, 'va_id', true),
-            									'utr'	         => $payment->utr,
+            									'utr'	         => $utr_id,
             								 );
 
   	$transaction_id = json_encode($transaction_arr);
