@@ -2,7 +2,7 @@
 /**
 *Plugin Name: SriToni Cashfree Autocollect
 *Plugin URI:
-*Description: SriToni e-commerce plugin using Cashfree API, focussed on Virtual Accounts
+*Description: SriToni e-commerce plugin using JODOPAY
 *Version: 2019103100
 *Author: Madhu Avasarala
 *Author URI: http://sritoni.org
@@ -617,7 +617,7 @@ function test_LDAP_connection()
 function test_custom_code()
 {
 	// we get to tet whatever we want here. Typically display contents of varoables and objects for debugging
-	$order_id = 590;
+	/*$order_id = 590;
 
 	$order = wc_get_order( $order_id );
 
@@ -636,4 +636,7 @@ function test_custom_code()
 	 }
 
 	echo nl2br("Order items number: " . count($order->get_items()) . "\n");
+	*/
+	$current_user = WPSC_Current_User::$current_user;
+	print_r($current_user);
 }

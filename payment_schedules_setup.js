@@ -28,6 +28,10 @@ jQuery(document).ready(function($)
                                 student_class:    $('#student-class').val(),
                                 category:         $('#category').val(),
                                 total:            $('#set-total').val(),
+                                duedate1:         $('#duedate1').val(),
+                                duedate2:         $('#duedate2').val(),
+                                duedate3:         $('#duedate3').val(),
+                                duedate4:         $('#duedate4').val(),
                                 wp_user_id_array: table.columns().data()[2],
                                 num_installments: table.columns().data()[7]
                               };

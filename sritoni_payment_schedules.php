@@ -174,6 +174,14 @@ class sritoni_payment_schedules
                         </select>
                 <input type="number" id="set-total" name="set-total">Total Payment
             </div>
+
+            <div style="display: inline-block" name="installment-dates" id="installment-dates">
+                <input type="date" id="duedate1" name="duedate1">1st Installment Due Date
+                <input type="date" id="duedate2" name="duedate2">2nd Installment Due Date
+                <input type="date" id="duedate3" name="duedate3">3rd Installment Due Date
+                <input type="date" id="duedate4" name="duedate4">4th Installment Due Date
+            </div>
+
             
 
                 
@@ -304,7 +312,8 @@ class sritoni_payment_schedules
     }
 
     /**
-     * 
+     *  This is the callback function that populates the payments schedules setup table. 
+     *  This is only to populate the tablle but not do anything yet with the table data
      */
     public function spzrbl_ajax_send_data_handler()
     {
@@ -366,16 +375,16 @@ class sritoni_payment_schedules
             switch (true)
             {
                 case (stripos('general', $studentcat) !== false):
-                    $installments = 1;
+                    $num_installments = 1;
                     break;
                 case (stripos('installment2', $studentcat) !== false):
-                    $installments = 2;
+                    $num_installments = 2;
                     break;
                 case (stripos('installment3', $studentcat) !== false):
-                    $installments = 3;
+                    $num_installments = 3;
                     break;
                 case (stripos('installment4', $studentcat) !== false):
-                    $installments = 4;
+                    $num_installments = 4;
                     break;
             }
             $data[] = array(
@@ -386,7 +395,7 @@ class sritoni_payment_schedules
                                 $class,
                                 $studentcat,
                                 $total,
-                                $installments,
+                                $num_installments,
                                 $triggered,
             );
 
@@ -399,7 +408,7 @@ class sritoni_payment_schedules
     }
 
     /**
-     * 
+     *  This is the callback function that takes the table data and sets up the payment schedules
      */
     public function spzrbl_ajax_setup_payment_schedules()
     {
@@ -411,7 +420,11 @@ class sritoni_payment_schedules
         $total              = sanitize_text_field( $datatoserver['total'] );
         $wp_user_id_array   = $datatoserver['wp_user_id_array'];
         $num_installments   = $datatoserver['num_installments'];
-        $due_dates          = $datatoserver['due_dates'];
+        $due_dates          = [ $datatoserver['duedate1'], 
+                                $datatoserver['duedate2'], 
+                                $datatoserver['duedate3'], 
+                                $datatoserver['duedate4'],
+                                ];
 
         // sanitize the arrays now simultaneously since they have teh same indexes
         foreach ($wp_user_id_array as $index => $wp_user_id)
