@@ -637,6 +637,6 @@ function test_custom_code()
 
 	echo nl2br("Order items number: " . count($order->get_items()) . "\n");
 	*/
-	$current_user = WPSC_Current_User::$current_user;
-	print_r($current_user);
+	// $current_user = WPSC_Current_User::$current_user;
+	// print_r($current_user);
 }
